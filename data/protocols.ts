@@ -14,6 +14,33 @@ type ProtocolSeed = Omit<Protocol, "id" | "normalFlow" | "suspiciousFlow" | "rel
 const node = (id: string, label: string) => ({ id, label });
 const edge = (source: string, target: string, label: string) => ({ source, target, label });
 
+const relatedHuntsByProtocol: Readonly<Record<string, readonly string[]>> = {
+  ssh: ["unexpected-ssh-egress", "firewall-to-router-ssh", "router-to-router-ssh"],
+  https: ["unexpected-management-interface-egress", "device-to-device-https-administration", "packet-capture-followed-by-file-transfer"],
+  snmp: ["snmp-fan-out", "snmp-from-unexpected-initiator"],
+  "tacacs-plus": ["new-aaa-destination"],
+  radius: ["new-aaa-destination"],
+  ldap: ["unexpected-ldap-from-infrastructure"],
+  ldaps: ["unexpected-ldap-from-infrastructure"],
+  netconf: ["device-to-device-https-administration", "management-acl-modified"],
+  restconf: ["device-to-device-https-administration", "management-acl-modified"],
+  scp: ["unexpected-ssh-egress", "packet-capture-followed-by-file-transfer"],
+  sftp: ["unexpected-ssh-egress", "packet-capture-followed-by-file-transfer"],
+  tftp: ["packet-capture-followed-by-file-transfer"],
+  dns: ["suspicious-infrastructure-dns", "alternate-dns-resolver"],
+  ntp: ["new-infrastructure-external-destination", "infrastructure-telemetry-gap"],
+  bgp: ["infrastructure-telemetry-gap", "management-acl-modified"],
+  ospf: ["infrastructure-telemetry-gap", "management-acl-modified"],
+  gre: ["unexpected-gre-tunnel"],
+  ipsec: ["new-ipsec-tunnel"],
+  vxlan: ["unexpected-gre-tunnel"],
+  smb: ["unexpected-management-interface-egress"],
+  rdp: ["unexpected-management-interface-egress"],
+  winrm: ["unexpected-management-interface-egress"],
+  wireguard: ["infrastructure-beaconing", "new-ipsec-tunnel"],
+  openvpn: ["infrastructure-beaconing", "new-ipsec-tunnel"],
+};
+
 function protocol(seed: ProtocolSeed): Protocol {
   const { normal, suspicious, ...record } = seed;
   return {
@@ -21,7 +48,7 @@ function protocol(seed: ProtocolSeed): Protocol {
     ...record,
     normalFlow: { title: `Expected ${seed.name} flow`, ...normal },
     suspiciousFlow: { title: `Suspicious ${seed.name} flow`, ...suspicious },
-    relatedHunts: [],
+    relatedHunts: [...(relatedHuntsByProtocol[seed.slug] ?? [])],
   };
 }
 

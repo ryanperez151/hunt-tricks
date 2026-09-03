@@ -111,7 +111,7 @@ describe("secondary content registries", () => {
     ]);
   });
 
-  test("keeps every protocol operationally complete and unrelated until hunts exist", () => {
+  test("keeps every protocol operationally complete and links launch hunts", () => {
     for (const item of protocols) {
       expect([
         item.category,
@@ -133,7 +133,7 @@ describe("secondary content registries", () => {
       expect(item.suspiciousFlow.edges.length).toBeGreaterThan(0);
       expect(item.suspiciousFlow.textAlternative.length).toBeGreaterThan(0);
       expect(item.suspiciousFlow.textAlternative.every((value) => value.trim().length > 0)).toBe(true);
-      expect(item.relatedHunts).toEqual([]);
+      expect(item.relatedHunts.length).toBeGreaterThan(0);
     }
   });
 
@@ -163,14 +163,14 @@ describe("secondary content registries", () => {
     }
   });
 
-  test("preserves exact primary-source research metadata and defers hunt links", () => {
+  test("preserves exact primary-source research metadata and links launch hunts", () => {
     expect(researchEntries.map(({ title, organization, publishedAt, sourceUrl }) => [
       title,
       organization,
       publishedAt,
       sourceUrl,
     ])).toEqual(expectedResearchMetadata);
-    expect(researchEntries.every((item) => item.relatedHunts.length === 0)).toBe(true);
+    expect(researchEntries.every((item) => item.relatedHunts.length > 0)).toBe(true);
   });
 
   test("all schema-backed secondary records satisfy their contracts", () => {

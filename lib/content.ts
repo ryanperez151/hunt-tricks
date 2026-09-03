@@ -1,4 +1,9 @@
 import { z } from "zod";
+import { attackPaths as attackPathSeeds } from "@/data/attack-paths";
+import { hunts as huntSeeds } from "@/data/hunts";
+import { protocols as protocolSeeds } from "@/data/protocols";
+import { researchEntries as researchSeeds } from "@/data/research";
+import { telemetrySources as telemetrySeeds } from "@/data/telemetry";
 import { HUNT_FAMILIES } from "@/lib/taxonomy";
 import {
   AttackPathSchema,
@@ -172,6 +177,62 @@ export function validateContentRegistries(registries: ContentRegistriesInput): v
   collectRelatedHuntErrors("attack path", attackPaths, huntSlugs, issues);
 
   if (issues.length > 0) throw new ContentIntegrityError(issues);
+}
+
+function deepFreeze<T>(value: T): Readonly<T> {
+  if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
+    for (const nested of Object.values(value as Record<string, unknown>)) {
+      deepFreeze(nested);
+    }
+    Object.freeze(value);
+  }
+  return value;
+}
+
+const registryInput = ContentRegistriesInputSchema.parse({
+  hunts: huntSeeds,
+  protocols: protocolSeeds,
+  telemetry: telemetrySeeds,
+  research: researchSeeds,
+  attackPaths: attackPathSeeds,
+});
+
+validateContentRegistries(registryInput);
+
+const validatedRegistries = deepFreeze(ContentRegistriesSchema.parse(registryInput));
+
+export const hunts = validatedRegistries.hunts as readonly Hunt[];
+export const protocols = validatedRegistries.protocols as readonly Protocol[];
+export const telemetrySources = validatedRegistries.telemetry as readonly Telemetry[];
+export const researchEntries = validatedRegistries.research as readonly Research[];
+export const attackPaths = validatedRegistries.attackPaths as readonly AttackPath[];
+
+const huntsBySlug: ReadonlyMap<string, Hunt> = new Map(hunts.map((hunt) => [hunt.slug, hunt]));
+const protocolsBySlug: ReadonlyMap<string, Protocol> = new Map(protocols.map((protocol) => [protocol.slug, protocol]));
+const huntsByFamily: ReadonlyMap<string, readonly Hunt[]> = new Map(
+  HUNT_FAMILIES.map((family) => [
+    family,
+    Object.freeze(hunts.filter((hunt) => hunt.family === family)),
+  ]),
+);
+
+export function getHuntBySlug(slug: string): Hunt | undefined {
+  return huntsBySlug.get(slug);
+}
+
+export function getProtocolBySlug(slug: string): Protocol | undefined {
+  return protocolsBySlug.get(slug);
+}
+
+export function getRelatedHunts(record: Pick<Hunt | Protocol | Research | AttackPath, "relatedHunts">): readonly Hunt[] {
+  return Object.freeze(record.relatedHunts.flatMap((slug) => {
+    const hunt = huntsBySlug.get(slug);
+    return hunt ? [hunt] : [];
+  }));
+}
+
+export function getHuntsByFamily(family: string): readonly Hunt[] {
+  return huntsByFamily.get(family) ?? Object.freeze([]);
 }
 
 export type { AttackPath, Hunt, Protocol, Research, Telemetry };
