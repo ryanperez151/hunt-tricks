@@ -93,14 +93,22 @@ describe("launch hunt registry", () => {
     expect(query).not.toContain('tunnel_type AS "GRE"');
   });
 
-  test("correlates GRE configuration changes only within one hour of observed tunnel activity", () => {
+  test("preserves GRE detections while correlating only changes within one hour of first activity", () => {
     const hunt = getHuntBySlug("unexpected-gre-tunnel")!;
     const query = hunt.queries.find((item) => item.platform === "kql")!;
+    const afterLeftJoin = query.query.slice(query.query.indexOf("| join kind=leftouter"));
 
-    expect(query.description).toMatch(/one-hour correlation window/i);
+    expect(query.description).toMatch(/one-hour correlation window around first observed tunnel activity/i);
     expect(query.query).toContain("ChangeTime=TimeGenerated");
-    expect(query.query).toContain("ChangeTime between ((FirstSeen - 1h) .. (LastSeen + 1h))");
-    expect(query.query).toContain("ChangeTimes=make_set_if(ChangeTime, isnotnull(ChangeTime))");
+    expect(query.query).toContain(
+      "ChangeInWindow = isnotnull(ChangeTime) and ChangeTime between ((FirstSeen - 1h) .. (FirstSeen + 1h))",
+    );
+    expect(query.query).toContain(
+      "Changes=make_set_if(ChangeSummary, ChangeInWindow and isnotempty(ChangeSummary))",
+    );
+    expect(query.query).toContain("Actors=make_set_if(Actor, ChangeInWindow and isnotempty(Actor))");
+    expect(query.query).toContain("ChangeTimes=make_set_if(ChangeTime, ChangeInWindow)");
+    expect(afterLeftJoin).not.toMatch(/\|\s*where[^\n]*ChangeTime/);
   });
 
   test("requires protocol-specific upload and capture-artifact evidence for capture transfer", () => {
@@ -111,10 +119,14 @@ describe("launch hunt registry", () => {
     expect(query).toContain('transfer.protocol = SFTP AND transfer.sftp.operation IN ("write", "upload")');
     expect(query).toContain('transfer.protocol = TFTP AND transfer.tftp.opcode = "WRQ"');
     expect(query).toContain('transfer.protocol = SCP AND transfer.scp.direction = "local-to-remote"');
+    expect(query).toContain("isnotempty(transfer.source_path) AND isnotempty(capture.artifact_path)");
     expect(query).toContain("transfer.source_path = capture.artifact_path");
+    expect(query).toContain("isnotempty(transfer.file_hash) AND isnotempty(capture.artifact_hash)");
     expect(query).toContain("transfer.file_hash = capture.artifact_hash");
+    expect(query).toContain("transfer.file_size > 0 AND capture.file_size > 0");
     expect(query).toContain("abs(transfer.file_size - capture.file_size)");
     expect(query).toContain("transfer.bytes_out >= capture.file_size * 0.95");
+    expect(query).toContain("transfer.bytes_out <= capture.file_size * 1.05 + 4096");
     expect(query).toContain("PROTOCOL_UPLOAD AND ARTIFACT_EVIDENCE");
   });
 

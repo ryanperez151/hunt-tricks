@@ -101,12 +101,12 @@ ENRICH WITH capture_interface, file_path, configured_duration, later_file_transf
     protocols: ["SCP", "SFTP", "TFTP", "HTTPS"],
     techniques: ["T1040 Network Sniffing", "T1048 Exfiltration Over Alternative Protocol"],
     telemetry: { recommended: ["cli-audit", "netflow-ipfix", "zeek"], optional: ["configuration-diffs", "aaa", "packet-capture", "syslog"] },
-    suspiciousBehavior: ["A capture start is followed by HTTPS PUT/POST content, an SFTP write/upload, a TFTP WRQ, or an outbound SCP copy from the same device.", "The upload matches the capture artifact by path, hash, size, or outbound byte evidence and the recipient is new, external, unapproved, or unrelated to the troubleshooting ticket."],
+    suspiciousBehavior: ["A capture start is followed by HTTPS PUT/POST content, an SFTP write/upload, a TFTP WRQ, or an outbound SCP copy from the same device.", "The upload matches the capture artifact by a populated path or hash, or by bounded size or outbound-byte tolerance, and the recipient is new, external, unapproved, or unrelated to the troubleshooting ticket."],
     investigationSteps: ["Establish a precise timeline for capture start, file creation, transfer, deletion, and operator activity.", "Validate capture scope, interface, size, hashes where available, and business purpose.", "Confirm protocol-specific upload direction from HTTPS method/body bytes, SFTP operation, TFTP opcode, or SCP copy direction rather than treating client initiation as proof of upload.", "Correlate the capture and transferred artifact by path, hash, size tolerance, or outbound bytes, then validate destination ownership and authentication.", "Compare the destination with approved backup, support, and case-management repositories.", "Review device integrity, logging continuity, prior discovery, and follow-on credential use."],
     escalationConditions: ["The destination is external or unapproved and byte volume is consistent with the capture artifact.", "No approved diagnostic ticket exists, or the sequence includes logging suppression, deletion, or later credential use."],
     falsePositives: ["A documented vendor support case requires upload of a capture to an approved portal.", "Automated diagnostics collect and send scoped traces to an internal monitoring repository."],
     enrichment: ["Capture path, hash, size, and filter; HTTPS method and request-body bytes; SFTP operation; TFTP opcode; SCP direction; destination certificate or host key; operator identity; support case; and subsequent credential activity."],
-    detectionStrategy: "Correlate normalized capture-start and capture-file events with protocol-confirmed uploads inside a bounded window. Client initiation alone is insufficient: require HTTPS PUT/POST body data, an SFTP write/upload, a TFTP WRQ, or outbound SCP plus a matching artifact path, hash, size, or outbound byte signal. Rank new or external destinations, sensitive capture filters, unapproved identities, deletion, and independent telemetry gaps.",
+    detectionStrategy: "Correlate normalized capture-start and capture-file events with protocol-confirmed uploads inside a bounded window. Client initiation alone is insufficient: require HTTPS PUT/POST body data, an SFTP write/upload, a TFTP WRQ, or outbound SCP plus a populated matching artifact path or hash, or a bounded size or outbound-byte match. Rank new or external destinations, sensitive capture filters, unapproved identities, deletion, and independent telemetry gaps.",
     queries: [{ title: "Capture then transfer sequence", description: "Vendor-neutral sequence logic over audit, file, and network-session records.", platform: "pseudocode", query: `SEQUENCE BY device.id WITHIN 2h
   capture = device_audit_event(action_category = "packet_capture_start")
   transfer = file_transfer_event(device_id = device.id AND protocol IN (SCP, SFTP, TFTP, HTTPS))
@@ -116,10 +116,10 @@ PROTOCOL_UPLOAD =
   OR (transfer.protocol = TFTP AND transfer.tftp.opcode = "WRQ")
   OR (transfer.protocol = SCP AND transfer.scp.direction = "local-to-remote")
 ARTIFACT_EVIDENCE =
-     transfer.source_path = capture.artifact_path
-  OR transfer.file_hash = capture.artifact_hash
-  OR abs(transfer.file_size - capture.file_size) <= max(4096, capture.file_size * 0.05)
-  OR transfer.bytes_out >= capture.file_size * 0.95
+     (isnotempty(transfer.source_path) AND isnotempty(capture.artifact_path) AND transfer.source_path = capture.artifact_path)
+  OR (isnotempty(transfer.file_hash) AND isnotempty(capture.artifact_hash) AND transfer.file_hash = capture.artifact_hash)
+  OR (transfer.file_size > 0 AND capture.file_size > 0 AND abs(transfer.file_size - capture.file_size) <= max(4096, capture.file_size * 0.05))
+  OR (capture.file_size > 0 AND transfer.bytes_out >= capture.file_size * 0.95 AND transfer.bytes_out <= capture.file_size * 1.05 + 4096)
 WHERE transfer.destination NOT IN approved_diagnostic_repositories AND PROTOCOL_UPLOAD AND ARTIFACT_EVIDENCE
 RETURN capture.time, capture.filter, capture.artifact_path, capture.artifact_hash, capture.file_size, transfer.destination, transfer.protocol, transfer.bytes_out, responsible_identity` }],
     references: [references.arcaneDoor, references.mitreNetworkSniffing],

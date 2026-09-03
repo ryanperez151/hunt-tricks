@@ -54,7 +54,7 @@ const seeds: HuntSeed[] = [
       },
       {
         title: "New GRE endpoint with configuration context",
-        description: "Example KQL over normalized session and configuration-change tables with a documented one-hour correlation window around observed tunnel activity.",
+        description: "Example KQL over normalized session and configuration-change tables with a documented one-hour correlation window around first observed tunnel activity.",
         platform: "kql",
         query: `let GreSessions = NetworkSession
 | where IpProtocolNumber == 47 and SourceAssetType in ("firewall", "router", "switch", "vpn-gateway")
@@ -65,8 +65,8 @@ let RelevantChanges = InfrastructureConfigChange
 | project DeviceId, ChangeTime=TimeGenerated, ChangeSummary, Actor;
 GreSessions
 | join kind=leftouter RelevantChanges on DeviceId
-| where isnull(ChangeTime) or ChangeTime between ((FirstSeen - 1h) .. (LastSeen + 1h))
-| summarize Sessions=max(Sessions), EncapsulatedBytes=max(EncapsulatedBytes), FirstSeen=min(FirstSeen), LastSeen=max(LastSeen), Changes=make_set_if(ChangeSummary, isnotempty(ChangeSummary)), Actors=make_set_if(Actor, isnotempty(Actor)), ChangeTimes=make_set_if(ChangeTime, isnotnull(ChangeTime)) by DeviceId, SourceIp, DestinationIp
+| extend ChangeInWindow = isnotnull(ChangeTime) and ChangeTime between ((FirstSeen - 1h) .. (FirstSeen + 1h))
+| summarize Sessions=max(Sessions), EncapsulatedBytes=max(EncapsulatedBytes), FirstSeen=min(FirstSeen), LastSeen=max(LastSeen), Changes=make_set_if(ChangeSummary, ChangeInWindow and isnotempty(ChangeSummary)), Actors=make_set_if(Actor, ChangeInWindow and isnotempty(Actor)), ChangeTimes=make_set_if(ChangeTime, ChangeInWindow) by DeviceId, SourceIp, DestinationIp
 | order by EncapsulatedBytes desc`,
       },
     ],
