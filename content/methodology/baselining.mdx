@@ -1,0 +1,44 @@
+# Baseline expected infrastructure communication
+
+A useful baseline is a reviewed dependency model, not a list of every flow ever observed. Treat each appliance as a host with clients, servers, identities, scheduled work, and trust relationships. Record the behavior the organization intends to permit, then investigate deviations instead of allowing yesterday's compromise to become tomorrow's baseline.
+
+## Expected-dependency inventory
+
+For every managed appliance and service, record:
+
+1. **Device identity and role** — hostname, asset identifier, platform, owner, environment, and business function.
+2. **Management addresses and interfaces** — dedicated management IPs, loopbacks, VRFs, zones, and paths.
+3. **Approved initiators** — jump hosts, controllers, automation services, administrators, peers, and monitoring systems allowed to start a session.
+4. **Approved destinations** — AAA, DNS, NTP, logging, configuration, update, directory, tunnel, and routing peers.
+5. **Protocol, port, and encapsulation** — include negotiated or non-default ports and the expected security mode.
+6. **Direction and device role** — state who initiates and whether the appliance acts as client, server, peer, forwarder, resolver, or tunnel endpoint.
+7. **Plane and path** — management, control, or data plane; expected source interface, zone, next hop, and policy boundary.
+8. **Identity and authorization** — service account, administrator group, peer identity, certificate, key, community, and permitted command or API scope.
+9. **Timing and cadence** — continuous, event-driven, periodic, maintenance-only, or tied to a change ticket.
+10. **Volume and fan-out** — expected bytes, packets, session duration, peer count, and burst behavior.
+11. **Evidence and stewardship** — authoritative configuration source, telemetry sources, approving owner, review date, and expiration or revalidation date.
+
+Inventory both directions independently. “SNMP is allowed” is incomplete: polling normally runs from an NMS to a router on UDP/161, while traps or informs run from the router to an NMS on UDP/162. A router originating UDP/161 toward many systems is a different behavior.
+
+## Infrastructure Communication Allow Matrix
+
+Use one row per directional dependency. A bidirectional protocol may need two rows when the initiator, port, or operational reason differs.
+
+| Initiator | Destination | Protocol / port | Device role and plane | Expected purpose | Timing / constraint |
+| --- | --- | --- | --- | --- | --- |
+| Approved jump host | Device management IP | SSH TCP/22 or HTTPS TCP/443 | Device is server; management plane | Interactive administration | Named administrators; ticketed or approved support window |
+| Automation controller | Managed device | NETCONF TCP/830 or RESTCONF HTTPS | Device is API server; management plane | Deploy and validate configuration | Service identity; controller subnet; change window |
+| Managed device | TACACS+ / RADIUS service | TCP/49 or UDP/1812–1813 | Device is AAA client; management plane | Authenticate, authorize, and account for access | Approved server set; accounting must remain continuous |
+| Managed device | Recursive resolver | DNS UDP/TCP/53 | Device is DNS client; management plane | Resolve infrastructure dependencies | Internal resolvers only; direct external resolution denied |
+| Managed device | Internal time source | NTP UDP/123 | Device is time client; management plane | Maintain reliable time | Approved hierarchy; offset and source changes alert |
+| Managed device | External log collector | Syslog TCP/TLS or approved transport | Device is log sender; management plane | Preserve security and operations events | Continuous; collector lives outside device control |
+| Network management system | Managed device | SNMP UDP/161 | Device is managed agent; management plane | Poll health and interface counters | Approved NMS addresses and object scope |
+| Managed device | Network management system | SNMP UDP/162 | Device is notification sender; management plane | Send traps or informs | Approved collectors; event-driven |
+| Managed device | Configuration repository | SCP/SFTP over TCP/22 | Device is transfer client or server as documented | Image import, backup, or diagnostic export | Signed images; named repository; scheduled or ticketed |
+| Edge router | Configured routing peer | BGP TCP/179 | Symmetric routing peer; control plane | Exchange approved prefixes and policy | Fixed peer identity, ASN, prefix, and maximum-prefix policy |
+| Internal router | Configured link neighbor | OSPF IP protocol 89 | Symmetric routing peer; control plane | Exchange authenticated topology state | Defined interface, area, router ID, and authentication |
+| VPN gateway | Approved tunnel peer | IKE UDP/500 or 4500 and ESP IP/50 | Tunnel endpoint; control and data planes | Connect named sites, partners, or users | Approved identity, cryptography, selectors, and routed networks |
+
+## Review deviations
+
+A deviation is a question, not an automatic incident. Confirm the asset role, change record, observed initiator, source interface, NAT path, authenticated identity, and independent telemetry. Update the matrix only after the owner confirms the dependency is necessary, constrained, and observable.

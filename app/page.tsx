@@ -1,20 +1,20 @@
 import Link from "next/link";
+import { homeContent } from "@/data/home";
 
 export default function HomePage() {
   return (
     <section className="hero workspace-width" aria-labelledby="page-title">
-      <p className="eyebrow">Threat Hunting Beyond the Endpoint</p>
-      <h1 id="page-title">Hunt the Infrastructure</h1>
+      <p className="eyebrow">{homeContent.eyebrow}</p>
+      <h1 id="page-title">{homeContent.title}</h1>
       <p className="hero__lede">
-        Investigate the devices that route, protect, and manage your network as potential hosts—not merely
-        passive sensors. Start by asking whether a flow was forwarded by an appliance or initiated from it.
+        {homeContent.heroCopy} {homeContent.originQuestion}
       </p>
       <div className="hero__actions">
-        <Link className="button button--primary" href="/hunts">
-          Explore Hunts
+        <Link className="button button--primary" href={homeContent.actions.primary.href}>
+          {homeContent.actions.primary.label}
         </Link>
-        <Link className="button button--secondary" href="/hunts/management-plane-c2">
-          Start With the Management Plane
+        <Link className="button button--secondary" href={homeContent.actions.secondary.href}>
+          {homeContent.actions.secondary.label}
         </Link>
       </div>
     </section>

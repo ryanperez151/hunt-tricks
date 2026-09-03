@@ -1,0 +1,30 @@
+# Reason about infrastructure rarity
+
+Rarity helps order an investigation; it does not establish maliciousness. Infrastructure is relatively stable, so a first-seen device role or dependency can be valuable even when the same protocol is common elsewhere. Do not implement a universal numerical score: retain the factors and the evidence so an analyst can explain the priority.
+
+## Conceptual Infrastructure Hunt Score
+
+Consider the following factors together:
+
+1. **Origin rarity** — has this appliance or device class ever initiated traffic of this kind?
+2. **Direction and role rarity** — is the appliance unexpectedly a client, scanner, proxy, resolver, file-transfer source, or tunnel endpoint?
+3. **Destination rarity** — is the peer new to the device, site, role, organization, or threat-intelligence context?
+4. **Protocol and port rarity** — is the service absent from the allow matrix, carried on an unusual port, or used in an unexpected security mode?
+5. **Time and cadence rarity** — did it occur outside maintenance, recur at machine-like intervals, or begin after a long quiet period?
+6. **Volume and duration rarity** — are bytes, packets, session length, or transfer direction unusual for this dependency?
+7. **Fan-out and peer rarity** — did one appliance contact many systems, or did many appliances converge on one new destination?
+8. **Change rarity** — did a route, ACL, resolver, account, capture, logging target, image, process, or tunnel state change without an approved record?
+9. **Sequence rarity** — did individually explainable events form a suspicious chain, such as capture then transfer, or telemetry loss then a new tunnel?
+10. **Independent corroboration** — do upstream flow, passive sensors, AAA, configuration history, or adjacent controls confirm or contradict the device's account?
+
+The conceptual relationship is:
+
+> Unusual origin + unusual role or direction + rare dependency + suspicious sequence + independent corroboration = higher hunt priority
+
+## Compare at the right scope
+
+Use several reference groups. Compare the device with its own history, same-role peers, the same site, the approved dependency inventory, and the current change window. A behavior can be frequent globally yet unprecedented for one router; conversely, a first-seen connection may be an approved rollout affecting an entire device class.
+
+## Preserve reasons, not just ranks
+
+Write the factors into the case: “first device-originated SSH, new external destination, no change ticket, repeated every five minutes, confirmed by upstream IPFIX.” That statement survives threshold changes and gives the investigator a concrete hypothesis. A bare score does neither.

@@ -1,0 +1,24 @@
+# Require independent observation
+
+An appliance cannot be the sole source of evidence about itself. A compromised device may suppress logs, falsify counters, alter time, redirect collectors, or operate below the administrative interface. Device telemetry remains useful, but confidence rises when a source outside the appliance's control sees the same behavior.
+
+## Independent observation equation
+
+> Device telemetry + independent telemetry = higher confidence
+
+Use device evidence to explain intended state and local context. Use independent evidence to confirm origin, direction, timing, peer, volume, and sequence.
+
+## Independent telemetry sources
+
+1. **Upstream NetFlow/IPFIX** — confirms device-originated and transit conversations, interfaces, timing, peer changes, fan-out, and volume from a separate exporter.
+2. **TAP/SPAN packet observation** — preserves headers and, where available and authorized, payload evidence from a passive point outside the appliance.
+3. **Zeek** — turns passive traffic into connection, DNS, TLS, SSH, file, and tunnel metadata linked by stable identifiers.
+4. **DNS resolver telemetry** — identifies which client asked for a name, the resolver used, the answer returned, and whether the appliance bypassed the approved path.
+5. **AAA records** — associates administrative sessions, authorization, command accounting, VPN activity, and failures with identities and source systems.
+6. **Central configuration management** — provides versioned snapshots, approved intent, and diffs for routes, ACLs, resolvers, tunnels, logging, accounts, and services.
+7. **External syslog** — retains events away from local storage and lets receipt-time gaps expose suppression, redirection, transport failure, or clock manipulation.
+8. **Neighboring-firewall telemetry** — independently records cross-zone sessions, NAT, policy decisions, denies, and device egress at the next enforcement point.
+
+## Resolve contradictions
+
+Absence in one source is not proof of absence. Check collection health, sensor placement, sampling, NAT, asymmetric routing, retention, time synchronization, and parser behavior. Escalate when independent telemetry observes a session the device denies, when the device reports activity no adjacent source can confirm, or when multiple external sources develop a gap immediately before suspicious configuration or network behavior.
