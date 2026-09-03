@@ -56,11 +56,19 @@ export const HuntTelemetrySchema = z
     optional: z.array(z.enum(TELEMETRY_KEYS)),
   })
   .superRefine(({ recommended, optional }, context) => {
-    const keys = [...recommended, ...optional];
-    if (new Set(keys).size !== keys.length) {
-      context.addIssue({
-        code: "custom",
-        message: "Telemetry keys cannot be duplicated across recommended and optional groups",
+    const firstOccurrences = new Map<string, string>();
+    for (const [group, keys] of [["recommended", recommended], ["optional", optional]] as const) {
+      keys.forEach((key, index) => {
+        const firstOccurrence = firstOccurrences.get(key);
+        if (firstOccurrence) {
+          context.addIssue({
+            code: "custom",
+            path: [group, index],
+            message: `Duplicate telemetry key: ${key}; first used at ${firstOccurrence}`,
+          });
+          return;
+        }
+        firstOccurrences.set(key, `${group}.${index}`);
       });
     }
   });

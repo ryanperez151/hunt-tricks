@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { validateContentRegistries } from "@/lib/content";
+import { ContentIntegrityError, validateContentRegistries } from "@/lib/content";
 import { makeHunt } from "./test-utils";
 
 const flow = {
@@ -91,13 +91,55 @@ describe("validateContentRegistries", () => {
     const protocol = { ...makeProtocol(), relatedHunts: ["missing-protocol-hunt"] };
     const research = { ...makeResearch(), relatedHunts: ["missing-research-hunt"] };
 
-    expect(() => validateContentRegistries({
-      hunts: [hunt],
-      protocols: [protocol, { ...protocol, slug: "ssh-copy" }],
-      telemetry: [makeTelemetry()],
-      research: [research],
-      attackPaths: [makeAttackPath()],
-    })).toThrow(/hunt management-plane-c2.*family slug|unknown protocol.*DNS|protocol ssh.*missing-protocol-hunt|research research-test.*missing-research-hunt|duplicate protocol id/i);
+    let error: unknown;
+    try {
+      validateContentRegistries({
+        hunts: [hunt],
+        protocols: [protocol, { ...protocol, slug: "ssh-copy" }],
+        telemetry: [makeTelemetry()],
+        research: [research],
+        attackPaths: [makeAttackPath()],
+      });
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(ContentIntegrityError);
+    const integrityError = error as ContentIntegrityError;
+    expect(integrityError.issues).toHaveLength(7);
+    expect(integrityError.issues).toEqual(expect.arrayContaining([
+      expect.stringMatching(/hunt management-plane-c2 field slug: collides with family slug management-plane-c2/i),
+      expect.stringMatching(/hunt management-plane-c2 field protocols: unknown protocol DNS/i),
+      expect.stringMatching(/hunt management-plane-c2 field telemetry: unknown telemetry dns/i),
+      expect.stringMatching(/duplicate protocol id: protocol-ssh/i),
+      expect.stringMatching(/protocol ssh field relatedHunts: missing-protocol-hunt/i),
+      expect.stringMatching(/protocol ssh-copy field relatedHunts: missing-protocol-hunt/i),
+      expect.stringMatching(/research research-test field relatedHunts: missing-research-hunt/i),
+    ]));
+  });
+
+  test("includes rejected schema values in aggregated validation errors", () => {
+    let error: unknown;
+    try {
+      validateContentRegistries({
+        hunts: [{
+          ...makeHunt(),
+          protocols: ["unsupported-protocol"],
+          references: [{ title: "Bad URL", url: "javascript:alert(1)" }],
+          telemetry: { recommended: ["netflow-ipfix", "netflow-ipfix"], optional: [] },
+        }],
+        protocols: [], telemetry: [], research: [], attackPaths: [],
+      });
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(ContentIntegrityError);
+    expect((error as ContentIntegrityError).issues).toEqual(expect.arrayContaining([
+      expect.stringMatching(/hunt test-hunt field protocols\.0:.*"unsupported-protocol"/i),
+      expect.stringMatching(/hunt test-hunt field references\.0\.url:.*"javascript:alert\(1\)"/i),
+      expect.stringMatching(/hunt test-hunt field telemetry\.recommended\.1:.*"netflow-ipfix"/i),
+    ]));
   });
 
   test("accepts registries whose references resolve", () => {

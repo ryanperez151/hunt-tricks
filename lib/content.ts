@@ -21,14 +21,16 @@ export const ContentRegistriesSchema = z.object({
   attackPaths: z.array(AttackPathSchema),
 });
 
+export const ContentRegistriesInputSchema = z.object({
+  hunts: z.array(z.unknown()),
+  protocols: z.array(z.unknown()),
+  telemetry: z.array(z.unknown()),
+  research: z.array(z.unknown()),
+  attackPaths: z.array(z.unknown()),
+});
+
 export type ContentRegistries = z.infer<typeof ContentRegistriesSchema>;
-export type ContentRegistriesInput = {
-  hunts: readonly unknown[];
-  protocols: readonly unknown[];
-  telemetry: readonly unknown[];
-  research: readonly unknown[];
-  attackPaths: readonly unknown[];
-};
+export type ContentRegistriesInput = z.infer<typeof ContentRegistriesInputSchema>;
 
 export class ContentIntegrityError extends Error {
   readonly issues: readonly string[];
@@ -42,6 +44,24 @@ export class ContentIntegrityError extends Error {
 
 function describeRecord(record: Record<string, unknown>, fallback: string) {
   return String(record.slug ?? record.id ?? fallback);
+}
+
+function valueAtPath(value: unknown, path: readonly PropertyKey[]) {
+  let current = value;
+  for (const segment of path) {
+    if (current === null || typeof current !== "object") return undefined;
+    current = (current as Record<PropertyKey, unknown>)[segment];
+  }
+  return current;
+}
+
+function serializeInvalidValue(value: unknown) {
+  try {
+    const serialized = JSON.stringify(value);
+    return serialized ?? String(value);
+  } catch {
+    return "[unserializable value]";
+  }
 }
 
 function collectParsed<T>(
@@ -64,7 +84,8 @@ function collectParsed<T>(
       : `${kind}[${index}]`;
     for (const issue of result.error.issues) {
       const field = issue.path.join(".") || "record";
-      issues.push(`${kind} ${descriptor} field ${field}: ${issue.message}`);
+      const invalidValue = serializeInvalidValue(valueAtPath(record, issue.path));
+      issues.push(`${kind} ${descriptor} field ${field}: ${issue.message}; received ${invalidValue}`);
     }
   });
 
