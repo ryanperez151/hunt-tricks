@@ -169,3 +169,143 @@ Exit code: `0`.
 ## Concerns
 
 No implementation blocker remains. The methodology MDX files are intentionally content modules without routes in this task; Task 8 will import them into their explicit static pages. The combined registry integrity gate remains intentionally deferred to Task 4 as required.
+
+## Fix Round 1 — completeness and MDX contract coverage
+
+### Review findings addressed
+
+1. Expanded `tests/secondary-content.test.ts` with focused characterization coverage for exact telemetry key/name identities; nonempty protocol definitions, direction narratives, ports or encapsulations, uses, suspicious patterns, abuse cases, flow nodes, and text alternatives; exact SNMP polling, notification, and router-originated fan-out edges; ordered and connected attack-path edges; exact seven title/organization/date/URL research tuples; and empty protocol, research, and attack-path `relatedHunts` arrays.
+2. Added real `@mdx-js/mdx` compilation of all three local bodies using the `@mdx-js/react` provider integration. Added content-contract checks for methodology headings, all 11 dependency-inventory items, all 12 allow-matrix rows, all 10 rarity factors, and all eight independent-observation sources.
+3. Declared the compiler directly as the exact pinned `@mdx-js/mdx@3.1.1` dev dependency instead of depending on its incidental hoisting through `@mdx-js/loader`.
+
+The registry and prose assertions are characterization coverage for content that was already correct. The RED/GREEN behavior in this round covers the missing direct test-tooling dependency.
+
+### RED
+
+The first run also revealed a test-harness path error because Vitest's jsdom transform did not preserve a `file:` scheme for `import.meta.url`. That setup error was corrected by resolving methodology files from `process.cwd()` before recording the clean RED below.
+
+Command:
+
+```text
+npm test -- tests/secondary-content.test.ts
+```
+
+Output:
+
+```text
+> hunt-the-infrastructure@0.1.0 test
+> vitest run tests/secondary-content.test.ts
+
+ RUN  v4.1.11 C:/Users/Mango/edgeTH/.worktrees/edge-threat-hunting-guide-mvp
+
+ ❯ tests/secondary-content.test.ts (11 tests | 1 failed) 61ms
+     × declares the MDX compiler used directly by methodology tests 4ms
+
+ FAIL  tests/secondary-content.test.ts > secondary content registries > declares the MDX compiler used directly by methodology tests
+AssertionError: expected undefined to be '3.1.1' // Object.is equality
+
+- Expected:
+"3.1.1"
+
++ Received:
+undefined
+
+ ❯ tests/secondary-content.test.ts:180:56
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Duration  1.73s
+```
+
+This was the intended failure: the real compiler and all ten characterization/compilation checks worked through the existing transitive install, but the package did not declare the compiler that its test imports directly.
+
+### GREEN
+
+Added `"@mdx-js/mdx": "3.1.1"` to `devDependencies` and the root lockfile package contract.
+
+Command:
+
+```text
+npm test -- tests/secondary-content.test.ts
+```
+
+Output:
+
+```text
+> hunt-the-infrastructure@0.1.0 test
+> vitest run tests/secondary-content.test.ts
+
+ RUN  v4.1.11 C:/Users/Mango/edgeTH/.worktrees/edge-threat-hunting-guide-mvp
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Duration  1.73s
+```
+
+Direct dependency verification:
+
+```text
+npm ls @mdx-js/mdx --depth=0
+
+hunt-the-infrastructure@0.1.0 C:\Users\Mango\edgeTH\.worktrees\edge-threat-hunting-guide-mvp
+└── @mdx-js/mdx@3.1.1
+```
+
+### Final verification
+
+Full suite:
+
+```text
+npm test
+
+ Test Files  4 passed (4)
+      Tests  28 passed (28)
+   Duration  2.87s
+```
+
+Lint:
+
+```text
+npm run lint
+
+> eslint .
+```
+
+Exit code: `0`.
+
+TypeScript:
+
+```text
+npm run typecheck
+
+> tsc --noEmit
+```
+
+Exit code: `0`.
+
+Production build:
+
+```text
+npm run build
+
+▲ Next.js 16.3.4 (Turbopack)
+✓ Compiled successfully in 657ms
+✓ Finished TypeScript in 2.4s
+✓ Generating static pages using 5 workers (4/4) in 758ms
+○  (Static)  prerendered as static content
+```
+
+Exit code: `0`.
+
+`git diff --check` reported no whitespace errors. Git continued to print only the existing Windows LF-to-CRLF notices.
+
+### Fix Round 1 files changed
+
+- `.superpowers/sdd/2026-09-02-edge-threat-hunting-guide-mvp/task-3-report.md`
+- `package.json`
+- `package-lock.json`
+- `tests/secondary-content.test.ts`
+
+### Fix Round 1 concerns
+
+No blocker remains. The separate table-scroll affordance review item is intentionally excluded from this round as directed.
