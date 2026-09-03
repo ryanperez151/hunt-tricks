@@ -34,13 +34,36 @@ describe("validated content lookups", () => {
     expect(getHuntsByFamily("not-real")).toEqual([]);
   });
 
-  test("populates protocol and research links exclusively with real hunts", () => {
+  test("populates supported protocol and research links exclusively with real hunts", () => {
     const huntSlugs = new Set(hunts.map((hunt) => hunt.slug));
-    expect(protocols.every((protocol) => protocol.relatedHunts.length > 0)).toBe(true);
+    expect(protocols.filter((protocol) => protocol.relatedHunts.length === 0).map((protocol) => protocol.slug)).toEqual(["bgp", "ospf", "vxlan"]);
     expect(researchEntries.every((research) => research.relatedHunts.length > 0)).toBe(true);
     expect([...protocols, ...researchEntries].every((record) => (
       record.relatedHunts.every((slug) => huntSlugs.has(slug))
     ))).toBe(true);
+  });
+
+  test("curates protocol links to hunts that directly observe the protocol", () => {
+    expect(getProtocolBySlug("netconf")?.relatedHunts).toEqual(["management-acl-modified"]);
+    expect(getProtocolBySlug("vxlan")?.relatedHunts).toEqual([]);
+    expect(getProtocolBySlug("ntp")?.relatedHunts).toEqual(["new-infrastructure-external-destination"]);
+    expect(getProtocolBySlug("bgp")?.relatedHunts).toEqual([]);
+    expect(getProtocolBySlug("ospf")?.relatedHunts).toEqual([]);
+    expect(getProtocolBySlug("wireguard")?.relatedHunts).toEqual(["infrastructure-beaconing"]);
+    expect(getProtocolBySlug("openvpn")?.relatedHunts).toEqual(["infrastructure-beaconing"]);
+  });
+
+  test("curates research links to behaviors stated by each source record", () => {
+    const linksByResearchId = Object.fromEntries(researchEntries.map((entry) => [entry.id, entry.relatedHunts]));
+    expect(linksByResearchId).toEqual({
+      "research-cisa-aa25-239a": ["unexpected-management-interface-egress", "firewall-to-router-ssh", "router-to-router-ssh", "device-to-device-https-administration"],
+      "research-cisco-talos-arcanedoor": ["packet-capture-started", "packet-capture-followed-by-file-transfer"],
+      "research-mandiant-ghost-in-router": ["router-to-router-ssh", "infrastructure-telemetry-gap"],
+      "research-mandiant-cloaked-and-covert": ["firewall-to-router-ssh", "router-to-router-ssh", "unexpected-ssh-egress"],
+      "research-ncsc-uk-edge-router-advisory": ["snmp-from-unexpected-initiator", "unexpected-gre-tunnel", "management-acl-modified"],
+      "research-microsoft-soho-dns-hijacking": ["alternate-dns-resolver"],
+      "research-cisa-aa24-038a": ["unexpected-management-interface-egress", "firewall-to-router-ssh", "router-to-router-ssh"],
+    });
   });
 
   test("exports immutable validated registries and records", () => {

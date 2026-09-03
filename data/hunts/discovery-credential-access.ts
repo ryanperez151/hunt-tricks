@@ -14,7 +14,7 @@ const seeds: HuntSeed[] = [
     planes: ["management"],
     devices: ["firewall", "router", "switch", "wireless-controller", "load-balancer", "vpn-gateway"],
     protocols: ["TACACS+", "RADIUS"],
-    techniques: ["T1556 Modify Authentication Process", "T1078 Valid Accounts", "T1056 Input Capture"],
+    techniques: ["T1556 Modify Authentication Process"],
     telemetry: { recommended: ["configuration-diffs", "aaa", "netflow-ipfix"], optional: ["cli-audit", "packet-capture", "syslog"] },
     suspiciousBehavior: ["A device sends TCP/49 or UDP/1812–1813 to a server outside its approved AAA group.", "Server order, shared secret reference, source interface, or accounting destination changes unexpectedly."],
     investigationSteps: ["Validate the destination against the authoritative AAA inventory and disaster-recovery configuration.", "Review the exact configuration diff, commit time, account, source session, and approval ticket.", "Compare flow timing with authentication attempts, rejects, accounting continuity, and administrator activity.", "Determine which devices were changed and whether the same destination appears elsewhere.", "Rotate exposed secrets and review successful access if a rogue destination received requests."],
@@ -71,7 +71,7 @@ ENRICH WITH query_count, result_count, configuration_change, subsequent_remote_a
     planes: ["management", "control", "data"],
     devices: ["firewall", "router", "switch", "wireless-controller", "load-balancer", "vpn-gateway"],
     protocols: ["SSH", "HTTPS"],
-    techniques: ["T1040 Network Sniffing", "T1059.008 Network Device CLI", "T1005 Data from Local System"],
+    techniques: ["T1040 Network Sniffing"],
     telemetry: { recommended: ["cli-audit", "configuration-diffs", "syslog"], optional: ["aaa", "packet-capture", "netflow-ipfix"] },
     suspiciousBehavior: ["CLI, API, or configuration state starts a capture without a linked incident or change ticket.", "The filter targets authentication, management, customer, or other high-value traffic and creates an exportable file."],
     investigationSteps: ["Identify the device, account, source session, command or API call, capture filter, interface, start time, and configured duration.", "Validate the activity with the operations owner and the referenced troubleshooting ticket.", "Determine whether a capture process, buffer, or file remains active and preserve metadata before approved containment.", "Review preceding privileged access, exploit indicators, account changes, and discovery commands.", "Search for subsequent file transfer, external egress, logging changes, or deletion of capture artifacts."],
@@ -99,19 +99,29 @@ ENRICH WITH capture_interface, file_path, configured_duration, later_file_transf
     planes: ["management", "data"],
     devices: ["firewall", "router", "switch", "wireless-controller", "load-balancer", "vpn-gateway"],
     protocols: ["SCP", "SFTP", "TFTP", "HTTPS"],
-    techniques: ["T1040 Network Sniffing", "T1041 Exfiltration Over C2 Channel", "T1048 Exfiltration Over Alternative Protocol"],
+    techniques: ["T1040 Network Sniffing", "T1048 Exfiltration Over Alternative Protocol"],
     telemetry: { recommended: ["cli-audit", "netflow-ipfix", "zeek"], optional: ["configuration-diffs", "aaa", "packet-capture", "syslog"] },
-    suspiciousBehavior: ["A capture start is followed by SCP, SFTP, TFTP, or HTTPS upload from the same device.", "The recipient is external, new, unapproved, or unrelated to the troubleshooting ticket."],
-    investigationSteps: ["Establish a precise timeline for capture start, file creation, transfer, deletion, and operator activity.", "Validate capture scope, interface, size, hashes where available, and business purpose.", "Confirm transfer client direction, destination ownership, protocol, authentication, bytes, and filename metadata.", "Compare the destination with approved backup, support, and case-management repositories.", "Review device integrity, logging continuity, prior discovery, and follow-on credential use."],
+    suspiciousBehavior: ["A capture start is followed by HTTPS PUT/POST content, an SFTP write/upload, a TFTP WRQ, or an outbound SCP copy from the same device.", "The upload matches the capture artifact by path, hash, size, or outbound byte evidence and the recipient is new, external, unapproved, or unrelated to the troubleshooting ticket."],
+    investigationSteps: ["Establish a precise timeline for capture start, file creation, transfer, deletion, and operator activity.", "Validate capture scope, interface, size, hashes where available, and business purpose.", "Confirm protocol-specific upload direction from HTTPS method/body bytes, SFTP operation, TFTP opcode, or SCP copy direction rather than treating client initiation as proof of upload.", "Correlate the capture and transferred artifact by path, hash, size tolerance, or outbound bytes, then validate destination ownership and authentication.", "Compare the destination with approved backup, support, and case-management repositories.", "Review device integrity, logging continuity, prior discovery, and follow-on credential use."],
     escalationConditions: ["The destination is external or unapproved and byte volume is consistent with the capture artifact.", "No approved diagnostic ticket exists, or the sequence includes logging suppression, deletion, or later credential use."],
     falsePositives: ["A documented vendor support case requires upload of a capture to an approved portal.", "Automated diagnostics collect and send scoped traces to an internal monitoring repository."],
-    enrichment: ["Capture metadata, transfer destination and certificate/host key, byte similarity, file hashes, operator identity, support case, and subsequent credential activity."],
-    detectionStrategy: "Correlate normalized capture-start and capture-file events with device-originated SCP, SFTP, TFTP, or HTTPS transfers inside a bounded window. Rank new or external destinations, matching byte volumes, sensitive capture filters, unapproved identities, deletion, and independent telemetry gaps.",
+    enrichment: ["Capture path, hash, size, and filter; HTTPS method and request-body bytes; SFTP operation; TFTP opcode; SCP direction; destination certificate or host key; operator identity; support case; and subsequent credential activity."],
+    detectionStrategy: "Correlate normalized capture-start and capture-file events with protocol-confirmed uploads inside a bounded window. Client initiation alone is insufficient: require HTTPS PUT/POST body data, an SFTP write/upload, a TFTP WRQ, or outbound SCP plus a matching artifact path, hash, size, or outbound byte signal. Rank new or external destinations, sensitive capture filters, unapproved identities, deletion, and independent telemetry gaps.",
     queries: [{ title: "Capture then transfer sequence", description: "Vendor-neutral sequence logic over audit, file, and network-session records.", platform: "pseudocode", query: `SEQUENCE BY device.id WITHIN 2h
   capture = device_audit_event(action_category = "packet_capture_start")
-  transfer = network_session(initiator = device AND protocol IN (SCP, SFTP, TFTP, HTTPS))
-WHERE transfer.destination NOT IN approved_diagnostic_repositories
-RETURN capture.time, capture.filter, capture.file_size, transfer.destination, transfer.bytes_out, responsible_identity` }],
+  transfer = file_transfer_event(device_id = device.id AND protocol IN (SCP, SFTP, TFTP, HTTPS))
+PROTOCOL_UPLOAD =
+     (transfer.protocol = HTTPS AND transfer.http.method IN ("PUT", "POST") AND transfer.http.request_body_bytes > 0)
+  OR (transfer.protocol = SFTP AND transfer.sftp.operation IN ("write", "upload"))
+  OR (transfer.protocol = TFTP AND transfer.tftp.opcode = "WRQ")
+  OR (transfer.protocol = SCP AND transfer.scp.direction = "local-to-remote")
+ARTIFACT_EVIDENCE =
+     transfer.source_path = capture.artifact_path
+  OR transfer.file_hash = capture.artifact_hash
+  OR abs(transfer.file_size - capture.file_size) <= max(4096, capture.file_size * 0.05)
+  OR transfer.bytes_out >= capture.file_size * 0.95
+WHERE transfer.destination NOT IN approved_diagnostic_repositories AND PROTOCOL_UPLOAD AND ARTIFACT_EVIDENCE
+RETURN capture.time, capture.filter, capture.artifact_path, capture.artifact_hash, capture.file_size, transfer.destination, transfer.protocol, transfer.bytes_out, responsible_identity` }],
     references: [references.arcaneDoor, references.mitreNetworkSniffing],
     relatedHunts: ["packet-capture-started", "unexpected-ssh-egress", "unexpected-gre-tunnel"],
   },

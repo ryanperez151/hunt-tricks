@@ -13,8 +13,8 @@ const seeds: HuntSeed[] = [
     confidence: "high",
     planes: ["control", "data"],
     devices: ["firewall", "router", "switch", "vpn-gateway"],
-    protocols: ["GRE", "VXLAN"],
-    techniques: ["T1572 Protocol Tunneling", "T1090 Proxy", "T1565.002 Transmitted Data Manipulation", "T1041 Exfiltration Over C2 Channel"],
+    protocols: ["GRE"],
+    techniques: ["T1572 Protocol Tunneling"],
     telemetry: { recommended: ["netflow-ipfix", "configuration-diffs", "packet-capture"], optional: ["cli-audit", "zeek", "syslog"] },
     suspiciousBehavior: ["IP protocol 47 appears between an infrastructure source and a new or unapproved endpoint.", "New tunnel interfaces, routes, ACLs, or policy selectors direct sensitive traffic into GRE.", "Encapsulated byte volume or inner traffic is inconsistent with the documented service."],
     investigationSteps: [
@@ -46,20 +46,27 @@ const seeds: HuntSeed[] = [
         query: `index=network ip_protocol=47
 | lookup network_assets ip AS src_ip OUTPUT asset_type AS src_type device_id AS src_device
 | where src_type IN ("firewall", "router", "switch", "vpn_gateway")
-| lookup approved_tunnels device_id AS src_device outer_destination AS dest_ip tunnel_type AS "GRE" OUTPUT tunnel_id approval_status
+| eval tunnel_type="GRE"
+| lookup approved_tunnels device_id AS src_device outer_destination AS dest_ip tunnel_type OUTPUT tunnel_id approval_status
 | where isnull(tunnel_id) OR approval_status!="approved"
 | stats count sum(bytes_out) AS encapsulated_bytes earliest(_time) AS first_seen latest(_time) AS last_seen by src_device src_ip dest_ip
 | sort - encapsulated_bytes`,
       },
       {
         title: "New GRE endpoint with configuration context",
-        description: "Example KQL over normalized session and configuration-change tables.",
+        description: "Example KQL over normalized session and configuration-change tables with a documented one-hour correlation window around observed tunnel activity.",
         platform: "kql",
-        query: `NetworkSession
+        query: `let GreSessions = NetworkSession
 | where IpProtocolNumber == 47 and SourceAssetType in ("firewall", "router", "switch", "vpn-gateway")
 | where ApprovedTunnel == false
-| summarize Sessions=count(), EncapsulatedBytes=sum(BytesSent), FirstSeen=min(TimeGenerated), LastSeen=max(TimeGenerated) by DeviceId, SourceIp, DestinationIp
-| join kind=leftouter (InfrastructureConfigChange | where ChangeCategory in ("tunnel", "route", "acl", "policy-routing") | summarize Changes=make_set(ChangeSummary), Actors=make_set(Actor) by DeviceId) on DeviceId
+| summarize Sessions=count(), EncapsulatedBytes=sum(BytesSent), FirstSeen=min(TimeGenerated), LastSeen=max(TimeGenerated) by DeviceId, SourceIp, DestinationIp;
+let RelevantChanges = InfrastructureConfigChange
+| where ChangeCategory in ("tunnel", "route", "acl", "policy-routing")
+| project DeviceId, ChangeTime=TimeGenerated, ChangeSummary, Actor;
+GreSessions
+| join kind=leftouter RelevantChanges on DeviceId
+| where isnull(ChangeTime) or ChangeTime between ((FirstSeen - 1h) .. (LastSeen + 1h))
+| summarize Sessions=max(Sessions), EncapsulatedBytes=max(EncapsulatedBytes), FirstSeen=min(FirstSeen), LastSeen=max(LastSeen), Changes=make_set_if(ChangeSummary, isnotempty(ChangeSummary)), Actors=make_set_if(Actor, isnotempty(Actor)), ChangeTimes=make_set_if(ChangeTime, isnotnull(ChangeTime)) by DeviceId, SourceIp, DestinationIp
 | order by EncapsulatedBytes desc`,
       },
     ],
@@ -92,8 +99,8 @@ const seeds: HuntSeed[] = [
     confidence: "high",
     planes: ["control", "data"],
     devices: ["firewall", "router", "vpn-gateway"],
-    protocols: ["IPsec", "WireGuard", "OpenVPN"],
-    techniques: ["T1572 Protocol Tunneling", "T1133 External Remote Services", "T1090 Proxy"],
+    protocols: ["IPsec"],
+    techniques: ["T1572 Protocol Tunneling"],
     telemetry: { recommended: ["configuration-diffs", "netflow-ipfix", "syslog"], optional: ["aaa", "cli-audit", "packet-capture"] },
     suspiciousBehavior: ["IKE UDP/500 or 4500, ESP IP/50, or new VPN state uses an unknown peer or identity.", "Selectors, routes, or allowed networks expose segments not present in the approved design."],
     investigationSteps: ["Inventory the outer peer addresses, authenticated identities, certificates or keys, proposals, and first establishment time.", "Compare tunnel state, selectors, routes, NAT exemptions, and allowed networks with the approved VPN design.", "Review configuration commits and AAA/CLI evidence for the actor and management source.", "Measure encrypted byte directions, session continuity, rekeys, and internal networks reached through the tunnel.", "Check for parallel GRE, WireGuard, OpenVPN, ACL, resolver, or logging changes."],
@@ -121,7 +128,7 @@ ENRICH WITH bytes, duration, rekeys, configuration_actor` }],
     planes: ["management"],
     devices: ["firewall", "router", "switch", "wireless-controller", "load-balancer", "vpn-gateway"],
     protocols: ["SSH", "HTTPS", "NETCONF", "RESTCONF"],
-    techniques: ["T1562.001 Impair Defenses", "T1070 Indicator Removal", "T1059.008 Network Device CLI"],
+    techniques: ["T1562.001 Impair Defenses"],
     telemetry: { recommended: ["configuration-diffs", "syslog", "cli-audit"], optional: ["aaa", "netflow-ipfix", "packet-capture"] },
     suspiciousBehavior: ["An approved collector is removed or replaced, or severity/facility filters are reduced.", "Collector receipts stop or shift source identity after a privileged configuration change."],
     investigationSteps: ["Compare running and intended logging configuration with the trusted baseline.", "Identify the commit, account, administrative source, command/API action, and ticket.", "Confirm collector reachability and last-received event independently of device status.", "Enrich any new destination and determine whether it actually received logs.", "Correlate the change with other authentication, discovery, tunnel, ACL, or egress activity."],
@@ -150,7 +157,7 @@ ENRICH WITH configuration_actor, new_destination, changed_transport, concurrent_
     planes: ["management", "control", "data"],
     devices: ["firewall", "router", "switch", "wireless-controller", "load-balancer", "vpn-gateway"],
     protocols: ["NTP", "BGP", "OSPF", "HTTPS"],
-    techniques: ["T1562.001 Impair Defenses", "T1070 Indicator Removal"],
+    techniques: ["T1562.001 Impair Defenses"],
     telemetry: { recommended: ["netflow-ipfix", "configuration-diffs", "syslog"], optional: ["aaa", "cli-audit", "zeek", "packet-capture", "dns"] },
     suspiciousBehavior: ["A normally continuous device feed becomes silent outside maintenance.", "Independent flow or packet evidence shows activity missing from device-controlled logs.", "Multiple feeds drift after a privileged change, reboot, or time-source modification."],
     investigationSteps: ["Establish the last good event and first missing interval for every expected telemetry source.", "Check collector health, network path, parser, certificate, retention, and platform-wide ingestion incidents.", "Compare the affected device with peer devices at the same site and role.", "Inspect configuration changes to logging, flow export, AAA accounting, audit, NTP, filters, and source interfaces.", "Correlate independent sessions, authentications, packet evidence, reboots, and follow-on changes during the gap."],
@@ -181,7 +188,7 @@ ENRICH WITH collector_health, peer_status, maintenance_window, configuration_cha
     planes: ["management", "control", "data"],
     devices: ["firewall", "router", "switch", "wireless-controller", "load-balancer", "vpn-gateway"],
     protocols: ["SSH", "HTTPS", "NETCONF", "RESTCONF", "GRE"],
-    techniques: ["T1562.004 Disable or Modify System Firewall", "T1059.008 Network Device CLI", "T1090 Proxy"],
+    techniques: ["T1562.004 Disable or Modify System Firewall"],
     telemetry: { recommended: ["configuration-diffs", "cli-audit", "aaa"], optional: ["netflow-ipfix", "syslog", "packet-capture"] },
     suspiciousBehavior: ["A rule admits a new source or service to management addresses or changes precedence unexpectedly.", "An ACL or policy selects traffic for an unapproved tunnel, mirror, bypass, or external path."],
     investigationSteps: ["Compute the effective before/after policy including object groups, sequence, implicit rules, interface, direction, and VRF.", "Identify the account, management source, command/API action, commit, reviewer, and change ticket.", "Determine newly reachable services, source ranges, destinations, and affected devices.", "Check whether new sources attempted or established access before or after the change.", "Correlate with tunnel, routing, resolver, logging, packet-capture, and configuration-export activity."],

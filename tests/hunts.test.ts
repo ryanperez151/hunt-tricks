@@ -82,6 +82,69 @@ describe("launch hunt registry", () => {
     expect(query?.query).toBe(suppliedUnexpectedInfrastructureEgressQuery);
   });
 
+  test("creates a GRE literal before using it as a Splunk lookup key", () => {
+    const hunt = getHuntBySlug("unexpected-gre-tunnel")!;
+    const query = hunt.queries.find((item) => item.platform === "splunk")!.query;
+    const literalPosition = query.indexOf('| eval tunnel_type="GRE"');
+    const lookupPosition = query.indexOf("tunnel_type OUTPUT tunnel_id approval_status");
+
+    expect(literalPosition).toBeGreaterThan(-1);
+    expect(lookupPosition).toBeGreaterThan(literalPosition);
+    expect(query).not.toContain('tunnel_type AS "GRE"');
+  });
+
+  test("correlates GRE configuration changes only within one hour of observed tunnel activity", () => {
+    const hunt = getHuntBySlug("unexpected-gre-tunnel")!;
+    const query = hunt.queries.find((item) => item.platform === "kql")!;
+
+    expect(query.description).toMatch(/one-hour correlation window/i);
+    expect(query.query).toContain("ChangeTime=TimeGenerated");
+    expect(query.query).toContain("ChangeTime between ((FirstSeen - 1h) .. (LastSeen + 1h))");
+    expect(query.query).toContain("ChangeTimes=make_set_if(ChangeTime, isnotnull(ChangeTime))");
+  });
+
+  test("requires protocol-specific upload and capture-artifact evidence for capture transfer", () => {
+    const hunt = getHuntBySlug("packet-capture-followed-by-file-transfer")!;
+    const query = hunt.queries[0].query;
+
+    expect(query).toContain('transfer.protocol = HTTPS AND transfer.http.method IN ("PUT", "POST")');
+    expect(query).toContain('transfer.protocol = SFTP AND transfer.sftp.operation IN ("write", "upload")');
+    expect(query).toContain('transfer.protocol = TFTP AND transfer.tftp.opcode = "WRQ"');
+    expect(query).toContain('transfer.protocol = SCP AND transfer.scp.direction = "local-to-remote"');
+    expect(query).toContain("transfer.source_path = capture.artifact_path");
+    expect(query).toContain("transfer.file_hash = capture.artifact_hash");
+    expect(query).toContain("abs(transfer.file_size - capture.file_size)");
+    expect(query).toContain("transfer.bytes_out >= capture.file_size * 0.95");
+    expect(query).toContain("PROTOCOL_UPLOAD AND ARTIFACT_EVIDENCE");
+  });
+
+  test("maps corrected hunts only to techniques directly evidenced by their detections", () => {
+    const expectedTechniques = {
+      "unexpected-management-interface-egress": ["T1071 Application Layer Protocol"],
+      "new-infrastructure-external-destination": ["T1071 Application Layer Protocol"],
+      "infrastructure-beaconing": ["T1071.001 Web Protocols", "T1071.004 DNS", "T1572 Protocol Tunneling"],
+      "suspicious-infrastructure-dns": ["T1071.004 DNS"],
+      "alternate-dns-resolver": ["T1071.004 DNS"],
+      "unexpected-ssh-egress": ["T1021.004 SSH"],
+      "firewall-to-router-ssh": ["T1021.004 SSH"],
+      "router-to-router-ssh": ["T1021.004 SSH"],
+      "device-to-device-https-administration": ["T1021 Remote Services"],
+      "snmp-from-unexpected-initiator": ["T1046 Network Service Discovery", "T1018 Remote System Discovery"],
+      "new-aaa-destination": ["T1556 Modify Authentication Process"],
+      "packet-capture-started": ["T1040 Network Sniffing"],
+      "packet-capture-followed-by-file-transfer": ["T1040 Network Sniffing", "T1048 Exfiltration Over Alternative Protocol"],
+      "unexpected-gre-tunnel": ["T1572 Protocol Tunneling"],
+      "new-ipsec-tunnel": ["T1572 Protocol Tunneling"],
+      "logging-destination-modified": ["T1562.001 Impair Defenses"],
+      "infrastructure-telemetry-gap": ["T1562.001 Impair Defenses"],
+      "management-acl-modified": ["T1562.004 Disable or Modify System Firewall"],
+    } as const;
+
+    for (const [slug, techniques] of Object.entries(expectedTechniques)) {
+      expect(getHuntBySlug(slug)?.techniques, slug).toEqual(techniques);
+    }
+  });
+
   test("keeps every non-flagship hunt operationally actionable", () => {
     const nonFlagships = hunts.filter((hunt) => !flagshipSlugs.includes(hunt.slug as (typeof flagshipSlugs)[number]));
 

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run validate:content && next build",
+    "validate:content": "vitest run tests/content-production-validation.test.ts --environment node",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

@@ -133,7 +133,11 @@ describe("secondary content registries", () => {
       expect(item.suspiciousFlow.edges.length).toBeGreaterThan(0);
       expect(item.suspiciousFlow.textAlternative.length).toBeGreaterThan(0);
       expect(item.suspiciousFlow.textAlternative.every((value) => value.trim().length > 0)).toBe(true);
-      expect(item.relatedHunts.length).toBeGreaterThan(0);
+      if (["bgp", "ospf", "vxlan"].includes(item.slug)) {
+        expect(item.relatedHunts).toEqual([]);
+      } else {
+        expect(item.relatedHunts.length).toBeGreaterThan(0);
+      }
     }
   });
 
