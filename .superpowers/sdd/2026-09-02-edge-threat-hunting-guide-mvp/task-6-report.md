@@ -77,3 +77,20 @@
 
 - Focused regressions: `npm test -- tests/components/NetworkFlow.test.tsx tests/components/CopyButton.test.tsx` passed — 2 files, 12 tests.
 - Full gate: `npm test` passed — 19 files, 87 tests; `npm run lint`, `npm run typecheck`, `npm run build`, and `git diff --check` passed.
+
+## Fix Round 3
+
+### RED / GREEN evidence
+
+- RED completed feedback: after a successful copy of `A`, rerendering `A → B → A` made the old `Copied to clipboard.` feedback visible again because it was keyed only by the value string.
+- RED pending feedback: the same `A → B → A` sequence restored an invalidated pending attempt's permanent `Copying…` feedback; resolving that deferred attempt could not safely distinguish the original A generation.
+- GREEN: focused regressions verify both completed and deferred A→B→A paths leave the live region empty, preserve the original focused button DOM node, and suppress an old deferred completion.
+
+### Interaction decision
+
+- Copy feedback carries the value-transition generation in state. A conditional value transition clears feedback and advances the generation without remounting the control; every clipboard update uses a functional state update that must match both the attempted value and generation. Request IDs continue to give the most recent overlapping click precedence.
+
+### Verification
+
+- Focused regression: `npm test -- tests/components/CopyButton.test.tsx` passed — 1 file, 7 tests.
+- Full gate: `npm test` passed — 19 files, 89 tests; `npm run lint`, `npm run typecheck`, `npm run build`, and `git diff --check` passed.

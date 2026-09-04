@@ -60,6 +60,43 @@ describe("CopyButton", () => {
     await waitFor(() => expect(screen.getByRole("status")).toBeEmptyDOMElement());
   });
 
+  test("does not restore completed feedback when a value returns to an earlier value", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    const { rerender } = render(<CopyButton value="A" writeText={writeText} />);
+    const button = screen.getByRole("button", { name: /copy/i });
+
+    button.focus();
+    await user.click(button);
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Copied to clipboard."));
+    rerender(<CopyButton value="B" writeText={writeText} />);
+    rerender(<CopyButton value="A" writeText={writeText} />);
+
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    expect(screen.getByRole("button", { name: /copy/i })).toBe(button);
+    expect(button).toHaveFocus();
+  });
+
+  test("does not restore invalidated pending feedback when a value returns to an earlier value", async () => {
+    let resolveCopy: (() => void) | undefined;
+    const writeText = vi.fn().mockReturnValue(new Promise<void>((resolve) => { resolveCopy = resolve; }));
+    const user = userEvent.setup();
+    const { rerender } = render(<CopyButton value="A" writeText={writeText} />);
+    const button = screen.getByRole("button", { name: /copy/i });
+
+    button.focus();
+    await user.click(button);
+    expect(screen.getByRole("status")).toHaveTextContent("Copying…");
+    rerender(<CopyButton value="B" writeText={writeText} />);
+    rerender(<CopyButton value="A" writeText={writeText} />);
+
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    expect(screen.getByRole("button", { name: /copy/i })).toBe(button);
+    expect(button).toHaveFocus();
+    resolveCopy?.();
+    await waitFor(() => expect(screen.getByRole("status")).toBeEmptyDOMElement());
+  });
+
   test("transitions the live region for every repeated success and failure while retaining button focus", async () => {
     let resolveFirstSuccess: (() => void) | undefined;
     let resolveSecondSuccess: (() => void) | undefined;

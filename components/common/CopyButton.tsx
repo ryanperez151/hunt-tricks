@@ -1,31 +1,37 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 export type ClipboardWriter = (value: string) => Promise<void>;
 
 export function CopyButton({ value, label = "Copy", writeText }: { value: string; label?: string; writeText?: ClipboardWriter }) {
-  const [feedback, setFeedback] = useState({ value, message: "" });
+  const [feedback, setFeedback] = useState({ value, generation: 0, message: "" });
   const requestId = useRef(0);
-  const currentValue = useRef(value);
-  const status = feedback.value === value ? feedback.message : "";
 
-  useLayoutEffect(() => {
-    currentValue.current = value;
-    requestId.current += 1;
-  }, [value]);
+  if (feedback.value !== value) {
+    setFeedback({ value, generation: feedback.generation + 1, message: "" });
+  }
+
+  const status = feedback.value === value ? feedback.message : "";
 
   async function copy() {
     const currentRequest = ++requestId.current;
     const attemptedValue = value;
-    setFeedback({ value: attemptedValue, message: "Copying…" });
+    const attemptedGeneration = feedback.generation;
+    const updateAttemptFeedback = (message: string) => {
+      setFeedback((currentFeedback) => currentFeedback.value === attemptedValue && currentFeedback.generation === attemptedGeneration
+        ? { ...currentFeedback, message }
+        : currentFeedback);
+    };
+
+    updateAttemptFeedback("Copying…");
     try {
       const copier = writeText ?? navigator.clipboard?.writeText.bind(navigator.clipboard);
       if (!copier) throw new Error("Clipboard API unavailable");
       await copier(attemptedValue);
-      if (currentRequest === requestId.current && currentValue.current === attemptedValue) setFeedback({ value: attemptedValue, message: "Copied to clipboard." });
+      if (currentRequest === requestId.current) updateAttemptFeedback("Copied to clipboard.");
     } catch {
-      if (currentRequest === requestId.current && currentValue.current === attemptedValue) setFeedback({ value: attemptedValue, message: "Copy failed — select the text manually." });
+      if (currentRequest === requestId.current) updateAttemptFeedback("Copy failed — select the text manually.");
     }
   }
 
