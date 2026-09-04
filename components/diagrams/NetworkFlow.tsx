@@ -8,37 +8,105 @@ type NetworkFlowProps = {
   textAlternative: readonly string[];
 };
 
-function edgeSentence(edge: DirectedEdge, nodes: readonly DiagramNode[]) {
-  const source = nodes.find((node) => node.id === edge.source)?.label ?? edge.source;
-  const target = nodes.find((node) => node.id === edge.target)?.label ?? edge.target;
-  return `${source} ${edge.label} to ${target}.`;
+type PositionedNode = DiagramNode & { x: number; y: number; width: number; height: number; lines: string[] };
+
+const NODE_MIN_WIDTH = 156;
+const NODE_MAX_WIDTH = 230;
+const NODE_GAP = 120;
+const LINE_HEIGHT = 18;
+const LANE_STEP = 120;
+
+function wrapText(value: string, maxCharacters = 22) {
+  const lines: string[] = [];
+  let line = "";
+  for (const word of value.split(/\s+/)) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (candidate.length <= maxCharacters) line = candidate;
+    else {
+      if (line) lines.push(line);
+      line = word;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [value];
+}
+
+function normalizeGraph(title: string, nodes: readonly DiagramNode[], edges: readonly DirectedEdge[]) {
+  const nodeById = new Map<string, DiagramNode>();
+  nodes.forEach((node) => {
+    if (nodeById.has(node.id)) throw new Error(`Invalid network flow "${title}": duplicate node ID "${node.id}".`);
+    nodeById.set(node.id, node);
+  });
+  edges.forEach((edge) => {
+    if (!nodeById.has(edge.source)) throw new Error(`Invalid network flow "${title}": unknown edge source "${edge.source}".`);
+    if (!nodeById.has(edge.target)) throw new Error(`Invalid network flow "${title}": unknown edge target "${edge.target}".`);
+  });
+  return { nodes: [...nodeById.values()], edges: [...edges], nodeById };
+}
+
+function edgeSentence(edge: DirectedEdge, nodeById: ReadonlyMap<string, DiagramNode>) {
+  return `${nodeById.get(edge.source)?.label ?? edge.source} ${edge.label} to ${nodeById.get(edge.target)?.label ?? edge.target}.`;
+}
+
+function renderLines(lines: readonly string[], x: number) {
+  return lines.map((line, index) => <tspan key={`${index}-${line}`} x={x} dy={index ? LINE_HEIGHT : 0}>{line}</tspan>);
 }
 
 export function NetworkFlow({ title, nodes, edges, textAlternative }: NetworkFlowProps) {
   const instanceId = useId().replaceAll(":", "");
-  const width = Math.max(nodes.length * 190, 380);
-  const nodePosition = (index: number) => ({ x: 30 + index * ((width - 160) / Math.max(nodes.length - 1, 1)), y: 52 });
-  const positions = new Map(nodes.map((node, index) => [node.id, nodePosition(index)]));
+  const graph = normalizeGraph(title, nodes, edges);
+  if (!graph.nodes.length) return <p className="network-flow__empty" role="status">No flow is available for {title}.</p>;
+
+  const nodeMeasurements = graph.nodes.map((node) => {
+    const lines = wrapText(node.label);
+    const longestLine = Math.max(...lines.map((line) => line.length));
+    return { ...node, lines, width: Math.min(NODE_MAX_WIDTH, Math.max(NODE_MIN_WIDTH, longestLine * 8.5 + 36)), height: lines.length * LINE_HEIGHT + 32 };
+  });
+  const maxNodeHeight = Math.max(...nodeMeasurements.map((node) => node.height));
+  const centerLane = (graph.edges.length - 1) / 2;
+  const laneOffsets = graph.edges.map((edge, index) => {
+    const sourceIndex = graph.nodes.findIndex((node) => node.id === edge.source);
+    const targetIndex = graph.nodes.findIndex((node) => node.id === edge.target);
+    const ordinalLane = (index - centerLane) * LANE_STEP;
+    return ordinalLane || (Math.abs(sourceIndex - targetIndex) > 1 ? (sourceIndex < targetIndex ? -LANE_STEP : LANE_STEP) : 0);
+  });
+  const maxLane = Math.max(...laneOffsets.map((offset) => Math.abs(offset)), 0);
+  const topPadding = maxLane + 52;
+  const centerY = topPadding + maxNodeHeight / 2;
+  const layout = nodeMeasurements.reduce<{ cursor: number; nodes: PositionedNode[] }>((current, node) => ({
+    cursor: current.cursor + node.width + NODE_GAP,
+    nodes: [...current.nodes, { ...node, x: current.cursor, y: centerY - node.height / 2 }],
+  }), { cursor: 40, nodes: [] });
+  const positionedNodes = layout.nodes;
+  const positionedById = new Map(positionedNodes.map((node) => [node.id, node]));
+  const width = layout.cursor - NODE_GAP + 40;
+  const height = topPadding + maxNodeHeight + maxLane + 72;
   const descriptionId = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${instanceId}-description`;
+  const graphSentences = graph.edges.map((edge) => edgeSentence(edge, graph.nodeById));
+  const summary = textAlternative.length ? textAlternative.join(" ") : graphSentences.length ? graphSentences.join(" ") : `${graph.nodes[0].label} has no directed connections in this flow.`;
 
   return (
     <figure className="network-flow" aria-labelledby={`${descriptionId}-title`}>
       <figcaption id={`${descriptionId}-title`}>{title}</figcaption>
       <div className="network-flow__canvas" aria-hidden="true">
-        <svg viewBox={`0 0 ${width} 150`} role="img">
-          <defs><marker id={`${descriptionId}-arrow`} markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4"><path d="M0,0 L8,4 L0,8 Z" /></marker></defs>
-          {edges.map((edge) => {
-            const source = positions.get(edge.source);
-            const target = positions.get(edge.target);
-            if (!source || !target) return null;
-            const x1 = source.x + 60;
-            const x2 = target.x + 60;
-            return <g key={`${edge.source}-${edge.target}-${edge.label}`}><line x1={x1} x2={x2} y1="77" y2="77" markerEnd={`url(#${descriptionId}-arrow)`} /><text x={(x1 + x2) / 2} y="40" textAnchor="middle">{edge.label}</text></g>;
+        <svg viewBox={`0 0 ${width} ${height}`} role="img">
+          <defs><marker id={`${descriptionId}-arrow`} markerHeight="9" markerWidth="9" orient="auto" refX="8" refY="4.5"><path d="M0,0 L9,4.5 L0,9 Z" /></marker></defs>
+          {graph.edges.map((edge, index) => {
+            const source = positionedById.get(edge.source)!;
+            const target = positionedById.get(edge.target)!;
+            const direction = target.x >= source.x ? 1 : -1;
+            const start = { x: source.x + (direction > 0 ? source.width : 0), y: centerY };
+            const end = { x: target.x + (direction > 0 ? 0 : target.width), y: centerY };
+            const control = { x: (start.x + end.x) / 2, y: centerY + laneOffsets[index] };
+            const label = { x: (start.x + 2 * control.x + end.x) / 4, y: (start.y + 2 * control.y + end.y) / 4 - 10 };
+            return <g key={`${edge.source}-${edge.target}-${edge.label}-${index}`}><path className="flow-edge" d={`M ${start.x} ${start.y} Q ${control.x} ${control.y} ${end.x} ${end.y}`} data-source={edge.source} data-target={edge.target} data-testid="flow-edge" markerEnd={`url(#${descriptionId}-arrow)`} /><text className="flow-edge-label" data-testid="flow-edge-label" textAnchor="middle" x={label.x} y={label.y}>{renderLines(wrapText(edge.label), label.x)}</text></g>;
           })}
-          {nodes.map((node, index) => { const position = nodePosition(index); return <g key={node.id}><rect x={position.x} y={position.y} width="120" height="50" rx="5" /><text x={position.x + 60} y={position.y + 30} textAnchor="middle">{node.label}</text></g>; })}
+          {positionedNodes.map((node) => <g key={node.id}><rect data-node-id={node.id} data-testid="flow-node" height={node.height} rx="5" width={node.width} x={node.x} y={node.y} /><text className="flow-node-label" data-testid="flow-node-label" textAnchor="middle" x={node.x + node.width / 2} y={node.y + (node.height - (node.lines.length - 1) * LINE_HEIGHT) / 2 + 5}>{renderLines(node.lines, node.x + node.width / 2)}</text></g>)}
         </svg>
       </div>
-      <p className="network-flow__summary" id={descriptionId}>{textAlternative.length ? textAlternative.join(" ") : edges.map((edge) => edgeSentence(edge, nodes)).join(" ")}</p>
+      <ul aria-label={`Nodes in ${title}`} className="sr-only">{graph.nodes.map((node) => <li key={node.id}>{node.label}</li>)}</ul>
+      {graph.edges.length ? <ol aria-label={`Directed connections in ${title}`} className="sr-only">{graphSentences.map((sentence) => <li key={sentence}>{sentence}</li>)}</ol> : null}
+      <p className="network-flow__summary" id={descriptionId}>{summary}</p>
     </figure>
   );
 }

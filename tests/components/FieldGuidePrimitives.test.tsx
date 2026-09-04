@@ -37,7 +37,7 @@ test("renders real visual flow labels and text equivalents for network and attac
   const edges = [{ source: "device", target: "internet", label: "HTTPS" }] as const;
   render(<><NetworkFlow title="Device egress" nodes={nodes} edges={edges} textAlternative={["Firewall initiates HTTPS to Internet."]} /><AttackPathDiagram title="Pivot" nodes={nodes} edges={edges} textAlternative={["A firewall pivots to the Internet."]} /></>);
 
-  expect(screen.getAllByText("Firewall")).toHaveLength(2);
+  expect(screen.getAllByText("Firewall")).toHaveLength(4);
   expect(screen.getByText("Firewall initiates HTTPS to Internet.")).toBeInTheDocument();
   expect(screen.getByText("A firewall pivots to the Internet.")).toBeInTheDocument();
 });
@@ -66,6 +66,38 @@ test("operates plane tabs by keyboard and presents a chronological attack timeli
   expect(screen.getByRole("tab", { name: "Management plane" })).toHaveFocus();
   expect(screen.getByRole("tabpanel")).toHaveTextContent("Admin API");
   expect(screen.getByRole("list", { name: /attack timeline/i })).toHaveTextContent("Configure");
+});
+
+test("keeps all tabpanels addressable and moves the roving tab stop with Arrow, Home, and End", async () => {
+  const user = userEvent.setup();
+  render(<PlaneExplorer planes={[
+    { plane: "data", label: "Data plane", examples: ["Forward traffic"] },
+    { plane: "management", label: "Management plane", examples: ["Admin API"] },
+    { plane: "control", label: "Control plane", examples: ["BGP"] },
+  ]} />);
+  const data = screen.getByRole("tab", { name: "Data plane" });
+  const management = screen.getByRole("tab", { name: "Management plane" });
+  const control = screen.getByRole("tab", { name: "Control plane" });
+
+  for (const tab of [data, management, control]) {
+    const panel = document.getElementById(tab.getAttribute("aria-controls")!);
+    expect(panel).toHaveAttribute("role", "tabpanel");
+    expect(panel).toHaveAttribute("aria-labelledby", tab.id);
+  }
+  expect(screen.getAllByRole("tabpanel", { hidden: true })).toHaveLength(3);
+  expect(data).toHaveAttribute("tabindex", "0");
+  expect(document.getElementById(data.getAttribute("aria-controls")!)!).toHaveAttribute("tabindex", "0");
+
+  data.focus();
+  await user.keyboard("{End}");
+  expect(control).toHaveFocus();
+  expect(control).toHaveAttribute("aria-selected", "true");
+  expect(control).toHaveAttribute("tabindex", "0");
+  await user.keyboard("{ArrowLeft}");
+  expect(management).toHaveFocus();
+  await user.keyboard("{Home}");
+  expect(data).toHaveFocus();
+  expect(management).toHaveAttribute("tabindex", "-1");
 });
 
 test("keeps multiple plane explorers independently wired", () => {

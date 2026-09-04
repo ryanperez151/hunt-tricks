@@ -41,4 +41,51 @@ describe("CopyButton", () => {
     resolveFirst?.();
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Copy failed — select the text manually."));
   });
+
+  test("invalidates an in-flight completion and clears feedback when its value changes", async () => {
+    let resolveCopy: (() => void) | undefined;
+    const writeText = vi.fn().mockReturnValue(new Promise<void>((resolve) => { resolveCopy = resolve; }));
+    const user = userEvent.setup();
+    const { rerender } = render(<CopyButton value="old query" writeText={writeText} />);
+
+    await user.click(screen.getByRole("button", { name: /copy/i }));
+    expect(screen.getByRole("status")).toHaveTextContent("Copying…");
+    rerender(<CopyButton value="new query" writeText={writeText} />);
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    resolveCopy?.();
+    await waitFor(() => expect(screen.getByRole("status")).toBeEmptyDOMElement());
+  });
+
+  test("transitions the live region for every repeated success and failure while retaining button focus", async () => {
+    let resolveFirstSuccess: (() => void) | undefined;
+    let resolveSecondSuccess: (() => void) | undefined;
+    let rejectFirstFailure: ((reason?: unknown) => void) | undefined;
+    let rejectSecondFailure: ((reason?: unknown) => void) | undefined;
+    const writeText = vi.fn()
+      .mockReturnValueOnce(new Promise<void>((resolve) => { resolveFirstSuccess = resolve; }))
+      .mockReturnValueOnce(new Promise<void>((resolve) => { resolveSecondSuccess = resolve; }))
+      .mockReturnValueOnce(new Promise<void>((_, reject) => { rejectFirstFailure = reject; }))
+      .mockReturnValueOnce(new Promise<void>((_, reject) => { rejectSecondFailure = reject; }));
+    const user = userEvent.setup();
+    render(<CopyButton value="query" writeText={writeText} />);
+    const button = screen.getByRole("button", { name: /copy/i });
+
+    await user.click(button);
+    expect(screen.getByRole("status")).toHaveTextContent("Copying…");
+    resolveFirstSuccess?.();
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Copied to clipboard."));
+    await user.click(button);
+    expect(screen.getByRole("status")).toHaveTextContent("Copying…");
+    resolveSecondSuccess?.();
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Copied to clipboard."));
+    await user.click(button);
+    expect(screen.getByRole("status")).toHaveTextContent("Copying…");
+    rejectFirstFailure?.(new Error("denied"));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Copy failed — select the text manually."));
+    await user.click(button);
+    expect(screen.getByRole("status")).toHaveTextContent("Copying…");
+    rejectSecondFailure?.(new Error("denied"));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Copy failed — select the text manually."));
+    expect(button).toHaveFocus();
+  });
 });

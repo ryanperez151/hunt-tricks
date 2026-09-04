@@ -35,3 +35,24 @@
 
 - `npm install` emitted existing ESLint peer-dependency warnings because the pinned project uses ESLint 10 while some Next lint plugins declare compatibility through ESLint 9. It completed successfully; lint, typecheck, tests, and build all passed.
 - Git emits a non-blocking warning for an unreadable global ignore file in this environment.
+
+## Fix Round 1
+
+### RED / GREEN evidence
+
+- RED geometry: `tests/components/NetworkFlow.test.tsx` failed against center-to-center `<line>` output: no curved edge paths, clipped long-label dimensions, no node-only list, no empty state, and no validation errors for malformed graphs.
+- GREEN geometry: the focused diagram suite now verifies bidirectional and branching SNMP paths terminate on source/target rectangle boundaries, carry arrow markers, use distinct curved `Q` paths, wrap seeded long attack-path labels, avoid intermediate nodes for non-adjacent connections, expose graph-derived node/edge lists, and reject duplicate IDs or unknown endpoints.
+- RED tabs: every non-selected `aria-controls` target was absent. GREEN renders all panels, hides inactive panels, binds every panel back to its tab, and verifies ArrowLeft/Right/Home/End roving selection, focus, and tab stops.
+- RED copy: pending work did not become value-invalid on rerender and had no `Copying…` state. GREEN remounts value-specific attempt state, invalidating stale completions and resetting feedback; deferred tests cover overlapping clicks, value changes, repeated success/failure transitions, and preserved button focus.
+
+### Geometry and accessibility decisions
+
+- `NetworkFlow` normalizes and validates nodes/edges once, then drives visual SVG paths and accessible node/connection lists from that same graph.
+- Node labels and edge labels use deterministic word wrapping. Per-label dimensions, lane clearance, and a content-sized SVG viewBox retain all content inside the existing horizontal scroll container.
+- Curves begin/end on node boundaries, use lane offsets for parallel, reverse, and branching relationships, and apply an extra lane for non-adjacent edges so they do not run through intermediate nodes.
+
+### Verification
+
+- Focused regression suite: passed — 4 files, 19 tests.
+- `npm test`: passed — 19 files, 86 tests.
+- `npm run lint`, `npm run typecheck`, `npm run build`, and `git diff --check`: passed.

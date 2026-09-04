@@ -14,6 +14,6 @@ const edges = [
 test("renders protocol flow nodes and an accessible direction statement", () => {
   render(<ProtocolFlowDiagram title="Normal SNMP" nodes={nodes} edges={edges} />);
 
-  expect(screen.getByText("NMS")).toBeInTheDocument();
-  expect(screen.getByText("NMS initiates UDP/161 to Router.")).toBeInTheDocument();
+  expect(screen.getAllByText("NMS")).toHaveLength(2);
+  expect(screen.getAllByText("NMS initiates UDP/161 to Router.")).toHaveLength(2);
 });
