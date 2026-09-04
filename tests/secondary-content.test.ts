@@ -72,12 +72,11 @@ function numberedBoldLabels(source: string) {
   return [...source.matchAll(/^\d+\. \*\*([^*]+)\*\*/gm)].map((match) => match[1]);
 }
 
-function markdownTableRows(source: string) {
-  return source
-    .split("\n")
-    .filter((line) => /^\| (?!---)/.test(line))
-    .slice(1)
-    .map((line) => line.split("|").slice(1, -1).map((cell) => cell.trim()));
+function semanticAllowMatrixRows(source: string) {
+  const body = source.match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? "";
+  return [...body.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map((row) =>
+    [...row[1].matchAll(/<td>([\s\S]*?)<\/td>/g)].map((cell) => cell[1].trim()),
+  );
 }
 
 describe("secondary content registries", () => {
@@ -199,6 +198,7 @@ describe("secondary content registries", () => {
 
   test("preserves the baselining inventory and directional allow-matrix rows", async () => {
     const source = await readFile(methodologyFiles.baselining, "utf8");
+    const compiled = String(await compile(source, { providerImportSource: "@mdx-js/react" }));
     expect(source).toContain("## Expected-dependency inventory");
     expect(source).toContain("## Infrastructure Communication Allow Matrix");
     expect(numberedBoldLabels(source)).toEqual([
@@ -214,7 +214,7 @@ describe("secondary content registries", () => {
       "Volume and fan-out",
       "Evidence and stewardship",
     ]);
-    expect(markdownTableRows(source)).toEqual([
+    expect(semanticAllowMatrixRows(source)).toEqual([
       ["Approved jump host", "Device management IP", "SSH TCP/22 or HTTPS TCP/443", "Device is server; management plane", "Interactive administration", "Named administrators; ticketed or approved support window"],
       ["Automation controller", "Managed device", "NETCONF TCP/830 or RESTCONF HTTPS", "Device is API server; management plane", "Deploy and validate configuration", "Service identity; controller subnet; change window"],
       ["Managed device", "TACACS+ / RADIUS service", "TCP/49 or UDP/1812–1813", "Device is AAA client; management plane", "Authenticate, authorize, and account for access", "Approved server set; accounting must remain continuous"],
@@ -228,11 +228,15 @@ describe("secondary content registries", () => {
       ["Internal router", "Configured link neighbor", "OSPF IP protocol 89", "Symmetric routing peer; control plane", "Exchange authenticated topology state", "Defined interface, area, router ID, and authentication"],
       ["VPN gateway", "Approved tunnel peer", "IKE UDP/500 or 4500 and ESP IP/50", "Tunnel endpoint; control and data planes", "Connect named sites, partners, or users", "Approved identity, cryptography, selectors, and routed networks"],
     ]);
+    expect(compiled).toContain('"aria-label": "Infrastructure Communication Allow Matrix"');
+    expect(compiled).not.toContain('children: "| Initiator | Destination |');
   });
 
   test("preserves the rarity factors and independent observation sources", async () => {
     const rarity = await readFile(methodologyFiles.rarity, "utf8");
     const independentObservation = await readFile(methodologyFiles.independentObservation, "utf8");
+    const rarityCompiled = String(await compile(rarity, { providerImportSource: "@mdx-js/react" }));
+    const independentCompiled = String(await compile(independentObservation, { providerImportSource: "@mdx-js/react" }));
     expect(rarity).toContain("## Conceptual Infrastructure Hunt Score");
     expect(independentObservation).toContain("## Independent observation equation");
     expect(independentObservation).toContain("## Independent telemetry sources");
@@ -258,5 +262,7 @@ describe("secondary content registries", () => {
       "External syslog",
       "Neighboring-firewall telemetry",
     ]);
+    expect(rarityCompiled).toContain('"aria-label": "Infrastructure Hunt Score relationship"');
+    expect(independentCompiled).toContain('"aria-label": "Independent observation equation"');
   });
 });

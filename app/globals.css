@@ -266,3 +266,61 @@ main { min-height: calc(100vh - 15rem); }
   .hunt-filters__controls { grid-template-columns: 1fr; }
   .hunt-card__metadata div { grid-template-columns: 1fr; }
 }
+
+.protocol-catalog-page, .telemetry-page, .methodology-page, .protocol-detail { padding-bottom: clamp(4rem, 9vw, 8rem); }
+.protocol-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.protocol-card { min-width: 0; border: 1px solid var(--border); background: var(--bg-panel); padding: 1.25rem; }
+.protocol-card h2 { margin: .25rem 0 .35rem; font-size: 1.4rem; }
+.protocol-card h2 a { text-decoration-thickness: 1px; text-underline-offset: .2em; }
+.protocol-card > p:last-child { color: var(--text-muted); }
+.protocol-card__port, .protocol-header__port { color: var(--amber); font-family: var(--font-mono); font-size: .82rem; }
+
+.protocol-detail { padding-top: clamp(3rem, 7vw, 6rem); }
+.protocol-header { padding-bottom: clamp(2rem, 5vw, 4rem); }
+.protocol-header__back { display: inline-block; margin-bottom: 2rem; }
+.protocol-header h1 { margin: .5rem 0 1rem; font-size: clamp(3rem, 8vw, 6rem); line-height: .92; letter-spacing: -.05em; }
+.protocol-detail__section { margin-top: clamp(2.5rem, 6vw, 4.5rem); }
+.protocol-detail__section > h2 { margin: 0 0 1rem; font-size: clamp(1.55rem, 3vw, 2.2rem); line-height: 1.15; }
+.protocol-detail__section li + li { margin-top: .5rem; }
+.protocol-detail__flows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.protocol-detail__flows > div { min-width: 0; border: 1px solid var(--border); background: var(--bg-panel); padding: 1rem; }
+.protocol-detail__flows .protocol-detail__flow--suspicious { border-top: 3px solid var(--risk-red); }
+
+.telemetry-matrix-scroll, .mdx-table-scroll { max-width: 100%; overflow-x: auto; }
+.mdx-table-scroll th, .mdx-table-scroll td { border-bottom: 1px solid var(--border); padding: .75rem 1rem; vertical-align: top; }
+.mdx-table-scroll th { background: var(--bg-panel-raised); color: var(--text); font-weight: 700; }
+.mdx-table-scroll td { color: var(--text-muted); }
+.telemetry-matrix-scroll { border: 1px solid var(--border); background: var(--bg-panel); }
+.telemetry-matrix-scroll:focus-visible, .mdx-table-scroll:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+.telemetry-matrix { width: 100%; min-width: 58rem; border-collapse: collapse; text-align: left; }
+.telemetry-matrix th, .telemetry-matrix td { border-bottom: 1px solid var(--border); padding: .9rem 1rem; vertical-align: top; }
+.telemetry-matrix thead th { background: var(--bg-panel-raised); color: var(--text-muted); font-size: .76rem; letter-spacing: .05em; text-transform: uppercase; }
+.telemetry-matrix tbody:last-child .telemetry-matrix__detail-row:last-child td { border-bottom: 0; }
+.telemetry-matrix__trigger { display: flex; width: 100%; min-width: 12rem; align-items: center; justify-content: space-between; gap: 1rem; border: 0; background: transparent; color: var(--text); cursor: pointer; padding: 0; text-align: left; font-weight: 700; }
+.telemetry-matrix__trigger span:last-child { color: var(--cyan); font-family: var(--font-mono); font-size: 1.2rem; }
+.telemetry-coverage { display: inline-flex; min-width: 5.4rem; justify-content: center; border: 1px solid var(--border); border-radius: 999px; padding: .2rem .55rem; font-family: var(--font-mono); font-size: .72rem; font-weight: 700; text-transform: uppercase; }
+.telemetry-coverage--low { color: var(--text-muted); }
+.telemetry-coverage--medium { border-color: var(--amber); color: var(--amber); }
+.telemetry-coverage--high { border-color: var(--cyan); color: var(--cyan); }
+.telemetry-matrix__detail-row td { padding-block: 0; }
+.telemetry-matrix__detail-row [role="region"] { padding: 1.25rem 0 1.5rem; }
+.telemetry-matrix__detail-row [role="region"] > p { max-width: 72ch; margin-top: 0; color: var(--text-muted); }
+.telemetry-matrix__detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.telemetry-matrix__detail-grid section { border-left: 2px solid var(--border); padding-left: 1rem; }
+.telemetry-matrix__detail-grid h3 { margin: 0; font-size: .9rem; }
+.telemetry-matrix__detail-grid p { margin-bottom: 0; color: var(--text-muted); font-size: .88rem; }
+
+.methodology-page { padding-top: clamp(3rem, 7vw, 6rem); }
+.methodology-context { margin-bottom: 2.5rem; border-left: 4px solid var(--cyan); background: var(--bg-panel); padding: 1.25rem 1.5rem; }
+.methodology-context p:last-child { margin: .45rem 0 0; color: var(--text-muted); }
+.methodology-page > h1 { max-width: 16ch; margin: .5rem 0 1rem; font-size: clamp(2.5rem, 6vw, 4.8rem); line-height: .98; letter-spacing: -.045em; }
+.methodology-page > ul[aria-label$="relationship"], .methodology-page > ul[aria-label$="equation"] { display: grid; gap: .6rem; margin: 1.5rem 0; border: 1px solid var(--amber); background: color-mix(in srgb, var(--amber) 7%, transparent); padding: 1.25rem 1.25rem 1.25rem 2.5rem; }
+
+@media (max-width: 72rem) {
+  .protocol-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .protocol-detail__flows { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 48rem) {
+  .protocol-grid, .telemetry-matrix__detail-grid { grid-template-columns: 1fr; }
+}

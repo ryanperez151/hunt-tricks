@@ -17,9 +17,16 @@ Consider the following factors together:
 9. **Sequence rarity** — did individually explainable events form a suspicious chain, such as capture then transfer, or telemetry loss then a new tunnel?
 10. **Independent corroboration** — do upstream flow, passive sensors, AAA, configuration history, or adjacent controls confirm or contradict the device's account?
 
-The conceptual relationship is:
+The conceptual relationship combines these evidence terms:
 
-> Unusual origin + unusual role or direction + rare dependency + suspicious sequence + independent corroboration = higher hunt priority
+<ul aria-label="Infrastructure Hunt Score relationship">
+  <li><strong>Signal:</strong> unusual origin</li>
+  <li><strong>Signal:</strong> unusual role or direction</li>
+  <li><strong>Signal:</strong> rare dependency</li>
+  <li><strong>Signal:</strong> suspicious sequence</li>
+  <li><strong>Confidence modifier:</strong> independent corroboration</li>
+  <li><strong>Outcome:</strong> higher hunt priority</li>
+</ul>
 
 ## Compare at the right scope
 

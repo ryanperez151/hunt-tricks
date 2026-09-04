@@ -24,20 +24,116 @@ Inventory both directions independently. “SNMP is allowed” is incomplete: po
 
 Use one row per directional dependency. A bidirectional protocol may need two rows when the initiator, port, or operational reason differs.
 
-| Initiator | Destination | Protocol / port | Device role and plane | Expected purpose | Timing / constraint |
-| --- | --- | --- | --- | --- | --- |
-| Approved jump host | Device management IP | SSH TCP/22 or HTTPS TCP/443 | Device is server; management plane | Interactive administration | Named administrators; ticketed or approved support window |
-| Automation controller | Managed device | NETCONF TCP/830 or RESTCONF HTTPS | Device is API server; management plane | Deploy and validate configuration | Service identity; controller subnet; change window |
-| Managed device | TACACS+ / RADIUS service | TCP/49 or UDP/1812–1813 | Device is AAA client; management plane | Authenticate, authorize, and account for access | Approved server set; accounting must remain continuous |
-| Managed device | Recursive resolver | DNS UDP/TCP/53 | Device is DNS client; management plane | Resolve infrastructure dependencies | Internal resolvers only; direct external resolution denied |
-| Managed device | Internal time source | NTP UDP/123 | Device is time client; management plane | Maintain reliable time | Approved hierarchy; offset and source changes alert |
-| Managed device | External log collector | Syslog TCP/TLS or approved transport | Device is log sender; management plane | Preserve security and operations events | Continuous; collector lives outside device control |
-| Network management system | Managed device | SNMP UDP/161 | Device is managed agent; management plane | Poll health and interface counters | Approved NMS addresses and object scope |
-| Managed device | Network management system | SNMP UDP/162 | Device is notification sender; management plane | Send traps or informs | Approved collectors; event-driven |
-| Managed device | Configuration repository | SCP/SFTP over TCP/22 | Device is transfer client or server as documented | Image import, backup, or diagnostic export | Signed images; named repository; scheduled or ticketed |
-| Edge router | Configured routing peer | BGP TCP/179 | Symmetric routing peer; control plane | Exchange approved prefixes and policy | Fixed peer identity, ASN, prefix, and maximum-prefix policy |
-| Internal router | Configured link neighbor | OSPF IP protocol 89 | Symmetric routing peer; control plane | Exchange authenticated topology state | Defined interface, area, router ID, and authentication |
-| VPN gateway | Approved tunnel peer | IKE UDP/500 or 4500 and ESP IP/50 | Tunnel endpoint; control and data planes | Connect named sites, partners, or users | Approved identity, cryptography, selectors, and routed networks |
+<Table aria-label="Infrastructure Communication Allow Matrix">
+  <thead>
+    <tr>
+      <th scope="col">Initiator</th>
+      <th scope="col">Destination</th>
+      <th scope="col">Protocol / port</th>
+      <th scope="col">Device role and plane</th>
+      <th scope="col">Expected purpose</th>
+      <th scope="col">Timing / constraint</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Approved jump host</td>
+      <td>Device management IP</td>
+      <td>SSH TCP/22 or HTTPS TCP/443</td>
+      <td>Device is server; management plane</td>
+      <td>Interactive administration</td>
+      <td>Named administrators; ticketed or approved support window</td>
+    </tr>
+    <tr>
+      <td>Automation controller</td>
+      <td>Managed device</td>
+      <td>NETCONF TCP/830 or RESTCONF HTTPS</td>
+      <td>Device is API server; management plane</td>
+      <td>Deploy and validate configuration</td>
+      <td>Service identity; controller subnet; change window</td>
+    </tr>
+    <tr>
+      <td>Managed device</td>
+      <td>TACACS+ / RADIUS service</td>
+      <td>TCP/49 or UDP/1812–1813</td>
+      <td>Device is AAA client; management plane</td>
+      <td>Authenticate, authorize, and account for access</td>
+      <td>Approved server set; accounting must remain continuous</td>
+    </tr>
+    <tr>
+      <td>Managed device</td>
+      <td>Recursive resolver</td>
+      <td>DNS UDP/TCP/53</td>
+      <td>Device is DNS client; management plane</td>
+      <td>Resolve infrastructure dependencies</td>
+      <td>Internal resolvers only; direct external resolution denied</td>
+    </tr>
+    <tr>
+      <td>Managed device</td>
+      <td>Internal time source</td>
+      <td>NTP UDP/123</td>
+      <td>Device is time client; management plane</td>
+      <td>Maintain reliable time</td>
+      <td>Approved hierarchy; offset and source changes alert</td>
+    </tr>
+    <tr>
+      <td>Managed device</td>
+      <td>External log collector</td>
+      <td>Syslog TCP/TLS or approved transport</td>
+      <td>Device is log sender; management plane</td>
+      <td>Preserve security and operations events</td>
+      <td>Continuous; collector lives outside device control</td>
+    </tr>
+    <tr>
+      <td>Network management system</td>
+      <td>Managed device</td>
+      <td>SNMP UDP/161</td>
+      <td>Device is managed agent; management plane</td>
+      <td>Poll health and interface counters</td>
+      <td>Approved NMS addresses and object scope</td>
+    </tr>
+    <tr>
+      <td>Managed device</td>
+      <td>Network management system</td>
+      <td>SNMP UDP/162</td>
+      <td>Device is notification sender; management plane</td>
+      <td>Send traps or informs</td>
+      <td>Approved collectors; event-driven</td>
+    </tr>
+    <tr>
+      <td>Managed device</td>
+      <td>Configuration repository</td>
+      <td>SCP/SFTP over TCP/22</td>
+      <td>Device is transfer client or server as documented</td>
+      <td>Image import, backup, or diagnostic export</td>
+      <td>Signed images; named repository; scheduled or ticketed</td>
+    </tr>
+    <tr>
+      <td>Edge router</td>
+      <td>Configured routing peer</td>
+      <td>BGP TCP/179</td>
+      <td>Symmetric routing peer; control plane</td>
+      <td>Exchange approved prefixes and policy</td>
+      <td>Fixed peer identity, ASN, prefix, and maximum-prefix policy</td>
+    </tr>
+    <tr>
+      <td>Internal router</td>
+      <td>Configured link neighbor</td>
+      <td>OSPF IP protocol 89</td>
+      <td>Symmetric routing peer; control plane</td>
+      <td>Exchange authenticated topology state</td>
+      <td>Defined interface, area, router ID, and authentication</td>
+    </tr>
+    <tr>
+      <td>VPN gateway</td>
+      <td>Approved tunnel peer</td>
+      <td>IKE UDP/500 or 4500 and ESP IP/50</td>
+      <td>Tunnel endpoint; control and data planes</td>
+      <td>Connect named sites, partners, or users</td>
+      <td>Approved identity, cryptography, selectors, and routed networks</td>
+    </tr>
+  </tbody>
+</Table>
 
 ## Review deviations
 
