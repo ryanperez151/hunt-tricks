@@ -25,6 +25,7 @@ export function CopyButton({ value, label = "Copy", writeText }: { value: string
     };
 
     updateAttemptFeedback("Copying…");
+    await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
     try {
       const copier = writeText ?? navigator.clipboard?.writeText.bind(navigator.clipboard);
       if (!copier) throw new Error("Clipboard API unavailable");

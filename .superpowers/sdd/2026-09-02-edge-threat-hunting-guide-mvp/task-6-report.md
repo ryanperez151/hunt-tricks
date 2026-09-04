@@ -94,3 +94,19 @@
 
 - Focused regression: `npm test -- tests/components/CopyButton.test.tsx` passed — 1 file, 7 tests.
 - Full gate: `npm test` passed — 19 files, 89 tests; `npm run lint`, `npm run typecheck`, `npm run build`, and `git diff --check` passed.
+
+## Fix Round 4
+
+### RED / GREEN evidence
+
+- RED: a synchronously throwing injected clipboard writer batched the initial `Copying…` and failure states in one React event update. The live region's first observable state was already `Copy failed — select the text manually.`, so a repeated failure could not be reliably re-announced.
+- GREEN: the focused regression invokes the real button click twice with a synchronous thrower and observes `Copying…` before each final failure. It also confirms focus remains on the original button node.
+
+### Interaction decision
+
+- The component now waits for a browser `setTimeout(0)` task after publishing `Copying…` and before acquiring or invoking the clipboard writer. This deliberately separates feedback rendering from both unavailable-clipboard and synchronous-writer failure paths without remounting the control or changing generation/request validation.
+
+### Verification
+
+- Focused regression: `npm test -- tests/components/CopyButton.test.tsx` passed — 1 file, 8 tests.
+- Full gate: `npm test` passed — 19 files, 90 tests; `npm run lint`, `npm run typecheck`, `npm run build`, and `git diff --check` passed.

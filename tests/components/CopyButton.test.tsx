@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
 import { CopyButton } from "@/components/common/CopyButton";
@@ -95,6 +95,21 @@ describe("CopyButton", () => {
     expect(button).toHaveFocus();
     resolveCopy?.();
     await waitFor(() => expect(screen.getByRole("status")).toBeEmptyDOMElement());
+  });
+
+  test("commits copying feedback before each repeated synchronous clipboard failure", async () => {
+    const writeText = vi.fn(() => { throw new Error("denied"); });
+    render(<CopyButton value="query" writeText={writeText} />);
+    const button = screen.getByRole("button", { name: /copy/i });
+
+    button.focus();
+    fireEvent.click(button);
+    expect(screen.getByRole("status")).toHaveTextContent("Copying…");
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Copy failed — select the text manually."));
+    fireEvent.click(button);
+    expect(screen.getByRole("status")).toHaveTextContent("Copying…");
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Copy failed — select the text manually."));
+    expect(button).toHaveFocus();
   });
 
   test("transitions the live region for every repeated success and failure while retaining button focus", async () => {
