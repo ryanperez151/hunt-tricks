@@ -48,10 +48,14 @@ describe("CopyButton", () => {
     const user = userEvent.setup();
     const { rerender } = render(<CopyButton value="old query" writeText={writeText} />);
 
-    await user.click(screen.getByRole("button", { name: /copy/i }));
+    const button = screen.getByRole("button", { name: /copy/i });
+    button.focus();
+    await user.click(button);
     expect(screen.getByRole("status")).toHaveTextContent("Copying…");
     rerender(<CopyButton value="new query" writeText={writeText} />);
     expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    expect(screen.getByRole("button", { name: /copy/i })).toBe(button);
+    expect(button).toHaveFocus();
     resolveCopy?.();
     await waitFor(() => expect(screen.getByRole("status")).toBeEmptyDOMElement());
   });

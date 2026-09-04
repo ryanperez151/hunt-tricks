@@ -20,6 +20,18 @@ function isOnBoundary(point: Point, box: Box) {
   return (inVerticalRange && (point.x === box.x || point.x === right)) || (inHorizontalRange && (point.y === box.y || point.y === bottom));
 }
 
+function intersects(first: Box, second: Box) {
+  return first.x < second.x + second.width && first.x + first.width > second.x && first.y < second.y + second.height && first.y + first.height > second.y;
+}
+
+function quadraticPoint(values: number[], t: number): Point {
+  const [startX, startY, controlX, controlY, endX, endY] = values;
+  return {
+    x: (1 - t) ** 2 * startX + 2 * (1 - t) * t * controlX + t ** 2 * endX,
+    y: (1 - t) ** 2 * startY + 2 * (1 - t) * t * controlY + t ** 2 * endY,
+  };
+}
+
 test("draws bidirectional and branching SNMP edges on distinct curved boundary-to-boundary lanes", () => {
   const snmp = protocols.find((protocol) => protocol.slug === "snmp")!;
   render(<><NetworkFlow {...snmp.normalFlow} /><NetworkFlow {...snmp.suspiciousFlow} /></>);
@@ -46,10 +58,34 @@ test("sizes and wraps the actual long attack-path labels without losing route ge
 
   const svg = container.querySelector("svg")!;
   const [, , width, height] = svg.getAttribute("viewBox")!.split(" ").map(Number);
+  expect(svg).toHaveAttribute("width", String(width));
   expect(width).toBeGreaterThan(1_000);
   expect(height).toBeGreaterThan(180);
   expect(Array.from(screen.getAllByTestId("flow-node-label")).find((label) => label.textContent?.includes("Discover trusted"))?.querySelectorAll("tspan").length).toBeGreaterThan(1);
   expect(Array.from(screen.getAllByTestId("flow-edge-label")).find((label) => label.textContent?.includes("inspect routes"))?.querySelectorAll("tspan").length).toBeGreaterThan(1);
+});
+
+test("clears the actual intermediate SNMP peer with the branching curve and its label", () => {
+  const snmp = protocols.find((protocol) => protocol.slug === "snmp")!;
+  const { container } = render(<NetworkFlow {...snmp.suspiciousFlow} />);
+  const intermediate = container.querySelector<SVGRectElement>("[data-node-id='peer-a']")!;
+  const intermediateBox = { x: Number(intermediate.getAttribute("x")), y: Number(intermediate.getAttribute("y")), width: Number(intermediate.getAttribute("width")), height: Number(intermediate.getAttribute("height")) };
+  const path = screen.getAllByTestId("flow-edge")[1] as unknown as SVGPathElement;
+  const values = (path.getAttribute("d")?.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+  const label = screen.getAllByTestId("flow-edge-label")[1] as unknown as SVGTextElement;
+  const lines = Array.from(label.querySelectorAll("tspan")).map((line) => line.textContent?.length ?? 0);
+  const labelBox = {
+    x: Number(label.getAttribute("x")) - Math.max(...lines) * 3.5,
+    y: Number(label.getAttribute("y")) - 11,
+    width: Math.max(...lines) * 7,
+    height: Math.max(1, lines.length) * 18,
+  };
+
+  expect([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8].every((t) => {
+    const point = quadraticPoint(values, t);
+    return point.x < intermediateBox.x || point.x > intermediateBox.x + intermediateBox.width || point.y < intermediateBox.y || point.y > intermediateBox.y + intermediateBox.height;
+  })).toBe(true);
+  expect(intersects(labelBox, intermediateBox)).toBe(false);
 });
 
 test("routes a non-adjacent connection above intermediate nodes instead of through them", () => {

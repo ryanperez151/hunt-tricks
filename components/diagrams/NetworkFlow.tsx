@@ -62,24 +62,28 @@ export function NetworkFlow({ title, nodes, edges, textAlternative }: NetworkFlo
     const longestLine = Math.max(...lines.map((line) => line.length));
     return { ...node, lines, width: Math.min(NODE_MAX_WIDTH, Math.max(NODE_MIN_WIDTH, longestLine * 8.5 + 36)), height: lines.length * LINE_HEIGHT + 32 };
   });
+  const edgeLabelLines = graph.edges.map((edge) => wrapText(edge.label));
+  const nodeGap = Math.max(NODE_GAP, ...edgeLabelLines.map((lines) => Math.max(...lines.map((line) => line.length)) * 7 + 32));
   const maxNodeHeight = Math.max(...nodeMeasurements.map((node) => node.height));
   const centerLane = (graph.edges.length - 1) / 2;
   const laneOffsets = graph.edges.map((edge, index) => {
     const sourceIndex = graph.nodes.findIndex((node) => node.id === edge.source);
     const targetIndex = graph.nodes.findIndex((node) => node.id === edge.target);
     const ordinalLane = (index - centerLane) * LANE_STEP;
-    return ordinalLane || (Math.abs(sourceIndex - targetIndex) > 1 ? (sourceIndex < targetIndex ? -LANE_STEP : LANE_STEP) : 0);
+    if (Math.abs(sourceIndex - targetIndex) <= 1) return ordinalLane;
+    const direction = Math.sign(ordinalLane) || (sourceIndex < targetIndex ? -1 : 1);
+    return ordinalLane + direction * (maxNodeHeight + 72);
   });
   const maxLane = Math.max(...laneOffsets.map((offset) => Math.abs(offset)), 0);
   const topPadding = maxLane + 52;
   const centerY = topPadding + maxNodeHeight / 2;
   const layout = nodeMeasurements.reduce<{ cursor: number; nodes: PositionedNode[] }>((current, node) => ({
-    cursor: current.cursor + node.width + NODE_GAP,
+    cursor: current.cursor + node.width + nodeGap,
     nodes: [...current.nodes, { ...node, x: current.cursor, y: centerY - node.height / 2 }],
   }), { cursor: 40, nodes: [] });
   const positionedNodes = layout.nodes;
   const positionedById = new Map(positionedNodes.map((node) => [node.id, node]));
-  const width = layout.cursor - NODE_GAP + 40;
+  const width = layout.cursor - nodeGap + 40;
   const height = topPadding + maxNodeHeight + maxLane + 72;
   const descriptionId = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${instanceId}-description`;
   const graphSentences = graph.edges.map((edge) => edgeSentence(edge, graph.nodeById));
@@ -89,7 +93,7 @@ export function NetworkFlow({ title, nodes, edges, textAlternative }: NetworkFlo
     <figure className="network-flow" aria-labelledby={`${descriptionId}-title`}>
       <figcaption id={`${descriptionId}-title`}>{title}</figcaption>
       <div className="network-flow__canvas" aria-hidden="true">
-        <svg viewBox={`0 0 ${width} ${height}`} role="img">
+        <svg height={height} style={{ height, width }} viewBox={`0 0 ${width} ${height}`} width={width} role="img">
           <defs><marker id={`${descriptionId}-arrow`} markerHeight="9" markerWidth="9" orient="auto" refX="8" refY="4.5"><path d="M0,0 L9,4.5 L0,9 Z" /></marker></defs>
           {graph.edges.map((edge, index) => {
             const source = positionedById.get(edge.source)!;
@@ -98,10 +102,19 @@ export function NetworkFlow({ title, nodes, edges, textAlternative }: NetworkFlo
             const start = { x: source.x + (direction > 0 ? source.width : 0), y: centerY };
             const end = { x: target.x + (direction > 0 ? 0 : target.width), y: centerY };
             const control = { x: (start.x + end.x) / 2, y: centerY + laneOffsets[index] };
-            const label = { x: (start.x + 2 * control.x + end.x) / 4, y: (start.y + 2 * control.y + end.y) / 4 - 10 };
-            return <g key={`${edge.source}-${edge.target}-${edge.label}-${index}`}><path className="flow-edge" d={`M ${start.x} ${start.y} Q ${control.x} ${control.y} ${end.x} ${end.y}`} data-source={edge.source} data-target={edge.target} data-testid="flow-edge" markerEnd={`url(#${descriptionId}-arrow)`} /><text className="flow-edge-label" data-testid="flow-edge-label" textAnchor="middle" x={label.x} y={label.y}>{renderLines(wrapText(edge.label), label.x)}</text></g>;
+            return <path className="flow-edge" d={`M ${start.x} ${start.y} Q ${control.x} ${control.y} ${end.x} ${end.y}`} data-source={edge.source} data-target={edge.target} data-testid="flow-edge" key={`${edge.source}-${edge.target}-${edge.label}-${index}`} markerEnd={`url(#${descriptionId}-arrow)`} />;
           })}
           {positionedNodes.map((node) => <g key={node.id}><rect data-node-id={node.id} data-testid="flow-node" height={node.height} rx="5" width={node.width} x={node.x} y={node.y} /><text className="flow-node-label" data-testid="flow-node-label" textAnchor="middle" x={node.x + node.width / 2} y={node.y + (node.height - (node.lines.length - 1) * LINE_HEIGHT) / 2 + 5}>{renderLines(node.lines, node.x + node.width / 2)}</text></g>)}
+          {graph.edges.map((edge, index) => {
+            const source = positionedById.get(edge.source)!;
+            const target = positionedById.get(edge.target)!;
+            const direction = target.x >= source.x ? 1 : -1;
+            const start = { x: source.x + (direction > 0 ? source.width : 0), y: centerY };
+            const end = { x: target.x + (direction > 0 ? 0 : target.width), y: centerY };
+            const control = { x: (start.x + end.x) / 2, y: centerY + laneOffsets[index] };
+            const label = { x: (start.x + 2 * control.x + end.x) / 4, y: (start.y + 2 * control.y + end.y) / 4 - 10 };
+            return <text className="flow-edge-label" data-testid="flow-edge-label" key={`label-${edge.source}-${edge.target}-${edge.label}-${index}`} textAnchor="middle" x={label.x} y={label.y}>{renderLines(edgeLabelLines[index], label.x)}</text>;
+          })}
         </svg>
       </div>
       <ul aria-label={`Nodes in ${title}`} className="sr-only">{graph.nodes.map((node) => <li key={node.id}>{node.label}</li>)}</ul>

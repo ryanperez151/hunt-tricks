@@ -1,27 +1,31 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 export type ClipboardWriter = (value: string) => Promise<void>;
 
 export function CopyButton({ value, label = "Copy", writeText }: { value: string; label?: string; writeText?: ClipboardWriter }) {
-  return <CopyButtonAttempt key={value} label={label} value={value} writeText={writeText} />;
-}
-
-function CopyButtonAttempt({ value, label, writeText }: { value: string; label: string; writeText?: ClipboardWriter }) {
-  const [status, setStatus] = useState("");
+  const [feedback, setFeedback] = useState({ value, message: "" });
   const requestId = useRef(0);
+  const currentValue = useRef(value);
+  const status = feedback.value === value ? feedback.message : "";
+
+  useLayoutEffect(() => {
+    currentValue.current = value;
+    requestId.current += 1;
+  }, [value]);
 
   async function copy() {
     const currentRequest = ++requestId.current;
-    setStatus("Copying…");
+    const attemptedValue = value;
+    setFeedback({ value: attemptedValue, message: "Copying…" });
     try {
       const copier = writeText ?? navigator.clipboard?.writeText.bind(navigator.clipboard);
       if (!copier) throw new Error("Clipboard API unavailable");
-      await copier(value);
-      if (currentRequest === requestId.current) setStatus("Copied to clipboard.");
+      await copier(attemptedValue);
+      if (currentRequest === requestId.current && currentValue.current === attemptedValue) setFeedback({ value: attemptedValue, message: "Copied to clipboard." });
     } catch {
-      if (currentRequest === requestId.current) setStatus("Copy failed — select the text manually.");
+      if (currentRequest === requestId.current && currentValue.current === attemptedValue) setFeedback({ value: attemptedValue, message: "Copy failed — select the text manually." });
     }
   }
 

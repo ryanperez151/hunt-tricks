@@ -56,3 +56,24 @@
 - Focused regression suite: passed — 4 files, 19 tests.
 - `npm test`: passed — 19 files, 86 tests.
 - `npm run lint`, `npm run typecheck`, `npm run build`, and `git diff --check`: passed.
+
+## Fix Round 2
+
+### RED / GREEN evidence
+
+- RED branch clearance: the actual seeded branching SNMP flow's second connection used its ordinal lane instead of composing it with non-adjacent clearance, so its wrapped label intersected the intermediate peer node.
+- GREEN branch clearance: the regression samples the second seeded curve and measures its wrapped label box against the intermediate node; both now clear it. Edge labels render after nodes as an additional paint-order safeguard.
+- RED narrow readability: the long-label diagram test had no content-width SVG attribute, leaving a `width: 100%; min-width: 380px` rule to scale a large viewBox down in narrow containers.
+- GREEN narrow readability: the SVG now publishes its computed content width as its `width` attribute and inline width, while the scroll canvas retains that intrinsic width; the regression verifies the long graph's rendered width tracks its computed viewBox width.
+- RED copy focus: changing the copy value keyed a remount, replacing the focused button element. GREEN retains that exact DOM element and focus while a layout-effect generation change suppresses the stale deferred completion.
+
+### Geometry and interaction decisions
+
+- Network-flow lanes now compose the parallel/ordinal offset with non-adjacent node clearance. The gap between nodes also accounts for the widest wrapped edge label so labels retain dedicated space.
+- The SVG has no responsive maximum width: the existing overflow container is responsible for narrow-viewport horizontal scrolling at content-size text scale.
+- Copy feedback is scoped to its value and derived as empty immediately after a value change. `requestId` and the current-value ref invalidate outstanding clipboard attempts without remounting the control, while every new attempt announces `Copying…` before its final outcome.
+
+### Verification
+
+- Focused regressions: `npm test -- tests/components/NetworkFlow.test.tsx tests/components/CopyButton.test.tsx` passed — 2 files, 12 tests.
+- Full gate: `npm test` passed — 19 files, 87 tests; `npm run lint`, `npm run typecheck`, `npm run build`, and `git diff --check` passed.
