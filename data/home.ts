@@ -3,6 +3,13 @@ export const homeContent = {
   title: "Hunt the Infrastructure",
   heroCopy: "Investigate the devices that route, protect, and manage your network as potential hosts—not merely passive sensors.",
   originQuestion: "Was this traffic forwarded BY the appliance, or initiated FROM it?",
+  heroNetwork: {
+    nodes: ["Internet", "Firewall", "Router", "Core", "Servers", "Endpoints"],
+    flows: [
+      { kind: "transit", label: "Ordinary transit", path: "Endpoints → Core → Router → Firewall → Internet" },
+      { kind: "origin", label: "Device-originated", path: "Firewall or Router → Internet" },
+    ],
+  },
   actions: {
     primary: { label: "Explore Hunts", href: "/hunts" },
     secondary: { label: "Start With the Management Plane", href: "/hunts/management-plane-c2" },

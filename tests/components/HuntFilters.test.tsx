@@ -1,0 +1,74 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, test, vi } from "vitest";
+import { HuntFilters, type HuntFilterOptions } from "@/components/hunts/HuntFilters";
+import { emptyHuntFilters, type HuntFilters as HuntFilterState } from "@/lib/filters";
+
+const filterOptions: HuntFilterOptions = {
+  families: ["management-plane-c2", "traffic-manipulation"],
+  devices: ["firewall", "router"],
+  protocols: ["SSH", "SNMP"],
+  planes: ["management", "data"],
+  severities: ["high", "critical"],
+  telemetry: ["netflow-ipfix", "packet-capture"],
+};
+
+describe("HuntFilters", () => {
+  test("updates one category without discarding the other canonical filter state", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const filters: HuntFilterState = {
+      ...emptyHuntFilters,
+      severities: ["critical"],
+    };
+    render(<HuntFilters filters={filters} options={filterOptions} onChange={onChange} />);
+
+    await user.selectOptions(screen.getByLabelText("Protocol"), "SNMP");
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...emptyHuntFilters,
+      protocols: ["SNMP"],
+      severities: ["critical"],
+    });
+  });
+
+  test("exposes every filter dimension and clears all active filters", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const filters: HuntFilterState = {
+      families: ["management-plane-c2"],
+      devices: ["router"],
+      protocols: ["SNMP"],
+      planes: ["management"],
+      severities: ["critical"],
+      telemetry: ["netflow-ipfix"],
+    };
+    render(<HuntFilters filters={filters} options={filterOptions} onChange={onChange} />);
+
+    for (const label of ["Family", "Device", "Protocol", "Plane", "Severity", "Telemetry"]) {
+      expect(screen.getByLabelText(label)).toBeInTheDocument();
+    }
+    expect(screen.getByText("Active filters")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Clear all filters" }));
+    expect(onChange).toHaveBeenLastCalledWith(emptyHuntFilters);
+  });
+
+  test("removes an individual active filter without changing the others", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const filters: HuntFilterState = {
+      ...emptyHuntFilters,
+      protocols: ["SNMP"],
+      severities: ["high"],
+    };
+    render(<HuntFilters filters={filters} options={filterOptions} onChange={onChange} />);
+
+    await user.click(screen.getByRole("button", { name: "Remove protocol SNMP filter" }));
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...emptyHuntFilters,
+      severities: ["high"],
+    });
+  });
+});
