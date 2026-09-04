@@ -1,7 +1,11 @@
 import { render, screen } from "@testing-library/react";
+import type { AnchorHTMLAttributes } from "react";
 import { describe, expect, test, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
+vi.mock("next/link", () => ({
+  default: (props: AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props} />,
+}));
 
 import HuntRoutePage, { generateMetadata } from "@/app/hunts/[slug]/page";
 
@@ -78,5 +82,18 @@ describe("shared hunt route page", () => {
       openGraph: { title: "SNMP Fan-Out", type: "article" },
     });
     expect(family.description).not.toBe(hunt.description);
+  });
+
+  test("renders origin guidance only from each hunt's explicit detection intent", async () => {
+    const first = render(await HuntRoutePage({ params: Promise.resolve({ slug: "new-infrastructure-external-destination" }) }));
+    expect(screen.getByRole("heading", { name: "Treat infrastructure as a host" })).toBeInTheDocument();
+    first.unmount();
+
+    const second = render(await HuntRoutePage({ params: Promise.resolve({ slug: "unexpected-gre-tunnel" }) }));
+    expect(screen.getByRole("heading", { name: "Treat infrastructure as a host" })).toBeInTheDocument();
+    second.unmount();
+
+    render(await HuntRoutePage({ params: Promise.resolve({ slug: "packet-capture-started" }) }));
+    expect(screen.queryByRole("heading", { name: "Treat infrastructure as a host" })).not.toBeInTheDocument();
   });
 });

@@ -14,7 +14,16 @@ import { makeHunt } from "./test-utils";
 
 describe("HuntSchema", () => {
   test("accepts a complete hunt", () => {
-    expect(HuntSchema.parse(makeHunt()).slug).toBe("test-hunt");
+    expect(HuntSchema.parse(makeHunt())).toMatchObject({ slug: "test-hunt", showOriginMatters: true });
+  });
+
+  test.each([
+    ["missing", undefined],
+    ["non-boolean", "yes"],
+  ])("rejects %s origin-matters presentation metadata", (_scenario, showOriginMatters) => {
+    const candidate = { ...makeHunt(), showOriginMatters };
+    if (showOriginMatters === undefined) delete candidate.showOriginMatters;
+    expect(() => HuntSchema.parse(candidate)).toThrow();
   });
 
   test.each([

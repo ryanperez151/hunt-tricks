@@ -8,7 +8,7 @@
 - Catalog/route RED: `npm test -- tests/components/HuntCatalog.test.tsx tests/hunt-routes.test.ts` failed because the client island and pure shared-segment helpers were absent.
 - Catalog/route GREEN: the expanded focused suite passed after canonical URL serialization, record-derived options, resettable empty state, strict resolution, ordered static parameters, and metadata inputs were implemented.
 - Page RED: home coverage failed on the missing origin/transit network and approved sections; the catalog fallback export was absent; the shared route page module was absent.
-- Page GREEN: the seven-file Task 7 suite passed with 21 tests after implementing the homepage, useful Suspense fallback, family route, build-highlighted hunt details, and metadata. A nested async-renderer failure was reproduced and corrected by completing Shiki work before returning the page tree.
+- Page GREEN: the six-file Task 7 suite passed with 14 tests after implementing the homepage, useful Suspense fallback, family route, build-highlighted hunt details, and metadata. A nested async-renderer failure was reproduced and corrected by completing Shiki work before returning the page tree.
 - Self-review RED/GREEN: the hunt page test first failed because required device/protocol scope was absent from the detail header; it passed after the header rendered both fields from the validated hunt record.
 
 ## Changed files and architecture
@@ -24,7 +24,7 @@
 
 ## Verification and export audit
 
-- Focused Task 7 regression suite: passed — 7 files, 21 tests.
+- Focused Task 7 regression suite: passed — 6 files, 14 tests.
 - Full `npm test`: passed — 25 files, 104 tests.
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
@@ -46,3 +46,15 @@
 - URL filtering requires JavaScript by design. The static Suspense fallback remains useful without JavaScript by exposing the complete hunt catalog rather than an empty loading shell.
 - No current hunt record contains timeline data in the validated schema, so the optional attack-timeline section is correctly absent.
 - Git emits a non-blocking warning for an unreadable global ignore file in this environment.
+
+## Fix Round 1
+
+- Focused RED: 6 files produced 11 expected failures covering the unnamed card link, repeated unresolved labels, push-versus-replace history behavior, hydration canonicalization, Back/Forward-derived rendering, raw internal anchors, and missing explicit origin-intent metadata.
+- Focused GREEN: the same 6 files passed with 37 tests. A final navigation edge-case pass also passed with 2 files and 5 tests after adding noncanonical multi-value ordering and exact raw-anchor constraints.
+- `HuntCard` now owns its semantic `article`, creates a unique title ID with `useId`, and exposes one full-card Next `Link` whose accessible name resolves through `aria-labelledby`. Built catalog HTML contains 20 labelled card articles and 20 matching labelled, trailing-slash links.
+- User filter changes and empty-state resets now call `router.push(..., { scroll: false })`. A guarded hydration effect alone calls `router.replace` when the raw pathname/query differs from the pure parser/serializer result, removing unknown, duplicate, unrelated, or noncanonical parameters and adding the trailing slash without adding history.
+- Homepage family/baselining actions and hunt-detail related-hunt actions now use Next `Link`; external reference anchors remain raw. The source/render navigation contract rejects internal raw anchors and verifies every explicit internal route is slash-terminated.
+- `showOriginMatters` is a required boolean in `HuntSchema` and is explicitly curated across all 20 validated hunt seeds. The detail route no longer infers presentation from prose. Page regressions prove that New Infrastructure External Destination and Unexpected GRE Tunnel show the guidance while Packet Capture Started does not.
+- Full verification passed: `npm test` (26 files, 111 tests), `npm run lint`, `npm run typecheck`, and `npm run build` (29 static pages, including content validation).
+- Export re-audit found exactly 25 hunt `index.html` outputs, the 20-link catalog fallback, zero non-trailing-slash internal hunt links, and zero server-only Shiki/highlighter signatures in client chunks.
+- Remaining concerns are unchanged: URL filter controls require JavaScript but retain the complete server fallback; Git continues to emit only the existing unreadable-global-ignore and line-ending warnings.

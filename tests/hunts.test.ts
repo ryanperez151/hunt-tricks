@@ -34,6 +34,29 @@ const flagshipSlugs = [
   "unexpected-gre-tunnel",
 ] as const;
 
+const originMattersBySlug = {
+  "unexpected-management-interface-egress": true,
+  "new-infrastructure-external-destination": true,
+  "infrastructure-beaconing": true,
+  "suspicious-infrastructure-dns": true,
+  "alternate-dns-resolver": true,
+  "unexpected-ssh-egress": true,
+  "firewall-to-router-ssh": true,
+  "router-to-router-ssh": true,
+  "device-to-device-https-administration": true,
+  "snmp-fan-out": true,
+  "snmp-from-unexpected-initiator": true,
+  "new-aaa-destination": true,
+  "unexpected-ldap-from-infrastructure": true,
+  "packet-capture-started": false,
+  "packet-capture-followed-by-file-transfer": true,
+  "unexpected-gre-tunnel": true,
+  "new-ipsec-tunnel": true,
+  "logging-destination-modified": false,
+  "infrastructure-telemetry-gap": false,
+  "management-acl-modified": false,
+} as const;
+
 const suppliedUnexpectedInfrastructureEgressQuery = `index=network
 | lookup network_assets ip AS src_ip
     OUTPUT asset_type AS src_type
@@ -64,6 +87,13 @@ describe("launch hunt registry", () => {
     expect(hunts).toHaveLength(20);
     expect(hunts.map((hunt) => hunt.title)).toEqual(requiredTitles);
     expect(hunts.map((hunt) => HuntSchema.parse(hunt))).toHaveLength(20);
+  });
+
+  test("explicitly curates origin-versus-transit guidance for every hunt", () => {
+    expect(Object.keys(originMattersBySlug)).toHaveLength(hunts.length);
+    for (const hunt of hunts) {
+      expect(hunt.showOriginMatters, hunt.slug).toBe(originMattersBySlug[hunt.slug as keyof typeof originMattersBySlug]);
+    }
   });
 
   test.each(flagshipSlugs)("gives flagship hunt %s full operational depth", (slug) => {

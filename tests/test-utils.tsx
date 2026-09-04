@@ -7,6 +7,7 @@ export function makeHunt() {
     summary: "A concise test hunt summary.",
     hypothesis: "The device is initiating unexpected management traffic.",
     rationale: "Unexpected management-plane traffic can indicate a compromised device or a configuration change that requires investigation.",
+    showOriginMatters: true,
     severity: "high",
     confidence: "medium",
     planes: ["management"],

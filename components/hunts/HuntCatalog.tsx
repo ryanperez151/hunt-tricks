@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { HuntCard } from "@/components/hunts/HuntCard";
 import { HuntFilters, type HuntFilterOptions } from "@/components/hunts/HuntFilters";
 import {
@@ -40,14 +41,24 @@ export function HuntCatalog({ hunts }: { hunts: readonly Hunt[] }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const filters = parseHuntFilters(new URLSearchParams(searchParams.toString()));
+  const rawQuery = searchParams.toString();
+  const filters = parseHuntFilters(new URLSearchParams(rawQuery));
   const filteredHunts = filterHunts(hunts, filters);
   const options = deriveHuntFilterOptions(hunts);
+  const canonicalPath = withTrailingSlash(pathname);
+  const canonicalQuery = serializeHuntFilters(filters).toString();
+  const currentUrl = rawQuery ? `${pathname}?${rawQuery}` : pathname;
+  const canonicalUrl = canonicalQuery ? `${canonicalPath}?${canonicalQuery}` : canonicalPath;
+
+  useEffect(() => {
+    if (currentUrl !== canonicalUrl) {
+      router.replace(canonicalUrl, { scroll: false });
+    }
+  }, [canonicalUrl, currentUrl, router]);
 
   function setFilters(nextFilters: HuntFilterState) {
     const query = serializeHuntFilters(nextFilters).toString();
-    const canonicalPath = withTrailingSlash(pathname);
-    router.replace(query ? `${canonicalPath}?${query}` : canonicalPath, { scroll: false });
+    router.push(query ? `${canonicalPath}?${query}` : canonicalPath, { scroll: false });
   }
 
   return (

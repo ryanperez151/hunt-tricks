@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { useId } from "react";
 import { SeverityBadge } from "@/components/common/SeverityBadge";
 import { Tag } from "@/components/common/Tag";
 import { huntFamilies } from "@/data/families";
@@ -18,31 +20,31 @@ export function HuntCard({ hunt, headingLevel = 2 }: { hunt: Hunt; headingLevel?
   const family = huntFamilies.find((candidate) => candidate.id === hunt.family);
   const telemetry = [...hunt.telemetry.recommended, ...hunt.telemetry.optional];
   const Heading = headingLevel === 3 ? "h3" : "h2";
+  const titleId = `hunt-card-title-${useId().replaceAll(":", "")}`;
 
   return (
-    <a className="hunt-card" href={`/hunts/${hunt.slug}/`}>
-      <article>
-        <div className="hunt-card__header">
-          <p className="eyebrow">{family?.label ?? hunt.family}</p>
-          <SeverityBadge severity={hunt.severity} />
+    <article className="hunt-card" aria-labelledby={titleId}>
+      <div className="hunt-card__header">
+        <p className="eyebrow">{family?.label ?? hunt.family}</p>
+        <SeverityBadge severity={hunt.severity} />
+      </div>
+      <Heading id={titleId}>{hunt.title}</Heading>
+      <p className="hunt-card__summary">{hunt.summary}</p>
+      <dl className="hunt-card__metadata">
+        <div>
+          <dt>Protocols</dt>
+          <dd>{hunt.protocols.map((protocol) => <Tag key={protocol}>{protocol}</Tag>)}</dd>
         </div>
-        <Heading>{hunt.title}</Heading>
-        <p className="hunt-card__summary">{hunt.summary}</p>
-        <dl className="hunt-card__metadata">
-          <div>
-            <dt>Protocols</dt>
-            <dd>{hunt.protocols.map((protocol) => <Tag key={protocol}>{protocol}</Tag>)}</dd>
-          </div>
-          <div>
-            <dt>Telemetry</dt>
-            <dd>{telemetry.map((key) => <Tag key={key}>{telemetryLabels[key] ?? key}</Tag>)}</dd>
-          </div>
-          <div>
-            <dt>Devices</dt>
-            <dd>{hunt.devices.map((device) => <Tag key={device}>{device}</Tag>)}</dd>
-          </div>
-        </dl>
-      </article>
-    </a>
+        <div>
+          <dt>Telemetry</dt>
+          <dd>{telemetry.map((key) => <Tag key={key}>{telemetryLabels[key] ?? key}</Tag>)}</dd>
+        </div>
+        <div>
+          <dt>Devices</dt>
+          <dd>{hunt.devices.map((device) => <Tag key={device}>{device}</Tag>)}</dd>
+        </div>
+      </dl>
+      <Link aria-labelledby={titleId} className="hunt-card__link" href={`/hunts/${hunt.slug}/`} />
+    </article>
   );
 }

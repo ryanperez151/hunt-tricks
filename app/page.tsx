@@ -70,7 +70,7 @@ export default function HomePage() {
               <p className="eyebrow">Hunt family</p>
               <h3>{family.label}</h3>
               <p>{family.objective}</p>
-              <a href={`/hunts/${family.id}/`}>Explore {family.label} hunts</a>
+              <Link href={`/hunts/${family.id}/`}>Explore {family.label} hunts</Link>
             </article>
           ))}
         </div>
@@ -94,7 +94,7 @@ export default function HomePage() {
           <h2>Build the baseline, then test it</h2>
           <p>Document the connections an appliance is allowed to initiate, then treat each new role, peer, protocol, and sequence as a question worth answering.</p>
           <div className="hero__actions">
-            <a className="button button--secondary" href="/methodology/baselining/">Learn baselining</a>
+            <Link className="button button--secondary" href="/methodology/baselining/">Learn baselining</Link>
             <Link className="button button--primary" href="/hunts/">Browse the hunt catalog</Link>
           </div>
         </div>

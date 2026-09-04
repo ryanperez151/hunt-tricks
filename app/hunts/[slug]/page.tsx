@@ -89,11 +89,6 @@ function BehaviorSection({ hunt }: { hunt: Hunt }) {
   );
 }
 
-function originMattersFor(hunt: Hunt) {
-  const evidence = [hunt.hypothesis, hunt.detectionStrategy, ...hunt.suspiciousBehavior].join(" ");
-  return /\b(?:initiat(?:e|es|ed|ing)|originat(?:e|es|ed|ing)|forwarded)\b/i.test(evidence);
-}
-
 async function HuntDetailPage({ hunt }: { hunt: Hunt }) {
   const highlightedQueries = await Promise.all(hunt.queries.map((query) => highlightQuery(query.query, query.platform)));
   const relatedHunts = getRelatedHunts(hunt);
@@ -106,7 +101,7 @@ async function HuntDetailPage({ hunt }: { hunt: Hunt }) {
         <h2>Hunt hypothesis</h2>
         <p>{hunt.hypothesis}</p>
       </section>
-      {originMattersFor(hunt) ? <OriginMatters /> : null}
+      {hunt.showOriginMatters ? <OriginMatters /> : null}
       <BehaviorSection hunt={hunt} />
       <section className="hunt-detail__section">
         <h2>Why this matters</h2>
@@ -133,7 +128,7 @@ async function HuntDetailPage({ hunt }: { hunt: Hunt }) {
       <ListSection title="ATT&CK techniques" items={hunt.techniques} />
       <section className="hunt-detail__section">
         <h2>Related hunts</h2>
-        {relatedHunts.length ? <ul className="related-links">{relatedHunts.map((related) => <li key={related.slug}><a aria-label={`Related hunt: ${related.title}`} href={`/hunts/${related.slug}/`}>{related.title}</a></li>)}</ul> : <p>No related hunts are defined.</p>}
+        {relatedHunts.length ? <ul className="related-links">{relatedHunts.map((related) => <li key={related.slug}><Link aria-label={`Related hunt: ${related.title}`} href={`/hunts/${related.slug}/`}>{related.title}</Link></li>)}</ul> : <p>No related hunts are defined.</p>}
       </section>
       <section className="hunt-detail__section">
         <h2>References</h2>

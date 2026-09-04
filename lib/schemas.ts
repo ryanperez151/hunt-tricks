@@ -81,6 +81,7 @@ export const HuntSchema = z.object({
   summary: NonEmptyString,
   hypothesis: NonEmptyString,
   rationale: NonEmptyString,
+  showOriginMatters: z.boolean(),
   expectedBehavior: z.array(NonEmptyString).optional(),
   severity: z.enum(SEVERITIES),
   confidence: z.enum(CONFIDENCE_LEVELS),

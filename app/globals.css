@@ -189,9 +189,9 @@ main { min-height: calc(100vh - 15rem); }
 .hunt-catalog__count { margin: 0; color: var(--cyan); font-family: var(--font-mono); font-weight: 700; }
 .hunt-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .hunt-grid--featured { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.hunt-card { display: block; min-width: 0; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text); text-decoration: none; transition: border-color var(--motion-fast), transform var(--motion-fast); }
+.hunt-card { position: relative; min-width: 0; border: 1px solid var(--border); background: var(--bg-panel); padding: 1.25rem; color: var(--text); transition: border-color var(--motion-fast), transform var(--motion-fast); }
 .hunt-card:hover { border-color: var(--cyan); color: var(--text); transform: translateY(-2px); }
-.hunt-card article { height: 100%; padding: 1.25rem; }
+.hunt-card__link { position: absolute; inset: 0; }
 .hunt-card__header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
 .hunt-card__header .eyebrow { margin-top: .2rem; }
 .hunt-card h2, .hunt-card h3 { margin: .35rem 0 .65rem; font-size: 1.25rem; line-height: 1.2; }
