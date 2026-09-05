@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import { TelemetryMatrix } from "@/components/telemetry/TelemetryMatrix";
 import { telemetrySources } from "@/lib/content";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
   title: "Independent Telemetry Coverage",
   description: "Compare eight independent telemetry sources across command-and-control, lateral movement, discovery, and traffic manipulation investigations.",
-};
+  path: "/telemetry/",
+});
 
 export default function TelemetryPage() {
   return (

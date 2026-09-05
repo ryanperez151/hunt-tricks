@@ -154,7 +154,7 @@ describe("secondary content registries", () => {
     expect(snmp?.suspiciousFlow.textAlternative.join(" ")).toMatch(/router originates UDP\/161.*fan-out/i);
   });
 
-  test("keeps attack paths ordered, connected, and unrelated until hunts exist", () => {
+  test("keeps attack paths ordered, connected, and linked to launch hunts", () => {
     for (const path of attackPaths) {
       const nodeIds = new Set(path.nodes.map((item) => item.id));
       expect(path.edges.every(({ source, target }) => nodeIds.has(source) && nodeIds.has(target))).toBe(true);
@@ -162,7 +162,7 @@ describe("secondary content registries", () => {
         path.nodes.slice(0, -1).map((item, index) => ({ source: item.id, target: path.nodes[index + 1].id })),
       );
       expect(path.textAlternative.length).toBe(path.edges.length);
-      expect(path.relatedHunts).toEqual([]);
+      expect(path.relatedHunts.length).toBeGreaterThan(0);
     }
   });
 

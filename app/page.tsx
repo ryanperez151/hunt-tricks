@@ -6,6 +6,13 @@ import { HuntCard } from "@/components/hunts/HuntCard";
 import { huntFamilies } from "@/data/families";
 import { homeContent } from "@/data/home";
 import { hunts } from "@/lib/content";
+import { createPageMetadata } from "@/lib/metadata";
+
+export const metadata = createPageMetadata({
+  title: "Hunt the Infrastructure",
+  description: "A practical field guide for hunting compromised routers, firewalls, switches, VPN gateways, and other network infrastructure as hosts.",
+  path: "/",
+});
 
 function HeroNetwork() {
   return (

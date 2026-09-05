@@ -16,6 +16,7 @@ import {
   type HuntRoute,
 } from "@/lib/hunt-routes";
 import { getRelatedHunts, telemetrySources, type Hunt } from "@/lib/content";
+import { createPageMetadata } from "@/lib/metadata";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -31,15 +32,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const metadata = getHuntRouteMetadata(slug);
   if (!route || !metadata) return { title: "Hunt not found" };
 
-  return {
+  return createPageMetadata({
     title: metadata.title,
     description: metadata.description,
-    openGraph: {
-      title: metadata.title,
-      description: metadata.description,
-      type: route.kind === "hunt" ? "article" : "website",
-    },
-  };
+    path: `/hunts/${slug}/`,
+    type: route.kind === "hunt" ? "article" : "website",
+  });
 }
 
 function FamilyPage({ route }: { route: Extract<HuntRoute, { kind: "family" }> }) {

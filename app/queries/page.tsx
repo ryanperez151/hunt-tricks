@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import { QueryLibrary, type QueryDisplayRecord } from "@/components/queries/QueryLibrary";
 import { hunts } from "@/lib/content";
 import { highlightQuery } from "@/lib/highlight";
+import { createPageMetadata } from "@/lib/metadata";
 import { aggregateQueries } from "@/lib/queries";
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
   title: "Infrastructure Query Library",
   description: "Filter adaptable Splunk, KQL, Zeek, and vendor-neutral infrastructure hunting queries derived from the operational hunt catalog.",
-};
+  path: "/queries/",
+});
 
 async function buildQueryDisplayRecords(): Promise<readonly QueryDisplayRecord[]> {
   return Promise.all(aggregateQueries(hunts).map(async (query) => ({

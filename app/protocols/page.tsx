@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { protocols } from "@/lib/content";
+import { createPageMetadata } from "@/lib/metadata";
 import { getProtocolHref } from "@/lib/protocol-routes";
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
   title: "Protocol Behavior Catalog",
   description: "Compare the expected direction, infrastructure purpose, suspicious use, and attacker abuse of twenty-four network protocols.",
-};
+  path: "/protocols/",
+});
 
 export default function ProtocolsPage() {
   return (

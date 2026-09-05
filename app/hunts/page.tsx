@@ -1,12 +1,13 @@
 import { Suspense } from "react";
-import type { Metadata } from "next";
 import { HuntCatalog, HuntCatalogFallback } from "@/components/hunts/HuntCatalog";
 import { hunts } from "@/lib/content";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
   title: "Infrastructure Hunt Catalog",
   description: "Filter twenty operational threat hunts by family, device, protocol, plane, severity, and telemetry.",
-};
+  path: "/hunts/",
+});
 
 export default function HuntsPage() {
   return (

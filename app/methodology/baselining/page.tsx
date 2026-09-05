@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
 import BaseliningContent from "@/content/methodology/baselining.mdx";
 import { methodologyEntries } from "@/data/methodology";
+import { createPageMetadata } from "@/lib/metadata";
 
 const entry = methodologyEntries[0];
 
-export const metadata: Metadata = { title: entry.title, description: entry.summary };
+export const metadata = createPageMetadata({ title: entry.title, description: entry.summary, path: "/methodology/baselining/" });
 
 export default function BaseliningPage() {
   return (

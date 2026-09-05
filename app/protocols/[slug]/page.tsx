@@ -8,6 +8,7 @@ import {
   getProtocolStaticParams,
   resolveProtocolRoute,
 } from "@/lib/protocol-routes";
+import { createPageMetadata } from "@/lib/metadata";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -21,15 +22,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const metadata = getProtocolRouteMetadata(slug);
   if (!metadata) return { title: "Protocol not found" };
-  return {
+  return createPageMetadata({
     title: metadata.title,
     description: metadata.description,
-    openGraph: {
-      title: metadata.title,
-      description: metadata.description,
-      type: "article",
-    },
-  };
+    path: `/protocols/${slug}/`,
+    type: "article",
+  });
 }
 
 function TextList({ items }: { items: readonly string[] }) {

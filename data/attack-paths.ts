@@ -22,7 +22,7 @@ const attackPathSeeds: AttackPath[] = [
       "Next, the actor establishes command access and inventories routes, neighbors, and trusted management paths.",
       "Finally, the appliance initiates an administrative session to an internal target, making the pivot appear to originate from trusted infrastructure.",
     ],
-    relatedHunts: [],
+    relatedHunts: ["firewall-to-router-ssh", "router-to-router-ssh", "device-to-device-https-administration"],
   },
   {
     id: "attack-path-credential-collection",
@@ -45,7 +45,7 @@ const attackPathSeeds: AttackPath[] = [
       "Collected material is transferred to another system using an available file-transfer or web channel.",
       "Recovered credentials are then reused against AAA, management, VPN, or neighboring infrastructure services.",
     ],
-    relatedHunts: [],
+    relatedHunts: ["unexpected-ldap-from-infrastructure", "packet-capture-started", "packet-capture-followed-by-file-transfer"],
   },
   {
     id: "attack-path-covert-tunnel",
@@ -68,7 +68,7 @@ const attackPathSeeds: AttackPath[] = [
       "A route, ACL, or policy selects traffic that the device normally forwards elsewhere.",
       "The device encapsulates that traffic and sends it to an actor-controlled endpoint, bypassing the expected inspection path.",
     ],
-    relatedHunts: [],
+    relatedHunts: ["unexpected-gre-tunnel", "new-ipsec-tunnel", "management-acl-modified"],
   },
   {
     id: "attack-path-telemetry-suppression",
@@ -91,7 +91,7 @@ const attackPathSeeds: AttackPath[] = [
       "The actor then conducts discovery, lateral movement, or tunneling while device-local evidence is missing or redirected.",
       "Upstream flow, passive sensors, AAA, configuration history, or neighboring controls reveal a telemetry gap or contradiction.",
     ],
-    relatedHunts: [],
+    relatedHunts: ["logging-destination-modified", "infrastructure-telemetry-gap"],
   },
 ];
 
