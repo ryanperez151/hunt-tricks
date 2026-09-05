@@ -32,3 +32,18 @@ Next 16 requires functional metadata routes to opt into static generation under 
 ## Concerns
 
 None. The research page links only to already validated HTTP(S) registry URLs, and no runtime service or contribution endpoint was introduced.
+
+## Fix round 1: deployment regressions
+
+- Replaced the extensionless `app/opengraph-image.tsx` metadata route with the force-static `app/opengraph-image.png/route.ts` route handler. Page metadata now references `/opengraph-image.png`.
+- Changed deployment-path deduplication from full-path equality to normalized segment-suffix comparison. A site URL ending in `/docs/guide/` and base path `/guide` now retains `/docs/guide/`; `/docs/`, `/guide`, and the near-match `/docs/my-guide/` retain their distinct expected behavior.
+- Added focused regressions for the `.png` URL and response MIME, parent-prefix, exact-base, absent-base, near-match suffix, and the unchanged 59-page inventory.
+
+Verification evidence:
+
+- `npm test -- tests/metadata.test.ts tests/open-graph-asset.test.ts tests/static-routes.test.ts` — 3 files, 13 tests passed.
+- A production build with `NEXT_PUBLIC_SITE_URL=https://docs.example.test/docs/guide/` and `NEXT_PUBLIC_BASE_PATH=/guide` completed in the disposable verification copy at `C:\Users\Mango\edgeTH\.task10-verify`; Next generated 65 routes including `/opengraph-image.png`.
+- Export audit confirmed 59 sitemap entries, no doubled `/docs/guide/guide/` prefix, matching canonical/robots/Open Graph URLs, a PNG signature, and 1200×630 dimensions.
+- Serving that export with the project's generic static server and requesting `HEAD /opengraph-image.png` returned `200 OK`, `Content-Disposition: inline; filename="opengraph-image.png"`, and `Content-Type: image/png`.
+
+The original generated directory `C:\Users\Mango\edgeTH\.worktrees\edge-threat-hunting-guide-mvp\out` remains locked at the directory level on Windows: both `Remove-Item` and `Rename-Item` report that another process is using it after its contents were removed. The owned audit-server Node processes (PIDs 25212 and 25228, started at 09:11) were stopped, the audit terminal session was exited, no listener remained on port 4173, and no remaining process command line referenced `serve out`, port 4173, or the locked path. Local `openfiles.exe` handle enumeration was unavailable with `Access is denied`, so no additional process was terminated. The successful verification copy uses a physical `node_modules`; Turbopack rejected an initial junction because it pointed outside the project root. Keep `.task10-verify` as a generated, disposable build environment until the original handle clears. A fresh copy/worktree with physical dependencies is the safe fallback for Task 11; do not broadly terminate unrelated Node or Codex processes.

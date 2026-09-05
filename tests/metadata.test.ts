@@ -6,7 +6,7 @@ afterEach(() => {
 });
 
 describe("public metadata URLs", () => {
-  test("builds canonical and Open Graph URLs from the deterministic fallback origin", () => {
+  test("builds canonical and filename-qualified Open Graph URLs from the deterministic fallback origin", () => {
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
     vi.stubEnv("NEXT_PUBLIC_BASE_PATH", "");
 
@@ -27,7 +27,7 @@ describe("public metadata URLs", () => {
         type: "article",
         url: "https://hunt-the-infrastructure.example/hunts/snmp-fan-out/",
         images: [{
-          url: "https://hunt-the-infrastructure.example/opengraph-image",
+          url: "https://hunt-the-infrastructure.example/opengraph-image.png",
           width: 1200,
           height: 630,
         }],
@@ -41,8 +41,8 @@ describe("public metadata URLs", () => {
 
     expect(getPublicUrl("/research")).toBe("https://docs.example.test/field-guide/research/");
     expect(getPublicUrl("/field-guide/about/")).toBe("https://docs.example.test/field-guide/about/");
-    expect(getPublicUrl("/opengraph-image", { trailingSlash: false }))
-      .toBe("https://docs.example.test/field-guide/opengraph-image");
+    expect(getPublicUrl("/opengraph-image.png"))
+      .toBe("https://docs.example.test/field-guide/opengraph-image.png");
   });
 
   test("appends a configured base path when the site URL contains only an origin", () => {
@@ -51,5 +51,37 @@ describe("public metadata URLs", () => {
 
     expect(getPublicUrl("/")).toBe("https://docs.example.test/field-guide/");
     expect(getPublicUrl("/protocols/snmp/")).toBe("https://docs.example.test/field-guide/protocols/snmp/");
+  });
+
+  test.each([
+    {
+      name: "parent prefix ending in the configured segment",
+      siteUrl: "https://docs.example.test/docs/guide/",
+      basePath: "/guide",
+      expected: "https://docs.example.test/docs/guide/research/",
+    },
+    {
+      name: "exact configured segment",
+      siteUrl: "https://docs.example.test/guide/",
+      basePath: "/guide",
+      expected: "https://docs.example.test/guide/research/",
+    },
+    {
+      name: "parent path without the configured segment",
+      siteUrl: "https://docs.example.test/docs/",
+      basePath: "/guide",
+      expected: "https://docs.example.test/docs/guide/research/",
+    },
+    {
+      name: "near-match suffix that is not the configured segment",
+      siteUrl: "https://docs.example.test/docs/my-guide/",
+      basePath: "/guide",
+      expected: "https://docs.example.test/docs/my-guide/guide/research/",
+    },
+  ])("adds the base path exactly once for $name", ({ siteUrl, basePath, expected }) => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", siteUrl);
+    vi.stubEnv("NEXT_PUBLIC_BASE_PATH", basePath);
+
+    expect(getPublicUrl("/research/")).toBe(expected);
   });
 });

@@ -20,6 +20,16 @@ function configuredBasePath(): string {
   return normalizePathname(process.env.NEXT_PUBLIC_BASE_PATH ?? "");
 }
 
+function hasPathSegmentSuffix(pathname: string, suffix: string): boolean {
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const suffixSegments = suffix.split("/").filter(Boolean);
+  if (suffixSegments.length > pathSegments.length) return false;
+
+  return suffixSegments.every((segment, index) => (
+    pathSegments[pathSegments.length - suffixSegments.length + index] === segment
+  ));
+}
+
 function deploymentBase(): URL {
   const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || DEFAULT_SITE_URL;
   const siteUrl = new URL(configuredUrl);
@@ -29,7 +39,7 @@ function deploymentBase(): URL {
 
   const sitePath = normalizePathname(siteUrl.pathname);
   const basePath = configuredBasePath();
-  const deploymentPath = !basePath || sitePath === basePath
+  const deploymentPath = !basePath || hasPathSegmentSuffix(sitePath, basePath)
     ? sitePath || basePath
     : `${sitePath}${basePath}`;
 
@@ -75,7 +85,7 @@ export function createPageMetadata({
       url: canonical,
       siteName: SITE_NAME,
       images: [{
-        url: getPublicUrl("/opengraph-image", { trailingSlash: false }),
+        url: getPublicUrl("/opengraph-image.png"),
         width: 1200,
         height: 630,
         alt: `${SITE_NAME} — ${SITE_DESCRIPTION}`,
