@@ -100,6 +100,57 @@ describe("global search dialog", () => {
     expect(input).toHaveAttribute("aria-activedescendant", options[0]!.id);
   });
 
+  test("keeps the selected option visible without moving focus or scrolling the page", async () => {
+    const user = userEvent.setup();
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+    const overflowAtScroll: string[] = [];
+    const scrollIntoView = vi.fn(function scrollSelectedOption(this: HTMLElement) {
+      overflowAtScroll.push(document.body.style.overflow);
+    });
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    try {
+      render(<SearchHarness />);
+      await user.click(screen.getByRole("button", { name: "Search guide" }));
+
+      const input = screen.getByRole("combobox", { name: "Search guide" });
+      const initialOption = screen.getAllByRole("option")[0]!;
+      expect(scrollIntoView).toHaveBeenLastCalledWith({ block: "nearest" });
+      expect(scrollIntoView.mock.instances.at(-1)).toBe(initialOption);
+      expect(overflowAtScroll.at(-1)).toBe("hidden");
+
+      scrollIntoView.mockClear();
+      const initialPageScroll = window.scrollY;
+      await user.keyboard("{ArrowDown}");
+      const arrowSelectedOption = screen.getAllByRole("option")[1]!;
+      expect(scrollIntoView).toHaveBeenLastCalledWith({ block: "nearest" });
+      expect(scrollIntoView.mock.instances.at(-1)).toBe(arrowSelectedOption);
+      expect(input).toHaveFocus();
+      expect(window.scrollY).toBe(initialPageScroll);
+
+      scrollIntoView.mockClear();
+      await user.clear(input);
+      await user.type(input, "independent");
+      const filteredOption = screen.getByRole("option", { name: /METHODOLOGY Require Independent Observation/ });
+      expect(scrollIntoView).toHaveBeenLastCalledWith({ block: "nearest" });
+      expect(scrollIntoView.mock.instances.at(-1)).toBe(filteredOption);
+      expect(input).toHaveFocus();
+      expect(window.scrollY).toBe(initialPageScroll);
+    } finally {
+      if (originalScrollIntoView) {
+        Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+          configurable: true,
+          value: originalScrollIntoView,
+        });
+      } else {
+        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView;
+      }
+    }
+  });
+
   test("activates the selected base-path-safe framework link with Enter and closes before navigation", async () => {
     const user = userEvent.setup();
     render(<SearchHarness />);

@@ -72,6 +72,26 @@ Exit code: 0
 
 Planned containing commit message: `feat: add query library and global guide search`. The exact containing commit hash is returned to the SDD controller after commit creation.
 
+## Independent review fix round 1
+
+The scoped review found one Important keyboard-navigation issue: changing `aria-activedescendant` did not ensure the active option remained visible inside the scrolling result list.
+
+A regression was added first for initial selection, ArrowDown movement, and replacement search results. It also asserts that the combobox retains focus and the page scroll position does not change. RED failed on the missing `scrollIntoView` call with 1 failed and 9 passed tests. A follow-up ordering assertion then failed because the initial call observed body overflow as empty rather than locked, proving that an initial scroll could run before modal setup. The dialog now locks the page first, then calls the selected option's `scrollIntoView({ block: "nearest" })` after initial render and whenever the active option or selected result changes; the call is feature-detected for non-browser environments such as jsdom.
+
+```text
+npm test -- tests/components/SearchDialog.test.tsx
+Test Files  1 passed (1)
+Tests       10 passed (10)
+
+npm run lint
+Exit code: 0
+
+npm run typecheck
+Exit code: 0
+```
+
+Per the fix-round scope, the unchanged full suite and production build were not repeated. The advisory duplicated search text remains intentionally deferred.
+
 ## Concerns
 
 No implementation blocker remains. Canonical URL and complete social metadata work remains intentionally deferred to Task 10. Git continues to warn that the user-level global ignore file is unreadable in this sandbox; that does not affect repository state or verification.

@@ -32,6 +32,7 @@ export function SearchDialog({ entries, onClose, onActivate }: SearchDialogProps
   const inputRef = useRef<HTMLInputElement>(null);
   const results = useMemo(() => searchGuide(query, entries), [entries, query]);
   const selectedIndex = results.length ? Math.min(activeIndex, results.length - 1) : -1;
+  const selectedResult = selectedIndex >= 0 ? results[selectedIndex] : undefined;
   const activeDescendant = selectedIndex >= 0 ? `${idPrefix}-option-${selectedIndex}` : undefined;
 
   useEffect(() => {
@@ -91,6 +92,11 @@ export function SearchDialog({ entries, onClose, onActivate }: SearchDialogProps
       }
     };
   }, [onClose]);
+
+  useEffect(() => {
+    if (!activeDescendant) return;
+    document.getElementById(activeDescendant)?.scrollIntoView?.({ block: "nearest" });
+  }, [activeDescendant, selectedResult?.id]);
 
   function moveActive(direction: -1 | 1) {
     if (!results.length) return;
