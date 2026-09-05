@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MobileNavigation } from "@/components/layout/MobileNavigation";
+import { SearchTrigger } from "@/components/search/SearchTrigger";
 import { navigation } from "@/data/navigation";
 
 export function Header() {
@@ -22,6 +23,7 @@ export function Header() {
             ))}
           </ul>
         </nav>
+        <SearchTrigger />
         <MobileNavigation />
       </div>
     </header>
