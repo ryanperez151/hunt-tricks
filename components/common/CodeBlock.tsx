@@ -8,7 +8,13 @@ export function CodeBlock({ raw, highlightedHtml }: { raw: string; highlightedHt
         <span>Query example</span>
         <CopyButton label="Copy query" value={raw} />
       </div>
-      <div className="code-block__source" dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
+      <div
+        aria-label="Query text. Scroll horizontally to view long lines."
+        className="code-block__source"
+        dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+        role="region"
+        tabIndex={0}
+      />
       <p className="adaptation-note">Adapt field names and data models to your environment.</p>
     </section>
   );

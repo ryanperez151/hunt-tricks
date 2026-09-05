@@ -92,8 +92,13 @@ export function NetworkFlow({ title, nodes, edges, textAlternative }: NetworkFlo
   return (
     <figure className="network-flow" aria-labelledby={`${descriptionId}-title`}>
       <figcaption id={`${descriptionId}-title`}>{title}</figcaption>
-      <div className="network-flow__canvas" aria-hidden="true">
-        <svg height={height} style={{ height, width }} viewBox={`0 0 ${width} ${height}`} width={width} role="img">
+      <div
+        aria-label={`${title} diagram. Scroll horizontally to view the complete flow.`}
+        className="network-flow__canvas"
+        role="region"
+        tabIndex={0}
+      >
+        <svg aria-hidden="true" height={height} style={{ height, width }} viewBox={`0 0 ${width} ${height}`} width={width}>
           <defs><marker id={`${descriptionId}-arrow`} markerHeight="9" markerWidth="9" orient="auto" refX="8" refY="4.5"><path d="M0,0 L9,4.5 L0,9 Z" /></marker></defs>
           {graph.edges.map((edge, index) => {
             const source = positionedById.get(edge.source)!;
