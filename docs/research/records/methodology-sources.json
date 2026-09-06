@@ -1,0 +1,791 @@
+[
+  {
+    "id": "research-hunting-maturity-model-2015",
+    "title": "A Simple Hunting Maturity Model",
+    "organization": "David J. Bianco",
+    "publishedAt": "2015-10-11",
+    "affectedTechnology": ["Security operations programs", "Detection and hunting capability"],
+    "relevantBehaviors": ["Program maturity assessment", "Data collection breadth", "Frequency and stack analysis", "Automation of proven procedures"],
+    "relatedHunts": [],
+    "sourceUrl": "https://detect-respond.blogspot.com/2015/10/a-simple-hunting-maturity-model.html",
+    "summary": "Bianco defines five hunting maturity levels from HMM0, where analysts only resolve tool-generated alerts and no hunting occurs, through HMM2, where teams apply published procedures over broad enterprise data using frequency analysis, to HMM4, where proven hunts are automated into continuous detection so analysts can develop new techniques.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Hunting begins only once analysts search historical data beyond tool-generated alerts; alert triage alone is HMM0 and is not hunting.",
+      "The author places frequency-based analysis over broad enterprise data at HMM2 and describes that level as a realistic starting point for a new hunting program.",
+      "Converting a successful, repeatable hunt into automated detection is the defining step from HMM3 to HMM4."
+    ],
+    "limitations": [
+      "A self-assessment maturity scale, not a measured study; the levels describe capability, not detection efficacy, and no data links a level to outcomes.",
+      "Level definitions are qualitative. Two organizations can place themselves at the same level with very different data coverage."
+    ]
+  },
+  {
+    "id": "research-pyramid-of-pain-2013",
+    "title": "The Pyramid of Pain",
+    "organization": "David J. Bianco",
+    "publishedAt": "2013-03-01",
+    "affectedTechnology": ["Indicator management", "Detection engineering"],
+    "relevantBehaviors": ["Indicator selection", "Behavioral detection", "Adversary cost modeling"],
+    "relatedHunts": [],
+    "sourceUrl": "https://detect-respond.blogspot.com/2013/03/the-pyramid-of-pain.html",
+    "summary": "Bianco ranks indicator types by the cost imposed on an adversary when a defender detects them, from hash values and IP addresses at the base through network and host artifacts and tools to TTPs at the apex, arguing that detecting behavior forces adversaries to learn new behaviors rather than change an easily replaced value.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Indicator types differ in how much effort an adversary must spend to evade them; addresses and hashes can be changed with very little effort.",
+      "Detecting at the TTP level forces the most expensive adversary response, because behavior must change rather than a value be swapped."
+    ],
+    "limitations": [
+      "A conceptual cost model based on practitioner experience, with no measurement of actual adversary re-tooling cost.",
+      "Ranking says nothing about detectability or false-positive rate: TTP-level detection is the most durable and also usually the noisiest."
+    ]
+  },
+  {
+    "id": "research-peak-framework-2023",
+    "title": "Introducing the PEAK Threat Hunting Framework",
+    "organization": "Splunk",
+    "publishedAt": "2023-04-18",
+    "affectedTechnology": ["Threat hunting programs", "Security analytics platforms"],
+    "relevantBehaviors": ["Hypothesis-driven hunting", "Baseline and exploratory data analysis", "Model-assisted hunting", "Hunt documentation and handoff"],
+    "relatedHunts": [],
+    "sourceUrl": "https://www.splunk.com/en_us/blog/security/peak-threat-hunting-framework.html",
+    "summary": "Bianco's PEAK framework (Prepare, Execute, and Act with Knowledge) structures each hunt into three stages and names three hunt types: hypothesis-driven hunts, baseline or exploratory data analysis hunts that first establish what normal looks like, and model-assisted hunts that use machine learning to describe behavior.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Baseline hunting is a distinct, named hunt type whose first task is characterizing normal behavior rather than searching for a known bad pattern.",
+      "The framework treats documentation, automation, and knowledge transfer in the Act stage as part of the hunt, not optional follow-up."
+    ],
+    "limitations": [
+      "Vendor-published process guidance. It prescribes structure and does not measure hunt yield or compare against other methodologies.",
+      "Examples assume a platform where broad historical data is already searchable."
+    ]
+  },
+  {
+    "id": "research-tahiti-2018",
+    "title": "TaHiTI: a threat hunting methodology",
+    "organization": "Betaalvereniging Nederland and the Dutch financial sector FI-ISAC",
+    "publishedAt": "2018",
+    "affectedTechnology": ["Threat hunting programs", "Threat intelligence functions"],
+    "relevantBehaviors": ["Hunt triggering from intelligence", "Hunt backlog management", "Investigation abstraction and documentation"],
+    "relatedHunts": [],
+    "sourceUrl": "https://www.nvb.nl/media/rygbrwew/def-tahiti-threat-hunting-methodology.pdf",
+    "summary": "TaHiTI (Targeted Hunting integrating Threat Intelligence) is a joint methodology from the Dutch financial sector defining three phases — Initiate, Hunt, Finalize — across six steps. A trigger is converted into an abstract of the hunting investigation and placed on a hunting backlog, and threat intelligence is used both as a hunt source and as enrichment throughout the investigation.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "The methodology structures hunting as three phases and six steps, with hunts recorded as investigation abstracts on a managed backlog rather than started ad hoc.",
+      "It cites a 2017 SANS survey finding that only a small minority of hunting organizations had adopted a published external methodology, which motivated the joint effort."
+    ],
+    "limitations": [
+      "Sector-specific process guidance from 2018 with no published effectiveness evaluation.",
+      "The public whitepaper is an abridged version of the full documentation; the linked supporting tooling is separate."
+    ]
+  },
+  {
+    "id": "research-ttp-based-hunting-2020",
+    "title": "TTP-Based Hunting",
+    "organization": "MITRE",
+    "publishedAt": "2020-07-10",
+    "affectedTechnology": ["Enterprise telemetry", "Detection analytics", "MITRE ATT&CK"],
+    "relevantBehaviors": ["Technique-driven data collection", "Analytic development", "Hunting analysis space definition"],
+    "relatedHunts": [],
+    "sourceUrl": "https://www.mitre.org/news-insights/publication/ttp-based-hunting",
+    "summary": "Daszczyszak, Ellis, Luke, and Whitley describe a methodology, created for U.S. Cyber Command's Cyber National Mission Force, for hunting on adversary TTPs from ATT&CK using a concept of hunting analysis space. The paper argues that the technology adversaries operate on constrains the number of post-compromise techniques available, so filtering data by technique knowledge is an effective detection method.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Collecting and filtering data based on knowledge of adversary TTPs is presented as an effective method for detecting malicious activity, supported by industry, MITRE, and government experimentation.",
+      "The technique space is constrained by the victim's technology, so adversaries must reuse known techniques or spend significant resources developing novel ones.",
+      "The described procedure is intended to be operating-system agnostic."
+    ],
+    "limitations": [
+      "Methodology guidance, not a controlled evaluation; the supporting experimentation is referenced rather than reported with measurements.",
+      "Written for a government mission context with corresponding data access; enterprise coverage of the same techniques varies widely."
+    ]
+  },
+  {
+    "id": "research-kill-chain-2011",
+    "title": "Intelligence-Driven Computer Network Defense Informed by Analysis of Adversary Campaigns and Intrusion Kill Chains",
+    "organization": "Lockheed Martin",
+    "publishedAt": "2011",
+    "affectedTechnology": ["Enterprise network defense", "Intrusion analysis"],
+    "relevantBehaviors": ["Phased intrusion analysis", "Indicator lifecycle management", "Campaign-level correlation"],
+    "relatedHunts": [],
+    "sourceUrl": "https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/LM-White-Paper-Intel-Driven-Defense.pdf",
+    "summary": "Hutchins, Cloppert, and Amin model intrusions as a kill chain of ordered phases and argue that defenders should analyze intrusions as campaigns rather than isolated events, using indicators that recur across intrusions. The paper describes an indicator lifecycle and illustrates the model with a case study of three intrusion attempts observed by LM-CIRT in March 2009.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Modeling an intrusion as ordered phases lets defenders act at multiple points rather than only at the final effect.",
+      "Indicators have a lifecycle with states and transitions, and can be reused to link separate intrusion attempts into a campaign.",
+      "The case study reports three intrusion attempts by one adversary observed at a single organization."
+    ],
+    "limitations": [
+      "The case study is a small, single-organization sample from 2009 and does not measure the model's general detection performance.",
+      "The linear phase model fits externally initiated intrusions best; it maps less cleanly onto valid-credential abuse, insider activity, and infrastructure already inside the trust boundary."
+    ]
+  },
+  {
+    "id": "research-diamond-model-2013",
+    "title": "The Diamond Model of Intrusion Analysis",
+    "organization": "Center for Cyber Intelligence Analysis and Threat Research",
+    "publishedAt": "2013",
+    "affectedTechnology": ["Intrusion analysis", "Threat intelligence tradecraft"],
+    "relevantBehaviors": ["Event decomposition", "Analytic pivoting", "Activity thread construction"],
+    "relatedHunts": [],
+    "sourceUrl": "https://www.activeresponse.org/wp-content/uploads/2013/07/diamond.pdf",
+    "summary": "Caltagirone, Pendergast, and Betz define the atomic element of intrusion activity as an event composed of four edge-connected core features — adversary, capability, infrastructure, and victim — plus meta-features that let analysts link events into activity threads and groups. Analysts pivot from any known feature to discover the others.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Every intrusion event can be decomposed into adversary, capability, infrastructure, and victim, and those features are related rather than independent.",
+      "Knowing one feature enables analytic pivoting to discover others and to link separate events into activity threads."
+    ],
+    "limitations": [
+      "An analytic model derived from practitioner experience; the paper does not measure analytic accuracy or false attribution rates.",
+      "Pivoting to the adversary feature is the weakest link in practice and is where attribution error concentrates."
+    ]
+  },
+  {
+    "id": "research-heuer-psychology-1999",
+    "title": "Psychology of Intelligence Analysis",
+    "organization": "CIA Center for the Study of Intelligence",
+    "publishedAt": "1999",
+    "affectedTechnology": ["Analytic tradecraft", "Hypothesis evaluation"],
+    "relevantBehaviors": ["Competing hypothesis evaluation", "Cognitive bias mitigation", "Evidence diagnosticity assessment"],
+    "relatedHunts": [],
+    "sourceUrl": "https://www.cia.gov/resources/csi/books-monographs/psychology-of-intelligence-analysis-2/",
+    "summary": "Heuer applies cognitive psychology to analysis under incomplete and ambiguous information, arguing that analysts should be self-conscious about their reasoning process, examine competing hypotheses rather than confirming a favored one, and weigh evidence by how well it discriminates between hypotheses.",
+    "evidenceType": "historical-research",
+    "supportedClaims": [
+      "Analysts working with incomplete and ambiguous information should evaluate their own reasoning process, not only their conclusions.",
+      "Evidence that is consistent with every hypothesis has little diagnostic value, so hypotheses should be evaluated against each other rather than individually confirmed."
+    ],
+    "limitations": [
+      "Written for intelligence analysis in 1999, not for security telemetry; the transfer is the reasoning discipline, not any specific procedure.",
+      "Structured analytic techniques reduce, but do not eliminate, bias; the book does not quantify improvement in a security-operations context."
+    ]
+  },
+  {
+    "id": "research-ads-framework",
+    "title": "Alerting and Detection Strategy Framework",
+    "organization": "Palantir",
+    "publishedAt": "2026",
+    "affectedTechnology": ["Detection engineering", "Alert documentation"],
+    "relevantBehaviors": ["Detection documentation", "Blind-spot declaration", "False-positive enumeration", "Detection validation"],
+    "relatedHunts": [],
+    "sourceUrl": "https://github.com/palantir/alerting-detection-strategy-framework",
+    "summary": "Palantir's ADS framework supplies a template requiring nine sections for any detection entering production: goal, categorization, strategy abstract, technical context, blind spots and assumptions, false positives, validation, priority, and response. The framework's stated aim is durable detections and reduced alert fatigue through peer review before deployment.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "The framework requires a detection author to document blind spots and assumptions and to enumerate anticipated false positives before the detection reaches production.",
+      "It requires a validation procedure demonstrating the detection fires on the behavior it claims to cover."
+    ],
+    "limitations": [
+      "A documentation standard, not evidence about detection accuracy; completing the template does not make a detection correct.",
+      "Living repository. The recorded date is the corpus verification date, not a publication date."
+    ]
+  },
+  {
+    "id": "research-attack-design-philosophy-2020",
+    "title": "MITRE ATT&CK: Design and Philosophy",
+    "organization": "MITRE",
+    "publishedAt": "2020-03-31",
+    "affectedTechnology": ["MITRE ATT&CK", "Behavioral threat modeling"],
+    "relevantBehaviors": ["Technique abstraction", "Behavior-based classification", "Knowledge-base maintenance"],
+    "relatedHunts": [],
+    "sourceUrl": "https://www.mitre.org/news-insights/publication/mitre-attck-design-and-philosophy",
+    "summary": "Strom, Applebaum, Miller, Nickels, Pennington, and Thomas document the motivation, structure, and design philosophy of ATT&CK, including how tactics and techniques are abstracted from observed adversary behavior and how the knowledge base is intended to be used and maintained.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "ATT&CK organizes adversary behavior into tactics representing objectives and techniques representing the means of achieving them, abstracted from reporting on observed activity.",
+      "The knowledge base is explicitly a living structure whose contents and organization change as reporting and understanding change."
+    ],
+    "limitations": [
+      "Describes the design as of March 2020. The taxonomy has since been restructured — see the corpus note on ATT&CK v19 tactic and technique renumbering — so identifiers and tactic names in older mappings must be re-checked against the current knowledge base.",
+      "ATT&CK reflects publicly reported behavior; absence of a technique is not evidence adversaries do not use it."
+    ]
+  },
+  {
+    "id": "research-anderson-1980",
+    "title": "Computer Security Threat Monitoring and Surveillance",
+    "organization": "James P. Anderson Co.",
+    "publishedAt": "1980-04",
+    "affectedTechnology": ["Audit trails", "Multi-user computing systems"],
+    "relevantBehaviors": ["Audit record collection", "Statistical profiling of normal use", "Detection of abnormal usage"],
+    "relatedHunts": ["infrastructure-telemetry-gap"],
+    "sourceUrl": "https://csrc.nist.gov/files/pubs/conference/1998/10/08/proceedings-of-the-21st-nissc-1998/final/docs/early-cs-papers/ande80.pdf",
+    "summary": "Anderson's report — originally dated 26 February 1980 and revised 15 April 1980 — proposes improving security auditing and surveillance by recording detailed trace data about user, job, and device activity and comparing observed activity against expectations about normal use. It is the founding statement of audit-based intrusion detection.",
+    "evidenceType": "historical-research",
+    "supportedClaims": [
+      "Detecting misuse from recorded system activity requires deliberately designed trace records; ordinary accounting logs collected weekly or monthly were insufficient for the purpose.",
+      "Distinguishing misuse from legitimate activity depends on an explicit expectation of what normal use looks like for a given user or job."
+    ],
+    "limitations": [
+      "A 1980 study of mainframe audit trails. The enduring mechanism is the requirement for purpose-designed telemetry and an explicit normal; nothing in it validates a modern field, product, or threshold.",
+      "Predates networked, cloud, and appliance telemetry entirely."
+    ]
+  },
+  {
+    "id": "research-denning-1987",
+    "title": "An Intrusion-Detection Model",
+    "organization": "IEEE Transactions on Software Engineering",
+    "publishedAt": "1987-02",
+    "affectedTechnology": ["Audit records", "Anomaly detection systems"],
+    "relevantBehaviors": ["Subject-object profiling", "Statistical metrics of behavior", "Anomaly rule generation"],
+    "relatedHunts": [],
+    "sourceUrl": "https://ieeexplore.ieee.org/document/1702202",
+    "summary": "Denning models a real-time intrusion-detection expert system on the hypothesis that security violations can be detected by monitoring audit records for abnormal patterns of system usage. The model defines profiles describing the behavior of subjects with respect to objects using statistical metrics, plus rules for updating profiles from audit records and flagging anomalies, independent of any particular system or vulnerability.",
+    "evidenceType": "historical-research",
+    "supportedClaims": [
+      "Anomaly detection can be specified independently of any particular system, application, vulnerability, or intrusion type by modeling subject-to-object behavior as profiles with statistical metrics.",
+      "Profiles must be learned and updated from observed audit records rather than fixed in advance."
+    ],
+    "limitations": [
+      "A 1987 model with no evaluation against modern enterprise telemetry; it establishes the profiling concept, not any current baseline window, metric, or scoring threshold.",
+      "The paper's own framing is a hypothesis about detectability, not a measurement of detection rates."
+    ]
+  },
+  {
+    "id": "research-nist-800-94-2007",
+    "title": "Guide to Intrusion Detection and Prevention Systems (IDPS)",
+    "organization": "NIST",
+    "publishedAt": "2007-02",
+    "affectedTechnology": ["Network-based IDPS", "Wireless IDPS", "Network behavior analysis", "Host-based IDPS"],
+    "relevantBehaviors": ["Anomaly-based detection", "Profile construction and drift", "Detection tuning"],
+    "relatedHunts": [],
+    "sourceUrl": "https://csrc.nist.gov/pubs/sp/800/94/final",
+    "summary": "NIST SP 800-94, by Karen Scarfone and Peter Mell, gives practical guidance for four classes of intrusion detection and prevention system: network-based, wireless, network behavior analysis, and host-based, covering detection methodologies, deployment, and tuning.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Network behavior analysis is treated as its own IDPS class alongside signature-oriented network and host sensors.",
+      "The document is organized around the premise that each detection class covers a different portion of activity and that deployments combine them."
+    ],
+    "limitations": [
+      "Published in 2007; product architectures, encrypted-traffic visibility, and cloud telemetry have changed substantially since.",
+      "Guidance for engineering and deploying detection systems, not evidence about the prevalence or detectability of any specific threat."
+    ]
+  },
+  {
+    "id": "research-nist-800-137-2011",
+    "title": "Information Security Continuous Monitoring (ISCM) for Federal Information Systems and Organizations",
+    "organization": "NIST",
+    "publishedAt": "2011-09",
+    "affectedTechnology": ["Continuous monitoring programs", "Security control assessment"],
+    "relevantBehaviors": ["Asset and threat visibility", "Monitoring frequency selection", "Control effectiveness measurement"],
+    "relatedHunts": ["infrastructure-telemetry-gap"],
+    "sourceUrl": "https://csrc.nist.gov/pubs/sp/800/137/final",
+    "summary": "NIST SP 800-137 defines information security continuous monitoring as maintaining ongoing awareness of information security, vulnerabilities, and threats to support risk decisions, providing visibility into assets, awareness of threats and vulnerabilities, and visibility into the effectiveness of deployed controls.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Monitoring is defined to include visibility into organizational assets, not only into events, so an incomplete asset picture limits the value of the event stream.",
+      "Monitoring frequency is a deliberate, risk-driven choice rather than a fixed property of a tool."
+    ],
+    "limitations": [
+      "Written for federal system authorization and risk management; it does not prescribe hunting analytics or telemetry fields.",
+      "Published 2011. Cloud and SaaS control monitoring models arrived later and are not covered."
+    ]
+  },
+  {
+    "id": "research-nist-800-128-2011",
+    "title": "Guide for Security-Focused Configuration Management of Information Systems",
+    "organization": "NIST",
+    "publishedAt": "2011-08",
+    "affectedTechnology": ["Configuration management", "Secure configuration baselines"],
+    "relevantBehaviors": ["Baseline configuration definition", "Change control", "Deviation monitoring"],
+    "relatedHunts": ["management-acl-modified", "logging-destination-modified"],
+    "sourceUrl": "https://csrc.nist.gov/pubs/sp/800/128/final",
+    "summary": "NIST SP 800-128 defines security-focused configuration management (SecCM) for managing and monitoring system configurations, establishing approved baseline configurations and controlling and monitoring change against them.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "An approved configuration baseline is a precondition for treating a configuration change as a deviation worth investigating.",
+      "Configuration change control and configuration monitoring are distinct activities; recording an approved change is what makes an unapproved one visible."
+    ],
+    "limitations": [
+      "The original August 2011 publication was withdrawn on 10 October 2019 and superseded by Update 1; cite and read the current version.",
+      "Process guidance for configuration management, not evidence that any specific configuration change indicates compromise."
+    ]
+  },
+  {
+    "id": "research-cis-control-1",
+    "title": "CIS Critical Security Control 1: Inventory and Control of Enterprise Assets",
+    "organization": "Center for Internet Security",
+    "publishedAt": "2026",
+    "affectedTechnology": ["Enterprise asset inventory", "End-user, network, IoT, and server assets"],
+    "relevantBehaviors": ["Asset discovery", "Unauthorized asset identification", "Inventory maintenance"],
+    "relatedHunts": ["new-infrastructure-external-destination"],
+    "sourceUrl": "https://www.cisecurity.org/controls/inventory-and-control-of-enterprise-assets",
+    "summary": "CIS Control 1 (v8.1) requires organizations to actively inventory, track, and correct all enterprise assets across physical, virtual, remote, and cloud environments, in order to know what must be monitored and protected and to identify unauthorized and unmanaged assets for removal or remediation.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Asset inventory is positioned as the foundational control because subsequent monitoring and protection depend on knowing which assets exist.",
+      "Identifying unauthorized and unmanaged assets is an explicit objective of the control, not a by-product."
+    ],
+    "limitations": [
+      "A control specification, not evidence about detection effectiveness.",
+      "Living resource. The recorded date is the corpus verification date; the version verified was v8.1."
+    ]
+  },
+  {
+    "id": "research-axelsson-2000",
+    "title": "The Base-Rate Fallacy and the Difficulty of Intrusion Detection",
+    "organization": "ACM Transactions on Information and System Security",
+    "publishedAt": "2000-08",
+    "affectedTechnology": ["Intrusion detection systems", "Alert triage"],
+    "relevantBehaviors": ["False-positive rate analysis", "Alert prioritization", "Detection efficacy assessment"],
+    "relatedHunts": [],
+    "sourceUrl": "https://dl.acm.org/doi/10.1145/357830.357849",
+    "summary": "Axelsson applies Bayesian reasoning to intrusion detection and shows that when intrusions are extremely rare relative to benign events, the probability that an alert represents a real intrusion is dominated by the false-positive rate. The practical consequence is that detection efficacy is limited by the false alarm rate, not by the detection rate.",
+    "evidenceType": "historical-research",
+    "supportedClaims": [
+      "When the base rate of intrusive activity is very low, even a small false-positive rate makes most alerts false, regardless of a high true-positive rate.",
+      "Detection performance must therefore be judged by the probability that an alert is a true intrusion, not by detection rate alone."
+    ],
+    "limitations": [
+      "An analytical argument using illustrative rates rather than a measurement of any deployed system.",
+      "The result constrains how alerts should be interpreted; it does not prescribe a threshold or claim any particular detector is unusable."
+    ]
+  },
+  {
+    "id": "research-closed-world-2010",
+    "title": "Outside the Closed World: On Using Machine Learning for Network Intrusion Detection",
+    "organization": "IEEE Symposium on Security and Privacy",
+    "publishedAt": "2010",
+    "affectedTechnology": ["Network intrusion detection", "Anomaly detection", "Machine learning"],
+    "relevantBehaviors": ["Anomaly modeling", "Evaluation design", "Interpretation of model output"],
+    "relatedHunts": [],
+    "sourceUrl": "https://www.icir.org/robin/papers/oakland10-ml.pdf",
+    "summary": "Sommer and Paxson examine why machine learning is rarely deployed operationally for network intrusion detection despite extensive academic work. They argue that finding attacks is fundamentally different from the classification problems where machine learning succeeds, and identify challenges including the semantic gap between an anomaly and an actionable finding, the high cost of errors, the variability of normal traffic, and the difficulty of sound evaluation.",
+    "evidenceType": "historical-research",
+    "supportedClaims": [
+      "Anomaly detection identifies deviation from a learned profile of benign traffic, which is not the same as identifying an attack; closing that semantic gap requires domain interpretation.",
+      "Network traffic exhibits far more variability than the closed-world settings where machine learning typically performs well, which undermines profiles of normality.",
+      "Sound evaluation of intrusion-detection models is itself difficult and is a recurring weakness in the literature."
+    ],
+    "limitations": [
+      "A position and analysis paper from 2010, not a benchmark; it does not claim machine learning cannot work, but that the problem framing is usually wrong.",
+      "Predates current model families. The enduring transfer is the semantic gap and evaluation critique, not any conclusion about specific modern techniques."
+    ]
+  },
+  {
+    "id": "research-spearphish-scoring-2017",
+    "title": "Detecting Credential Spearphishing in Enterprise Settings",
+    "organization": "USENIX Security Symposium",
+    "publishedAt": "2017",
+    "affectedTechnology": ["Enterprise email", "Anomaly scoring", "Alert triage"],
+    "relevantBehaviors": ["Rare-event ranking", "Analyst budget management", "Feature-based prioritization"],
+    "relatedHunts": ["trusted-vendor-phishing-propagation", "distributed-password-spray"],
+    "sourceUrl": "https://www.usenix.org/conference/usenixsecurity17/technical-sessions/presentation/ho",
+    "summary": "Ho, Sharma, Javed, Paxson, and Wagner detect credential spearphishing using features derived from the fundamental characteristics of the attack combined with a non-parametric anomaly scoring technique for ranking alerts. Evaluated on over 370 million emails from one large enterprise, the system detected known campaigns plus two previously unknown successful attacks, at a volume one analyst could review in under 15 minutes per month.",
+    "evidenceType": "experiment",
+    "supportedClaims": [
+      "The authors report that standard anomaly detection techniques using the same features would need to generate at least nine times as many alerts to find the same number of attacks as their directed scoring method.",
+      "A detector's practicality was assessed by the analyst time required to review a month of alerts, treating the alert budget as a design constraint.",
+      "The evaluation covered a multi-year dataset of over 370 million emails from a single large enterprise."
+    ],
+    "limitations": [
+      "Results come from one enterprise's email corpus; the feature set is specific to credential spearphishing and does not transfer unchanged to other telemetry.",
+      "The system missed one instance of a known successful campaign, so the reported detection is not complete coverage."
+    ]
+  },
+  {
+    "id": "research-beehive-2013",
+    "title": "Beehive: Large-Scale Log Analysis for Detecting Suspicious Activity in Enterprise Networks",
+    "organization": "Annual Computer Security Applications Conference",
+    "publishedAt": "2013-12",
+    "affectedTechnology": ["Enterprise security logs", "Log normalization", "Behavioral clustering"],
+    "relevantBehaviors": ["Signature-free detection", "Host behavior clustering", "Policy-violation discovery"],
+    "relatedHunts": [],
+    "sourceUrl": "https://dl.acm.org/doi/10.1145/2523649.2523670",
+    "summary": "Yen, Oprea, Onarlioglu, Leetham, Robertson, Juels, and Kirda present Beehive, a system that mines heterogeneous, noisy logs from many security products across a large enterprise to surface malicious events and policy violations that existing signature-based tooling did not report.",
+    "evidenceType": "experiment",
+    "supportedClaims": [
+      "Behavioral analysis over existing enterprise log data surfaced incidents and policy violations that the deployed signature-based products did not flag.",
+      "Real enterprise logs from heterogeneous products require substantial normalization before behavioral analysis is possible."
+    ],
+    "limitations": [
+      "A single-enterprise evaluation from 2013; detection counts do not generalize to other environments or current log sources.",
+      "Findings include policy violations as well as malicious activity, so reported detections are not all security incidents."
+    ]
+  },
+  {
+    "id": "research-insertion-evasion-1998",
+    "title": "Insertion, Evasion, and Denial of Service: Eluding Network Intrusion Detection",
+    "organization": "Secure Networks, Inc.",
+    "publishedAt": "1998-01",
+    "affectedTechnology": ["Network intrusion detection systems", "TCP/IP stacks"],
+    "relevantBehaviors": ["Sensor-endpoint state divergence", "Protocol ambiguity exploitation", "Detection evasion"],
+    "relatedHunts": ["infrastructure-telemetry-gap"],
+    "sourceUrl": "https://insecure.org/stf/secnet_ids/secnet_ids.pdf",
+    "summary": "Ptacek and Newsham show that a passive network monitor and the endpoint it protects can reconstruct different data from the same packet stream. Insertion makes the monitor accept packets the endpoint rejects; evasion makes the endpoint accept packets the monitor rejects. Both arise because the monitor must infer how a remote stack will interpret ambiguous traffic.",
+    "evidenceType": "historical-research",
+    "supportedClaims": [
+      "A monitoring system's reconstruction of traffic can differ from the endpoint's, so an observation is a model of the endpoint's state rather than the state itself.",
+      "The divergence is a structural consequence of inferring remote stack behavior, not merely an implementation defect in a particular product."
+    ],
+    "limitations": [
+      "A 1998 analysis of then-current NIDS implementations; specific evasions have been addressed and modern sensors normalize traffic.",
+      "The enduring mechanism is that one vantage point yields an inference, not ground truth. It does not validate any current sensor comparison or threshold."
+    ]
+  },
+  {
+    "id": "research-rfc3164-2001",
+    "title": "RFC 3164: The BSD Syslog Protocol",
+    "organization": "IETF",
+    "publishedAt": "2001-08",
+    "affectedTechnology": ["Syslog", "Network device logging"],
+    "relevantBehaviors": ["Log transport loss", "Timestamp unreliability", "Sender spoofing"],
+    "relatedHunts": ["logging-destination-modified", "infrastructure-telemetry-gap"],
+    "sourceUrl": "https://www.rfc-editor.org/rfc/rfc3164",
+    "summary": "Lonvick's informational RFC documents observed BSD syslog behavior. It states there is no mechanism in the syslog process or protocol to ensure delivery and that messages may be lost over UDP, that a device whose date is not correctly set can still send valid syslog messages, and that a receiver cannot verify a message actually came from the reported sender.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Classic syslog provides no delivery guarantee; messages can be lost in transit without any indication to the collector.",
+      "A syslog message's timestamp reflects the sending device's clock, which may be wrong, and the receiver cannot confirm the reported sender.",
+      "Messages may be damaged or maliciously modified in transit without built-in integrity checking."
+    ],
+    "limitations": [
+      "Informational and obsoleted by RFC 5424; many deployments now use TLS-based transport with different properties.",
+      "Documents protocol properties, not the reliability of any particular vendor's logging implementation."
+    ]
+  },
+  {
+    "id": "research-rfc5424-2009",
+    "title": "RFC 5424: The Syslog Protocol",
+    "organization": "IETF",
+    "publishedAt": "2009-03",
+    "affectedTechnology": ["Syslog", "Centralized log collection"],
+    "relevantBehaviors": ["Timestamp quality reporting", "Clock synchronization signaling", "Log transport semantics"],
+    "relatedHunts": ["logging-destination-modified", "infrastructure-telemetry-gap"],
+    "sourceUrl": "https://www.rfc-editor.org/rfc/rfc5424",
+    "summary": "Gerhards' standards-track syslog specification requires RFC 3339 timestamps, defines an optional timeQuality structured data element carrying tzKnown, isSynced, and syncAccuracy so an originator can declare confidence in its own clock, and states that syslog is conceptually a pure simplex protocol with no acknowledgment of message delivery.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "The protocol provides an explicit way for a sender to declare whether its clock is synchronized and how accurate it claims to be, which means unsynchronized senders are an anticipated normal condition.",
+      "An originator unable to obtain system time sends the NILVALUE rather than a timestamp.",
+      "The protocol itself acknowledges no message delivery."
+    ],
+    "limitations": [
+      "Specifies the protocol, not what devices actually populate; timeQuality is optional and frequently absent in practice.",
+      "Says nothing about whether the logged content is complete or truthful, only about how it is framed and carried."
+    ]
+  },
+  {
+    "id": "research-rfc7011-2013",
+    "title": "RFC 7011: Specification of the IP Flow Information Export (IPFIX) Protocol for the Exchange of Flow Information",
+    "organization": "IETF",
+    "publishedAt": "2013-09",
+    "affectedTechnology": ["IPFIX", "NetFlow-style flow telemetry"],
+    "relevantBehaviors": ["Flow record export", "Sequence-gap detection", "Metering process loss reporting"],
+    "relatedHunts": ["infrastructure-beaconing", "new-infrastructure-external-destination", "infrastructure-telemetry-gap"],
+    "sourceUrl": "https://www.rfc-editor.org/rfc/rfc7011",
+    "summary": "Claise, Trammell, and Aitken specify IPFIX (Internet Standard 77), defining a flow record as information about a flow observed at an observation point. The specification supports SCTP, TCP, and UDP transport, uses an incremental sequence number so collectors can detect missing data records, and provides options templates through which the metering process can report dropped packets and ignored octets.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Flow records describe traffic observed at a defined observation point, so flow evidence is bounded by where collection occurs.",
+      "The protocol anticipates data loss and provides sequence numbering and metering statistics so collectors can detect and account for missing records.",
+      "Over UDP the export is unreliable and templates must be periodically resent."
+    ],
+    "limitations": [
+      "Specifies export and transport, not what a given exporter samples or how aggressively; sampling rates materially change what flow data can support.",
+      "Flow records summarize connections and do not carry payload, so they cannot confirm session content."
+    ]
+  },
+  {
+    "id": "research-nsa-network-infrastructure-2023",
+    "title": "CTR: Network Infrastructure Security Guide (October 2023 Update)",
+    "organization": "NSA",
+    "publishedAt": "2023-10",
+    "affectedTechnology": ["Routers", "Switches", "Network device management planes"],
+    "relevantBehaviors": ["Out-of-band management", "Remote logging", "Administrative access control", "Protocol hardening"],
+    "relatedHunts": ["unexpected-management-interface-egress", "logging-destination-modified", "management-acl-modified", "snmp-from-unexpected-initiator", "device-to-device-https-administration"],
+    "sourceUrl": "https://www.nsa.gov/Press-Room/Digital-Media-Center/Document-Gallery/igphoto/2003018261/",
+    "summary": "NSA's Cybersecurity Technical Report (U/OO/118623-22, PP-22-0293, Version 1.2) gives hardening guidance for network infrastructure, covering network design and segmentation, device password management, remote logging and administration, security updates, key exchange algorithms, and protocols including NTP, SSH, HTTP, and SNMP.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "The guidance treats remote logging off the device and out-of-band administration as baseline hardening for network infrastructure rather than optional maturity.",
+      "It identifies device management protocols — including NTP, SSH, HTTP, and SNMP — as configuration surfaces requiring explicit restriction."
+    ],
+    "limitations": [
+      "Hardening guidance, not incident reporting; it does not establish that any observed protocol use is malicious.",
+      "Version 1.2 of a periodically updated document; verify against the current release before quoting specific settings."
+    ]
+  },
+  {
+    "id": "research-attack-t1070",
+    "title": "MITRE ATT&CK T1070: Indicator Removal",
+    "organization": "MITRE ATT&CK",
+    "publishedAt": "2026-05-12",
+    "affectedTechnology": ["Host and cloud logs", "Command histories", "File metadata"],
+    "relevantBehaviors": ["Selective log deletion", "Log modification to resemble normal activity", "Timestamp manipulation"],
+    "relatedHunts": ["infrastructure-telemetry-gap", "logging-destination-modified"],
+    "sourceUrl": "https://attack.mitre.org/techniques/T1070/",
+    "summary": "ATT&CK technique T1070 (version 3.0) describes adversaries deleting or modifying artifacts such as command histories, log entries, and file metadata. The technique notes that modification may be tailored to align with expected user or system activity rather than wholesale deletion, and enumerates eight sub-techniques including clearing mailbox data, clearing persistence, and timestomping.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Adversaries are documented modifying artifacts to resemble expected activity, not only deleting them, so an intact-looking log is not evidence that no tampering occurred.",
+      "Indicator removal spans host, mailbox, network-connection, and persistence artifacts across eight named sub-techniques."
+    ],
+    "limitations": [
+      "A behavior catalog abstracted from public reporting, not a measurement of how often tampering occurs or how often it is caught.",
+      "Living knowledge base. Technique identifiers, names, and tactic assignment change between ATT&CK versions."
+    ]
+  },
+  {
+    "id": "research-attack-t1685",
+    "title": "MITRE ATT&CK T1685: Disable or Modify Tools",
+    "organization": "MITRE ATT&CK",
+    "publishedAt": "2026-05-12",
+    "affectedTechnology": ["EDR and IDS sensors", "Logging agents", "ETW and event log configuration", "SIEM ingestion pipelines"],
+    "relevantBehaviors": ["Sensor disablement", "Telemetry redirection", "Log forwarding interference"],
+    "relatedHunts": ["infrastructure-telemetry-gap", "logging-destination-modified"],
+    "sourceUrl": "https://attack.mitre.org/techniques/T1685/",
+    "summary": "Under the Defense Impairment tactic, T1685 (version 1.0, created 14 April 2026) describes adversaries disabling, degrading, or tampering with security tools — stopping services, killing processes, altering configuration — and also blocking or manipulating the telemetry used for detection, including disabling or redirecting sensors such as ETW, modifying event log configuration, and interfering with logging pipelines and forwarding to a SIEM.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Documented tampering includes interference with logging pipelines and forwarding mechanisms, not only with sensors on the host itself.",
+      "Redirecting or reconfiguring where logs go is catalogued as an impairment technique in its own right."
+    ],
+    "limitations": [
+      "A behavior catalog, not incident prevalence data.",
+      "This technique was previously numbered T1562 under the Defense Evasion tactic; ATT&CK v19 renumbered it and moved it to Defense Impairment (TA0112). Older mappings must be migrated rather than assumed current."
+    ]
+  },
+  {
+    "id": "research-rfc5905-2010",
+    "title": "RFC 5905: Network Time Protocol Version 4: Protocol and Algorithms Specification",
+    "organization": "IETF",
+    "publishedAt": "2010-06",
+    "affectedTechnology": ["Time synchronization", "Event timestamps"],
+    "relevantBehaviors": ["Clock offset and dispersion", "Synchronization state signaling", "Timestamp accuracy bounds"],
+    "relatedHunts": ["infrastructure-beaconing"],
+    "sourceUrl": "https://www.rfc-editor.org/rfc/rfc5905",
+    "summary": "The NTPv4 specification by Mills, Martin, Burbank, and Kasch defines offset, round-trip delay, and dispersion, where dispersion represents the maximum error inherent in the measurement and grows with the system clock's frequency tolerance. It notes practical accuracy of tens of microseconds for primary servers and hundreds of microseconds for secondary servers on fast LANs, and defines encodings signaling unknown or unsynchronized time.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Every synchronized timestamp carries a bounded error that accumulates between synchronizations rather than being exact.",
+      "The protocol defines an explicit unsynchronized state, so a device reporting timestamps may be reporting them from an unsynchronized clock."
+    ],
+    "limitations": [
+      "Specifies the protocol's own accuracy, not the end-to-end accuracy of a log record, which also depends on when the application sampled the clock and on ingest delay.",
+      "Does not address deliberate clock manipulation by an adversary."
+    ]
+  },
+  {
+    "id": "research-beacon-hunting-2020",
+    "title": "Hunting for beacons",
+    "organization": "Fox-IT",
+    "publishedAt": "2020-01-15",
+    "affectedTechnology": ["Network metadata", "Proxy and DNS logs", "C2 channels"],
+    "relevantBehaviors": ["Periodicity detection", "Jitter tolerance", "Connection-pair analysis"],
+    "relatedHunts": ["infrastructure-beaconing", "suspicious-infrastructure-dns", "new-infrastructure-external-destination"],
+    "sourceUrl": "https://blog.fox-it.com/2020/01/15/hunting-for-beacons/",
+    "summary": "Ruud van Luijk describes detecting C2 beaconing from connection metadata by forming connection pairs and modeling the temporal spacing between consecutive connections, tolerating the randomization that a configured jitter introduces into a beacon's sleep interval. The method works on metadata alone, so it applies to DNS and domain-fronted channels, and the post states plainly that legitimate timer-driven traffic will produce false positives.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Beacon sleep intervals are commonly randomized by a configured jitter percentage, so exact fixed-interval matching is the wrong detection shape.",
+      "Because the method uses only connection metadata, it applies to encrypted and DNS-based channels.",
+      "The author states that legitimate periodic traffic — Windows telemetry, update checks, automated scripts — will produce several false positives, requiring baseline refinement before alerting."
+    ],
+    "limitations": [
+      "Practitioner methodology without a published benchmark or reproducible dataset.",
+      "Regularity is a property of automation in general. Detecting periodicity identifies scheduled behavior, not malice or any particular tool."
+    ]
+  },
+  {
+    "id": "research-attack-t1110-003",
+    "title": "MITRE ATT&CK T1110.003: Brute Force — Password Spraying",
+    "organization": "MITRE ATT&CK",
+    "publishedAt": "2025-10-24",
+    "affectedTechnology": ["SSH", "FTP", "SMB", "RDP", "LDAP", "Cloud identity services"],
+    "relevantBehaviors": ["Low-and-slow authentication attempts", "Lockout-threshold evasion", "Protocol selection to reduce log visibility"],
+    "relatedHunts": ["distributed-password-spray", "new-aaa-destination", "unexpected-ldap-from-infrastructure"],
+    "sourceUrl": "https://attack.mitre.org/techniques/T1110/003/",
+    "summary": "Sub-technique T1110.003 (version 1.8) describes adversaries trying a single password or a small list against many accounts to avoid lockout, pacing attempts as slowly as roughly four authentication attempts per hour per account over days or weeks, and choosing LDAP or Kerberos over SMB because those paths are less likely to generate high-visibility logon-failure events.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Credential attacks are documented operating over days or weeks at rates as low as about four attempts per hour per account, so a short observation window can miss the campaign entirely.",
+      "Adversaries select the authentication protocol partly for its logging characteristics, which changes which telemetry sees the attempts."
+    ],
+    "limitations": [
+      "The cited rate is an illustrative documented example, not a threshold that separates malicious from benign authentication activity.",
+      "Living knowledge base; identifiers and content change between versions."
+    ]
+  },
+  {
+    "id": "research-lolbas",
+    "title": "Living Off The Land Binaries, Scripts and Libraries (LOLBAS)",
+    "organization": "LOLBAS Project",
+    "publishedAt": "2026",
+    "affectedTechnology": ["Windows signed binaries", "Scripts and libraries"],
+    "relevantBehaviors": ["Native-tool abuse", "Signed-binary execution", "Role deviation of trusted software"],
+    "relatedHunts": ["signed-utility-new-external-relationship"],
+    "sourceUrl": "https://lolbas-project.github.io/",
+    "summary": "A community-maintained catalog of legitimate Windows binaries, scripts, and libraries that can be repurposed by an adversary, with each entry mapped to the ATT&CK techniques it can serve. The project catalogs functionality available in trusted software; it does not characterize the listed binaries as malicious.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "A large set of signed, legitimate Windows binaries offer capabilities — download, execution, credential access — that an adversary can use without introducing new tooling.",
+      "The project explicitly frames these as legitimate tools whose functions can be abused, not as malware."
+    ],
+    "limitations": [
+      "An index of capability, not evidence of use. Presence of a listed binary, or its execution, is not an indicator of compromise.",
+      "Living community project. The recorded date is the corpus verification date, not a publication date."
+    ]
+  },
+  {
+    "id": "research-gtfobins",
+    "title": "GTFOBins",
+    "organization": "GTFOBins Project",
+    "publishedAt": "2026",
+    "affectedTechnology": ["Unix-like executables", "SUID and sudo configurations"],
+    "relevantBehaviors": ["Restricted-shell escape", "Privilege escalation via trusted binaries", "File transfer through native tooling"],
+    "relatedHunts": ["signed-utility-new-external-relationship", "kubernetes-exec-after-secret-read"],
+    "sourceUrl": "https://gtfobins.org/",
+    "summary": "Maintained by Emilio Pinna, Andrea Cardaci, and community contributors, GTFOBins is a curated list of legitimate functions in Unix-like executables that can be abused to escape restricted shells, escalate or maintain privileges, transfer files, and support other post-exploitation tasks. The project states explicitly that it is not a list of exploits and that the listed programs are not vulnerable per se.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Standard Unix utilities provide shell, file-transfer, and privilege-retention capability that becomes exploitable through misconfiguration such as SUID or permissive sudo rules.",
+      "The project states the listed binaries are not themselves vulnerable, locating the problem in configuration and context."
+    ],
+    "limitations": [
+      "A capability index, not evidence of adversary activity; the listed binaries have overwhelmingly legitimate use.",
+      "Living community project. The recorded date is the corpus verification date, not a publication date."
+    ]
+  },
+  {
+    "id": "research-specification-gaming-2020",
+    "title": "Specification gaming: the flip side of AI ingenuity",
+    "organization": "Google DeepMind",
+    "publishedAt": "2020-04-21",
+    "affectedTechnology": ["Reinforcement-learning agents", "Objective and reward specification"],
+    "relevantBehaviors": ["Literal objective satisfaction", "Loophole exploitation", "Reward signal manipulation"],
+    "relatedHunts": ["evaluator-change-precedes-perfect-score", "claimed-success-without-target-evidence"],
+    "sourceUrl": "https://deepmind.google/discover/blog/specification-gaming-the-flip-side-of-ai-ingenuity/",
+    "summary": "Krakovna and co-authors define specification gaming as behavior that satisfies the literal specification of an objective without achieving the intended outcome, illustrate it with agents exploiting loopholes in task definitions, and locate the cause in misspecification of the objective rather than in a failure of the learning algorithm.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Specification gaming is defined by the gap between the literal success criterion and the intended outcome, which is the precise sense the term carries.",
+      "The authors attribute the behavior to imprecise task specification rather than to algorithmic failure."
+    ],
+    "limitations": [
+      "Definitional and illustrative. The examples come from research and game environments, not from intrusions, and establish no prevalence in operational systems.",
+      "Applies to agents optimizing against a specified objective; it does not describe an adversary pursuing an intended goal effectively, which is not specification gaming."
+    ]
+  },
+  {
+    "id": "research-concrete-problems-2016",
+    "title": "Concrete Problems in AI Safety",
+    "organization": "Google Brain, Stanford, UC Berkeley, and OpenAI",
+    "publishedAt": "2016-06-21",
+    "affectedTechnology": ["Machine-learning systems", "Objective functions", "Reward design"],
+    "relevantBehaviors": ["Reward hacking", "Side effects", "Unsafe exploration", "Distributional shift"],
+    "relatedHunts": ["evaluator-change-precedes-perfect-score"],
+    "sourceUrl": "https://arxiv.org/abs/1606.06565",
+    "summary": "Amodei, Olah, Steinhardt, Christiano, Schulman, and Mané set out five research problems in accident risk from machine-learning systems, categorized by cause. Avoiding side effects and avoiding reward hacking are grouped under having the wrong objective function; the paper is the standard reference for reward hacking as a named category.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Reward hacking is defined as a problem arising from the wrong objective function — a system achieving its stated goal in an unintended way — and is distinguished from problems of scalable oversight and robustness.",
+      "The paper frames these as accident risks from design, not as adversarial behavior."
+    ],
+    "limitations": [
+      "A 2016 research agenda paper, not an empirical study; it makes no claim about how often these failures occur in deployed systems.",
+      "Predates current model and agent architectures; the taxonomy is what transfers, not any specific mitigation."
+    ]
+  },
+  {
+    "id": "research-ncsc-ai-threat-2024",
+    "title": "The near-term impact of AI on the cyber threat",
+    "organization": "NCSC (UK)",
+    "publishedAt": "2024-01-24",
+    "affectedTechnology": ["Offensive cyber capability", "Social engineering", "Reconnaissance"],
+    "relevantBehaviors": ["Capability uplift assessment", "Volume and impact change", "Actor-tier differentiation"],
+    "relatedHunts": [],
+    "sourceUrl": "https://www.ncsc.gov.uk/report/impact-of-ai-on-cyber-threat",
+    "summary": "NCSC assesses that AI will almost certainly increase the volume and heighten the impact of cyber attacks over the following two years, with uneven effects across actor tiers: uplift concentrated in reconnaissance and social engineering, greatest proportional gain for less-capable actors from a low base, and advanced state actors best positioned to exploit more sophisticated applications. The assessment uses formal probabilistic confidence language.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "A national technical authority's assessment describes AI uplift as uneven across actor capability tiers and concentrated in reconnaissance and social engineering, rather than as a uniform transformation.",
+      "The assessment is expressed in graded probabilistic language rather than as established fact."
+    ],
+    "limitations": [
+      "A forward-looking intelligence assessment with a stated two-year horizon from January 2024, not a measurement of observed intrusions.",
+      "Assesses capability uplift; it provides no method for determining whether AI was involved in a specific observed intrusion."
+    ]
+  },
+  {
+    "id": "research-gtig-genai-misuse-2025",
+    "title": "Adversarial Misuse of Generative AI",
+    "organization": "Google Threat Intelligence Group",
+    "publishedAt": "2025-01-29",
+    "affectedTechnology": ["Generative AI assistants", "Threat actor tooling"],
+    "relevantBehaviors": ["Research and troubleshooting assistance", "Content generation", "Attempted misuse and refusal"],
+    "relatedHunts": ["agent-tool-scope-escalation"],
+    "sourceUrl": "https://cloud.google.com/blog/topics/threat-intelligence/adversarial-misuse-generative-ai",
+    "summary": "GTIG reports on observed use of its assistant by government-backed actors from over twenty countries and by information operations actors, covering coding assistance, research on publicly reported vulnerabilities, reconnaissance, and content generation. The report states it did not see indications of actors developing novel capabilities and that current LLMs alone are unlikely to enable breakthrough capabilities.",
+    "evidenceType": "incident-report",
+    "supportedClaims": [
+      "The provider states that observed misuse produced productivity and volume gains rather than novel offensive capability.",
+      "Observed use concentrated on common tasks — troubleshooting, research, content generation — and requests for overtly malicious tooling were refused by safety controls."
+    ],
+    "limitations": [
+      "Provider telemetry covering only that provider's product; it cannot observe use of other models or offline tooling.",
+      "Describes what actors asked an assistant to do, not what they achieved against victim networks, so it supports no inference about detectability in victim telemetry."
+    ]
+  },
+  {
+    "id": "research-openai-disruption-2025",
+    "title": "Disrupting malicious uses of AI: June 2025",
+    "organization": "OpenAI",
+    "publishedAt": "2025-06",
+    "affectedTechnology": ["Generative AI platforms", "Influence operations", "Scam and employment fraud infrastructure"],
+    "relevantBehaviors": ["Account disruption", "Scaled content generation", "Cyber-operations assistance"],
+    "relatedHunts": ["agent-tool-scope-escalation", "trusted-vendor-phishing-propagation"],
+    "sourceUrl": "https://cdn.openai.com/threat-intelligence-reports/5f73af09-a3a3-4a55-992e-069237681620/disrupting-malicious-uses-of-ai-june-2025.pdf",
+    "summary": "OpenAI's threat report describes disrupted operations spanning cyber activity, social engineering and scams, deceptive employment schemes, and influence operations, based on the provider's own account-level investigations.",
+    "evidenceType": "incident-report",
+    "supportedClaims": [
+      "A second major provider independently reports observing threat actors using general-purpose AI services for scaling and assistance, corroborating the pattern reported by other providers.",
+      "Disruptions were driven by provider-side account investigation rather than by detection in any victim network."
+    ],
+    "limitations": [
+      "Provider-side visibility only; the report cannot establish what happened inside targeted environments.",
+      "Case selection reflects what the provider detected and chose to publish, so it is not a representative sample of misuse."
+    ]
+  },
+  {
+    "id": "research-owasp-llm-top10-2025",
+    "title": "OWASP Top 10 for LLM and Generative AI Applications (2025)",
+    "organization": "OWASP Gen AI Security Project",
+    "publishedAt": "2025",
+    "affectedTechnology": ["LLM applications", "Retrieval systems", "Agentic tool use"],
+    "relevantBehaviors": ["Prompt injection", "Excessive agency", "Data and model poisoning", "System prompt leakage"],
+    "relatedHunts": ["retrieved-content-precedes-tool-action", "agent-tool-scope-escalation", "retrieval-corpus-provenance-drift"],
+    "sourceUrl": "https://genai.owasp.org/llm-top-10/",
+    "summary": "The 2025 list enumerates ten risk categories for LLM and generative AI applications, led by LLM01 Prompt Injection and including LLM04 Data and Model Poisoning, LLM06 Excessive Agency, LLM07 System Prompt Leakage, LLM08 Vector and Embedding Weaknesses, and LLM10 Unbounded Consumption.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Excessive agency — an application granting an LLM more tool authority than the task requires — is treated as a distinct risk class from prompt injection itself.",
+      "Retrieval and embedding components are named as their own risk surface, separate from the model."
+    ],
+    "limitations": [
+      "A community-consensus risk ranking, not measured incident frequency; ordering reflects contributor judgment.",
+      "Versioned annually. Category numbering changes between editions, so LLM identifiers must carry their year."
+    ]
+  },
+  {
+    "id": "research-mitre-atlas",
+    "title": "MITRE ATLAS (Adversarial Threat Landscape for Artificial-Intelligence Systems)",
+    "organization": "MITRE",
+    "publishedAt": "2026",
+    "affectedTechnology": ["Machine-learning systems", "AI-enabled applications"],
+    "relevantBehaviors": ["AI-system reconnaissance", "Model access and extraction", "Poisoning", "Evasion"],
+    "relatedHunts": ["retrieval-corpus-provenance-drift", "retrieved-content-precedes-tool-action", "evaluator-change-precedes-perfect-score"],
+    "sourceUrl": "https://atlas.mitre.org/",
+    "summary": "ATLAS is MITRE's public knowledge base of adversary tactics and techniques targeting AI systems, structured in the manner of ATT&CK and maintained alongside it so that AI-specific techniques can be combined with enterprise techniques in a single view.",
+    "evidenceType": "framework",
+    "supportedClaims": [
+      "Attacks against AI systems are catalogued as their own technique set, distinct from the enterprise techniques used to reach the system hosting them.",
+      "The knowledge base is maintained to be combinable with ATT&CK Enterprise rather than as a replacement for it."
+    ],
+    "limitations": [
+      "A knowledge base abstracted from reporting, red-team results, and research; entries do not indicate frequency in real intrusions.",
+      "Living resource. The recorded date is the corpus verification date, not a publication date."
+    ]
+  }
+]

@@ -1,0 +1,131 @@
+[
+  {
+    "id": "research-cisa-aa25-239a",
+    "title": "Countering Chinese State-Sponsored Actors Compromise of Networks Worldwide to Feed Global Espionage System",
+    "organization": "NSA, CISA, FBI, DC3, and international partners",
+    "publishedAt": "2025-08-27",
+    "threatActor": "PRC state-sponsored actors",
+    "affectedTechnology": ["Backbone routers", "Provider-edge routers", "Customer-edge routers", "Telecommunications infrastructure"],
+    "relevantBehaviors": ["Modification of routers for long-term persistence", "Use of compromised devices and trusted connections to pivot into other networks", "Targeting of customer-facing and internal enterprise network infrastructure"],
+    "relatedHunts": ["unexpected-management-interface-egress", "firewall-to-router-ssh", "router-to-router-ssh", "device-to-device-https-administration", "unexpected-gre-tunnel"],
+    "sourceUrl": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa25-239a",
+    "summary": "The joint advisory describes actors targeting backbone and edge routing infrastructure, modifying routers to retain access, and using trusted network relationships as pivots. Hunters should compare device-originated management and egress traffic, configuration state, and upstream observations rather than relying on router logs alone.",
+    "evidenceType": "incident-report",
+    "supportedClaims": [
+      "The advisory reports actors modifying router configurations to establish persistence on backbone, provider-edge, and customer-edge routers.",
+      "It reports actors leveraging compromised devices and trusted connections or private interconnections to pivot into other networks, including via GRE tunnels."
+    ],
+    "limitations": [
+      "A multi-agency advisory summarizing investigations by many parties; it does not publish the underlying telemetry or per-victim detail.",
+      "Advisory content is versioned — v1.0 issued 27 August 2025, v1.1 on 3 September 2025 — so quoted detail should be checked against the current revision."
+    ]
+  },
+  {
+    "id": "research-cisco-talos-arcanedoor",
+    "title": "ArcaneDoor — New espionage-focused campaign found targeting perimeter network devices",
+    "organization": "Cisco Talos",
+    "publishedAt": "2024-04-24",
+    "threatActor": "UAT4356 / STORM-1849",
+    "affectedTechnology": ["Cisco Adaptive Security Appliance", "Perimeter network devices", "VPN services"],
+    "relevantBehaviors": ["Deployment of the Line Dancer and Line Runner backdoors", "Configuration modification and reconnaissance", "Network traffic capture and exfiltration", "Potential lateral movement from a perimeter appliance"],
+    "relatedHunts": ["packet-capture-started", "packet-capture-followed-by-file-transfer", "unexpected-management-interface-egress"],
+    "sourceUrl": "https://blog.talosintelligence.com/arcanedoor-new-espionage-focused-campaign-found-targeting-perimeter-network-devices/",
+    "summary": "Talos documented bespoke implants on perimeter appliances that supported command execution, configuration changes, reconnaissance, packet capture, exfiltration, and possible pivoting. The activity makes packet-capture commands, unexpected file transfer, device-originated sessions, and protected off-device logs especially useful hunting evidence.",
+    "evidenceType": "incident-report",
+    "supportedClaims": [
+      "Talos reports the Line Dancer in-memory shellcode interpreter and the reboot-persistent Line Runner backdoor on perimeter appliances.",
+      "The report states the actors used Line Dancer to create and exfiltrate packet captures and to execute configuration-mode CLI commands."
+    ],
+    "limitations": [
+      "Talos states it did not determine the initial access vector for the campaign, so the report cannot support hunts framed around a specific entry point.",
+      "Findings describe one campaign against a specific appliance family; the transferable pattern is appliance-originated capture and egress, not the named implants."
+    ]
+  },
+  {
+    "id": "research-mandiant-ghost-in-router",
+    "title": "Ghost in the Router: China-Nexus Espionage Actor UNC3886 Targets Juniper Routers",
+    "organization": "Mandiant",
+    "publishedAt": "2025-03-11",
+    "threatActor": "UNC3886",
+    "affectedTechnology": ["Juniper Networks Junos OS routers", "End-of-life Juniper MX hardware and software"],
+    "relevantBehaviors": ["TINYSHELL-based active and passive router backdoors", "Process injection into a trusted process", "Disabling device logging", "Use of legitimate credentials for lateral movement"],
+    "relatedHunts": ["router-to-router-ssh", "infrastructure-telemetry-gap", "logging-destination-modified"],
+    "sourceUrl": "https://cloud.google.com/blog/topics/threat-intelligence/china-nexus-espionage-targets-juniper-routers",
+    "summary": "Mandiant found custom active and passive backdoors on Junos OS routers, including a script designed to disable logging and code execution within a trusted process. The report supports hunting for unexplained device listeners or egress, missing telemetry, integrity deviations, and valid-credential movement from routing infrastructure.",
+    "evidenceType": "incident-report",
+    "supportedClaims": [
+      "Mandiant reports six TINYSHELL-derived backdoors on Junos OS routers, including passive variants activated by packet sniffing rather than by outbound C2.",
+      "One implant carried a script that disabled syslog and preserved copies of log files around an SSH session, then restored them afterwards, and patched running processes to suppress SNMP traps and audit logging of administrative login events.",
+      "The affected devices ran end-of-life Juniper MX hardware and software versions."
+    ],
+    "limitations": [
+      "Passive backdoors that wait for a trigger packet produce no beaconing, so this report specifically does not support egress-only hunting as sufficient coverage for router compromise.",
+      "A single vendor's investigation of one actor against one platform family; log-suppression mechanics are platform-specific."
+    ]
+  },
+  {
+    "id": "research-mandiant-cloaked-and-covert",
+    "title": "Cloaked and Covert: Uncovering UNC3886 Espionage Operations",
+    "organization": "Mandiant",
+    "publishedAt": "2024-06-18",
+    "threatActor": "UNC3886",
+    "affectedTechnology": ["Network appliances", "VMware vCenter Server", "Virtual machines", "TACACS+ services"],
+    "relevantBehaviors": ["Use of valid credentials and SSH for lateral movement", "Collection of TACACS+ credentials", "Deployment of backdoors and rootkits on devices with limited endpoint visibility", "Abuse of trusted network paths"],
+    "relatedHunts": ["firewall-to-router-ssh", "router-to-router-ssh", "unexpected-ssh-egress", "new-aaa-destination"],
+    "sourceUrl": "https://cloud.google.com/blog/topics/threat-intelligence/uncovering-unc3886-espionage-operations",
+    "summary": "Mandiant described a credential-focused espionage workflow spanning virtualization and network infrastructure, with SSH movement, TACACS+ credential collection, and stealth tooling on systems that commonly lack endpoint monitoring. Relevant hunts correlate AAA and SSH activity with configuration, CLI, and independent network evidence.",
+    "evidenceType": "incident-report",
+    "supportedClaims": [
+      "Mandiant reports two distinct TACACS+ credential-collection methods: a custom sniffer decrypting TACACS+ traffic on TCP/49 with the pre-shared key, and a backdoored tac_plus daemon logging credentials after successful validation.",
+      "Both the SSH client and the SSH daemon were replaced with modified binaries that captured credentials for outbound and inbound sessions, with package version locking used to prevent updates from restoring them."
+    ],
+    "limitations": [
+      "Credential capture occurred on the AAA and jump systems themselves, so AAA logs from those hosts are not independent evidence about this activity.",
+      "One actor's tradecraft against a specific technology mix; file paths and binaries do not transfer, while the pattern of harvesting at the authentication chokepoint does."
+    ]
+  },
+  {
+    "id": "research-microsoft-soho-dns-hijacking",
+    "title": "SOHO router compromise leads to DNS hijacking and adversary-in-the-middle attacks",
+    "organization": "Microsoft Threat Intelligence",
+    "publishedAt": "2026-04-07",
+    "threatActor": "Forest Blizzard / Storm-2754",
+    "affectedTechnology": ["Small office/home office routers", "DNS resolvers", "Remote and hybrid-worker networks"],
+    "relevantBehaviors": ["Router reconfiguration to actor-controlled DNS resolvers", "Collection of network traffic through compromised upstream devices", "Adversary-in-the-middle handling of selected TLS connections", "Use of compromised routers as malicious infrastructure"],
+    "relatedHunts": ["alternate-dns-resolver", "suspicious-infrastructure-dns"],
+    "sourceUrl": "https://www.microsoft.com/en-us/security/blog/2026/04/07/soho-router-compromise-leads-to-dns-hijacking-and-adversary-in-the-middle-attacks/",
+    "summary": "Microsoft documented large-scale compromise of SOHO routers whose DNS settings were changed to actor-controlled resolvers, enabling passive visibility and follow-on adversary-in-the-middle activity. Enterprise hunts should include unmanaged upstream routers, resolver changes, alternate DNS paths, and TLS destinations inconsistent with endpoint intent.",
+    "evidenceType": "incident-report",
+    "supportedClaims": [
+      "Microsoft reports actors modifying settings on home and small-office routers so connected devices resolve through actor-controlled resolvers, using the router's legitimate dnsmasq to forward queries while the actor observes them.",
+      "The redirected resolution supported follow-on adversary-in-the-middle activity against Microsoft 365 Outlook and government server domains.",
+      "Microsoft reports impact spanning over 200 organizations and roughly 5,000 consumer devices, with activity dating to at least August 2025."
+    ],
+    "limitations": [
+      "The compromised device sits outside enterprise management, so enterprise telemetry sees the consequence — resolver and TLS behavior — rather than the compromise itself.",
+      "Provider-scoped visibility centered on Microsoft 365 targeting; the reported counts are what Microsoft observed, not a full population."
+    ]
+  },
+  {
+    "id": "research-cisa-aa24-038a",
+    "title": "PRC State-Sponsored Actors Compromise and Maintain Persistent Access to U.S. Critical Infrastructure",
+    "organization": "CISA, NSA, FBI, and international partners",
+    "publishedAt": "2024-02-07",
+    "threatActor": "Volt Typhoon",
+    "affectedTechnology": ["Internet-facing network appliances", "Critical-infrastructure IT networks", "Small office/home office routing equipment"],
+    "relevantBehaviors": ["Use of valid accounts and living-off-the-land administration", "Long-term persistence and reconnaissance", "Proxying through compromised infrastructure", "Preparation for lateral movement toward operational technology assets"],
+    "relatedHunts": ["unexpected-management-interface-egress", "firewall-to-router-ssh", "router-to-router-ssh", "signed-utility-new-external-relationship"],
+    "sourceUrl": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a",
+    "summary": "The joint advisory describes long-duration access using valid accounts, built-in administration, and compromised infrastructure to obscure origin while actors learn critical-infrastructure networks and prepare lateral paths. Defenders should centralize logs and correlate appliance-originated access, AAA, proxy infrastructure, and unusual internal reachability.",
+    "evidenceType": "incident-report",
+    "supportedClaims": [
+      "The advisory identifies living-off-the-land technique use as a hallmark of the actor and reports access maintained in some victim environments for at least five years.",
+      "It reports repeated credential extraction over extended periods, in one case across nine months and in another across four years.",
+      "It states that many organizations lack baselines and centralized aggregation needed to detect living-off-the-land activity, and that conventional indicators are sparse for this behavior."
+    ],
+    "limitations": [
+      "An advisory synthesizing multiple investigations; dwell-time figures are what responders could establish from available retention, which is a lower bound rather than a measurement.",
+      "Because the tradecraft uses valid accounts and native tools, the advisory supports baselining and correlation work rather than any single high-fidelity indicator."
+    ]
+  }
+]
