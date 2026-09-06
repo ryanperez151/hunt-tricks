@@ -1,0 +1,86 @@
+import { TelemetrySchema, type Telemetry } from "@/lib/schemas";
+
+const seeds: Telemetry[] = [
+  {
+    id: "telemetry-endpoint-events", key: "endpoint-events", name: "Endpoint Events",
+    summary: "Process, file, registry, module, credential-store, and network events tied to a host and user session.",
+    collectionGuidance: "Collect process ancestry, signed-image identity, command metadata, file hashes, credential-store access, user and logon IDs, device posture, and network destinations with synchronized event time.",
+    investigationContribution: "Links local credential or persistence activity to later identity, cloud, SaaS, and network actions.",
+    limitations: "Sensor exclusions, short retention, kernel visibility differences, encrypted command content, and unmanaged devices can leave partial or absent trails.",
+    coverage: { c2: "high", lateralMovement: "high", discovery: "high", manipulation: "high" },
+  },
+  {
+    id: "telemetry-identity-audit", key: "identity-audit", name: "Identity Audit",
+    summary: "Authentication, token, session, application-consent, MFA, role, and directory-change records.",
+    collectionGuidance: "Retain event and ingest times, tenant, actor and target IDs, source IP, device and session identifiers, authentication result and method, token or client identifiers, risk context, role, and change details.",
+    investigationContribution: "Reconstructs sprays, session reuse, privilege changes, OAuth grants, and cross-application identity sequences.",
+    limitations: "Shared egress, privacy relays, missing device IDs, token refresh semantics, log tier differences, and provider normalization can obscure actor continuity.",
+    coverage: { c2: "medium", lateralMovement: "high", discovery: "medium", manipulation: "high" },
+  },
+  {
+    id: "telemetry-cloud-audit", key: "cloud-audit", name: "Cloud Audit",
+    summary: "Cloud control-plane and data-plane API records with principal, resource, request, result, region, and session context.",
+    collectionGuidance: "Enable organization-wide management events and the required data events; centralize immutable copies with event ID, event time, principal and session issuer, source, API, resource, region, request parameters, and result.",
+    investigationContribution: "Connects key use, role grants, discovery, resource changes, and object access across cloud services.",
+    limitations: "Data events may be opt-in, payload fields may be redacted, assumed-role identities need session resolution, and delivery delay differs by service and region.",
+    coverage: { c2: "medium", lateralMovement: "high", discovery: "high", manipulation: "high" },
+  },
+  {
+    id: "telemetry-saas-audit", key: "saas-audit", name: "SaaS Audit",
+    summary: "Tenant application events for consent, sharing, administration, search, downloads, exports, and API access.",
+    collectionGuidance: "Export tenant audit feeds with actor, app and client IDs, session, source, action, object, permission scope, result, byte or item counts, event time, and provider event ID.",
+    investigationContribution: "Shows application grants, bulk reads, export jobs, sharing changes, and activity spanning multiple SaaS services.",
+    limitations: "Event names and retention vary by license and provider; bulk operations may be summarized, delayed, or omit object-level detail.",
+    coverage: { c2: "medium", lateralMovement: "high", discovery: "high", manipulation: "high" },
+  },
+  {
+    id: "telemetry-email-audit", key: "email-audit", name: "Email Audit",
+    summary: "Message trace, mailbox access, rule, forwarding, delegation, and send events for email investigations.",
+    collectionGuidance: "Preserve message and conversation IDs, sender and recipient, authentication results, URLs, mailbox actor and owner, session, client, source, rule predicates and actions, forwarding destination, send result, and event time.",
+    investigationContribution: "Connects lure delivery and click evidence to session reuse, inbox persistence, collection, and outbound propagation.",
+    limitations: "Privacy controls, journaling scope, provider retention, message rewriting, mobile clients, and delegated access can complicate attribution and content recovery.",
+    coverage: { c2: "medium", lateralMovement: "high", discovery: "medium", manipulation: "high" },
+  },
+  {
+    id: "telemetry-kubernetes-audit", key: "kubernetes-audit", name: "Kubernetes Audit",
+    summary: "Chronological Kubernetes API requests and responses associated with users, service accounts, resources, namespaces, and request stages.",
+    collectionGuidance: "Define an audit policy that records the needed verbs and resources at Metadata or RequestResponse level as appropriate; ship logs or webhooks off-cluster with audit ID, stages, user, source, verb, URI, namespace, object, response code, and times.",
+    investigationContribution: "Reconstructs service-account reach, secret access, role changes, pod creation, and exec or attach sequences.",
+    limitations: "Policy level controls content, exec command details may be incomplete, webhook buffers can drop events, and direct node activity can bypass API-server evidence.",
+    coverage: { c2: "low", lateralMovement: "high", discovery: "high", manipulation: "high" },
+  },
+  {
+    id: "telemetry-build-audit", key: "build-audit", name: "Build and CI Audit",
+    summary: "Repository, workflow, runner, dependency, artifact, signature, and release provenance events.",
+    collectionGuidance: "Retain immutable workflow revisions, actor and approval data, runner identity, step and dependency digests, token permissions, network destinations, artifact hashes, attestations, signatures, tag movements, and release promotion links.",
+    investigationContribution: "Connects workflow or dependency changes to runner behavior and verifies whether released artifacts derive from reviewed source and expected builders.",
+    limitations: "Mutable tags, ephemeral runners, third-party actions, missing egress monitoring, unsigned artifacts, and log secret masking can break end-to-end lineage.",
+    coverage: { c2: "high", lateralMovement: "medium", discovery: "medium", manipulation: "high" },
+  },
+  {
+    id: "telemetry-data-audit", key: "data-audit", name: "Data Store Audit",
+    summary: "Authentication, query, schema, policy, staging, export, and object-access events from databases and data platforms.",
+    collectionGuidance: "Collect principal and role, session and query IDs, client and source, statement category and object, rows or bytes, stage and export destination, policy changes, result, query start and end, and audit ingest time.",
+    investigationContribution: "Distinguishes routine application queries from interactive discovery, privilege changes, temporary staging, and large exports.",
+    limitations: "Full statements may contain sensitive data, prepared queries can obscure intent, row counts may be estimates, and native retention or audit coverage can be short or selective.",
+    coverage: { c2: "low", lateralMovement: "medium", discovery: "high", manipulation: "high" },
+  },
+  {
+    id: "telemetry-ot-passive", key: "ot-passive", name: "OT Passive Monitoring",
+    summary: "Passive industrial-protocol, asset, engineering-session, and process-context observations collected without active polling.",
+    collectionGuidance: "Use approved TAP or broker feeds at cell, area, and remote-access boundaries; retain asset and zone, initiator and responder, function, program or firmware identifier, session timing, remote peer, and process-mode context.",
+    investigationContribution: "Surfaces new remote peers, engineering workstation use, controller programming, and zone crossings while preserving fragile operations.",
+    limitations: "Encrypted or proprietary protocols, mirrored-packet loss, serial networks, safety constraints, and incomplete asset context can prevent decoding or intent assessment.",
+    coverage: { c2: "medium", lateralMovement: "high", discovery: "medium", manipulation: "high" },
+  },
+  {
+    id: "telemetry-agent-traces", key: "agent-traces", name: "Agent and Model Traces",
+    summary: "Authorized model requests, agent runs, retrieved inputs, tool calls, approvals, intermediate artifacts, evaluations, and outcome checks.",
+    collectionGuidance: "Record tenant, model and agent run IDs, parent-child call lineage, prompt or retrieval provenance under access controls, tool name and authorization, target object, arguments with secret redaction, result status, evaluator version, and event plus ingest times.",
+    investigationContribution: "Corroborates whether an AI system participated and connects retrieved content, decisions, tool use, claimed outcomes, and independent target effects.",
+    limitations: "Tracing varies by architecture and policy; missing traces do not disprove AI use, trace content can be sensitive, and provider logs alone cannot establish malicious intent or downstream success.",
+    coverage: { c2: "medium", lateralMovement: "medium", discovery: "high", manipulation: "high" },
+  },
+];
+
+export const expandedTelemetry = TelemetrySchema.array().parse(seeds);

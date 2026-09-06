@@ -1,4 +1,5 @@
 import { ResearchSchema, type ResearchInput } from "@/lib/schemas";
+import { expandedResearch } from "@/data/research-expanded";
 
 const researchSeeds: ResearchInput[] = [
   {
@@ -59,6 +60,9 @@ const researchSeeds: ResearchInput[] = [
     relatedHunts: ["snmp-from-unexpected-initiator", "unexpected-gre-tunnel", "management-acl-modified"],
     sourceUrl: "https://www.ncsc.gov.uk/information/uk-internet-edge-router-devices-advisory",
     summary: "NCSC reported router access with legitimate SNMP strings, configuration export over TFTP, and GRE tunnels paired with ACLs to copy selected transit traffic to external infrastructure. This chain links unexpected SNMP initiation, configuration transfer, administrative access, ACL changes, and new GRE endpoints.",
+    evidenceType: "framework",
+    supportedClaims: ["The advisory links legitimate SNMP credentials, configuration transfer, administrative access, ACL changes, and GRE tunneling in its defensive guidance."],
+    limitations: ["Treat the document as historical advisory guidance; validate modern device fields and current topology rather than transferring its indicators as universal rules."],
   },
   {
     id: "research-microsoft-soho-dns-hijacking",
@@ -86,4 +90,9 @@ const researchSeeds: ResearchInput[] = [
   },
 ];
 
-export const researchEntries = ResearchSchema.array().parse(researchSeeds);
+export { expandedResearch };
+
+export const researchEntries = ResearchSchema.array().parse([
+  ...researchSeeds,
+  ...expandedResearch,
+]);

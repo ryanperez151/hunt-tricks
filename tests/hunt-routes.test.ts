@@ -8,7 +8,7 @@ import {
 } from "@/lib/hunt-routes";
 
 describe("shared family and hunt routes", () => {
-  test("generates exactly four families followed by twenty hunts without collisions", () => {
+  test("generates every family followed by every hunt without collisions", () => {
     const params = getHuntStaticParams();
     const expected = [
       ...huntFamilies.map((family) => ({ slug: family.id })),
@@ -16,8 +16,8 @@ describe("shared family and hunt routes", () => {
     ];
 
     expect(params).toEqual(expected);
-    expect(params).toHaveLength(24);
-    expect(new Set(params.map(({ slug }) => slug)).size).toBe(24);
+    expect(params).toHaveLength(expected.length);
+    expect(new Set(params.map(({ slug }) => slug)).size).toBe(expected.length);
   });
 
   test("resolves a family before a hunt and rejects non-canonical or unknown segments", () => {
@@ -39,8 +39,8 @@ describe("shared family and hunt routes", () => {
     const metadata = getHuntStaticParams().map(({ slug }) => getHuntRouteMetadata(slug));
 
     expect(metadata.every((item) => item && item.title.length > 10 && item.description.length > 40)).toBe(true);
-    expect(new Set(metadata.map((item) => item?.title)).size).toBe(24);
-    expect(new Set(metadata.map((item) => item?.description)).size).toBe(24);
+    expect(new Set(metadata.map((item) => item?.title)).size).toBe(metadata.length);
+    expect(new Set(metadata.map((item) => item?.description)).size).toBe(metadata.length);
     expect(getHuntRouteMetadata("management-plane-c2")?.title).toBe("Management-Plane C2 Hunts");
     expect(getHuntRouteMetadata("snmp-fan-out")?.title).toBe("SNMP Fan-Out");
   });

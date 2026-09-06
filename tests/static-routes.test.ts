@@ -41,8 +41,8 @@ describe("static route discovery", () => {
     ];
 
     expect(paths).toEqual(expected);
-    expect(paths).toHaveLength(59);
-    expect(new Set(paths).size).toBe(59);
+    expect(paths).toHaveLength(expected.length);
+    expect(new Set(paths).size).toBe(expected.length);
     expect(paths).toContain("/hunts/snmp-fan-out/");
     expect(paths).toContain("/protocols/snmp/");
     expect(paths.some((path) => path.startsWith("/research/") && path !== "/research/")).toBe(false);
@@ -63,13 +63,13 @@ describe("static route discovery", () => {
     });
   });
 
-  test("keeps all 59 sitemap routes distinct when the deployment path is also a catalog route", () => {
+  test("keeps every sitemap route distinct when the deployment path is also a catalog route", () => {
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://docs.example.test/hunts");
     vi.stubEnv("NEXT_PUBLIC_BASE_PATH", "/hunts");
 
     const urls = buildSitemapEntries().map(({ url }) => url);
-    expect(urls).toHaveLength(59);
-    expect(new Set(urls).size).toBe(59);
+    expect(urls).toHaveLength(fixedRoutes.length + huntFamilies.length + hunts.length + protocols.length);
+    expect(new Set(urls).size).toBe(urls.length);
     expect(urls).toContain("https://docs.example.test/hunts/");
     expect(urls).toContain("https://docs.example.test/hunts/hunts/");
     expect(urls).toContain("https://docs.example.test/hunts/hunts/snmp-fan-out/");
@@ -103,7 +103,7 @@ describe("informational routes", () => {
       expect(within(card!).getByText(entry.publishedAt)).toHaveAttribute("datetime", entry.publishedAt);
       expect(within(card!).getByText(entry.affectedTechnology[0])).toBeInTheDocument();
       expect(within(card!).getByText(entry.relevantBehaviors[0])).toBeInTheDocument();
-      expect(within(card!).getAllByRole("link", { name: /hunt:/i })).toHaveLength(entry.relatedHunts.length);
+      expect(within(card!).queryAllByRole("link", { name: /hunt:/i })).toHaveLength(entry.relatedHunts.length);
       expect(source).toHaveAttribute("href", entry.sourceUrl);
       expect(source).toHaveAttribute("target", "_blank");
       expect(source).toHaveAttribute("rel", expect.stringMatching(/noopener/));

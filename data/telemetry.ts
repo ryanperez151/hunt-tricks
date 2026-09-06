@@ -1,4 +1,5 @@
 import { TelemetrySchema, type Telemetry } from "@/lib/schemas";
+import { expandedTelemetry } from "@/data/telemetry-expanded";
 
 const telemetrySeeds: Telemetry[] = [
   {
@@ -67,4 +68,9 @@ const telemetrySeeds: Telemetry[] = [
   },
 ];
 
-export const telemetrySources = TelemetrySchema.array().parse(telemetrySeeds);
+export { expandedTelemetry };
+
+export const telemetrySources = TelemetrySchema.array().parse([
+  ...telemetrySeeds,
+  ...expandedTelemetry,
+]);

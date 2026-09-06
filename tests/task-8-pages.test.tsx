@@ -12,6 +12,7 @@ vi.mock("next/navigation", () => ({
 import ProtocolsPage from "@/app/protocols/page";
 import ProtocolDetailPage, { dynamicParams, generateStaticParams } from "@/app/protocols/[slug]/page";
 import TelemetryPage from "@/app/telemetry/page";
+import { telemetrySources } from "@/lib/content";
 
 describe("Task 8 route pages", () => {
   test("renders all 24 protocols as framework links with deterministic trailing slashes", () => {
@@ -56,6 +57,6 @@ describe("Task 8 route pages", () => {
     render(<TelemetryPage />);
     expect(screen.getByRole("heading", { level: 1, name: /independent telemetry coverage/i })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: /telemetry coverage/i })).toBeInTheDocument();
-    expect(screen.getAllByRole("button")).toHaveLength(8);
+    expect(screen.getAllByRole("button")).toHaveLength(telemetrySources.length);
   });
 });

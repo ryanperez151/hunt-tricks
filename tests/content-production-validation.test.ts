@@ -9,10 +9,10 @@ test("loads every validated production content registry", () => {
     research: researchEntries.length,
     attackPaths: attackPaths.length,
   }).toEqual({
-    hunts: 20,
+    hunts: 45,
     protocols: 24,
-    telemetry: 8,
-    research: 7,
+    telemetry: 18,
+    research: 25,
     attackPaths: 4,
   });
 });

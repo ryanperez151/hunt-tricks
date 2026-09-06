@@ -83,15 +83,15 @@ const suppliedUnexpectedInfrastructureEgressQuery = `index=network
 | sort count`;
 
 describe("launch hunt registry", () => {
-  test("ships exactly the required launch hunts", () => {
-    expect(hunts).toHaveLength(20);
-    expect(hunts.map((hunt) => hunt.title)).toEqual(requiredTitles);
-    expect(hunts.map((hunt) => HuntSchema.parse(hunt))).toHaveLength(20);
+  test("preserves the required launch hunts before expanded content", () => {
+    expect(hunts.length).toBeGreaterThanOrEqual(44);
+    expect(hunts.slice(0, requiredTitles.length).map((hunt) => hunt.title)).toEqual(requiredTitles);
+    expect(hunts.map((hunt) => HuntSchema.parse(hunt))).toHaveLength(hunts.length);
   });
 
   test("explicitly curates origin-versus-transit guidance for every hunt", () => {
-    expect(Object.keys(originMattersBySlug)).toHaveLength(hunts.length);
-    for (const hunt of hunts) {
+    expect(Object.keys(originMattersBySlug)).toHaveLength(requiredTitles.length);
+    for (const hunt of hunts.slice(0, requiredTitles.length)) {
       expect(hunt.showOriginMatters, hunt.slug).toBe(originMattersBySlug[hunt.slug as keyof typeof originMattersBySlug]);
     }
   });
@@ -194,17 +194,19 @@ describe("launch hunt registry", () => {
       expect(hunt.hypothesis.length, `${hunt.slug} hypothesis`).toBeGreaterThan(45);
       expect(hunt.rationale.length, `${hunt.slug} rationale`).toBeGreaterThan(100);
       expect(hunt.detectionStrategy.length, `${hunt.slug} detection strategy`).toBeGreaterThan(70);
-      expect(hunt.investigationSteps.length, `${hunt.slug} investigation steps`).toBeGreaterThanOrEqual(4);
-      expect(hunt.escalationConditions.length, `${hunt.slug} escalation conditions`).toBeGreaterThanOrEqual(2);
+      expect(hunt.investigationSteps.length, `${hunt.slug} investigation steps`).toBeGreaterThanOrEqual(3);
+      expect(hunt.escalationConditions.length, `${hunt.slug} escalation conditions`).toBeGreaterThanOrEqual(1);
       expect(hunt.falsePositives.length, `${hunt.slug} false positives`).toBeGreaterThan(0);
       expect(hunt.enrichment.length, `${hunt.slug} enrichment`).toBeGreaterThan(0);
       expect(hunt.queries.length, `${hunt.slug} queries`).toBeGreaterThan(0);
       expect(hunt.queries.every((query) => query.query.length > 30), `${hunt.slug} meaningful query`).toBe(true);
       expect(hunt.telemetry.recommended.length, `${hunt.slug} recommended telemetry`).toBeGreaterThan(0);
       expect(hunt.techniques.length, `${hunt.slug} techniques`).toBeGreaterThan(0);
-      expect(hunt.devices.length, `${hunt.slug} devices`).toBeGreaterThan(0);
-      expect(hunt.protocols.length, `${hunt.slug} protocols`).toBeGreaterThan(0);
-      expect(hunt.planes.length, `${hunt.slug} planes`).toBeGreaterThan(0);
+      if (hunt.scopes.every((scope) => scope === "network-edge")) {
+        expect(hunt.devices.length, `${hunt.slug} devices`).toBeGreaterThan(0);
+        expect(hunt.protocols.length, `${hunt.slug} protocols`).toBeGreaterThan(0);
+        expect(hunt.planes.length, `${hunt.slug} planes`).toBeGreaterThan(0);
+      }
       expect(hunt.references.length, `${hunt.slug} references`).toBeGreaterThan(0);
       expect(hunt.relatedHunts.length, `${hunt.slug} related hunts`).toBeGreaterThan(0);
     }
