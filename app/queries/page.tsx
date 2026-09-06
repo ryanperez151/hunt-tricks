@@ -15,6 +15,7 @@ async function buildQueryDisplayRecords(): Promise<readonly QueryDisplayRecord[]
     id: query.id,
     title: query.title,
     description: query.description,
+    detectionStrategy: query.detectionStrategy,
     platform: query.platform,
     query: query.query,
     highlightedHtml: await highlightQuery(query.query, query.platform),

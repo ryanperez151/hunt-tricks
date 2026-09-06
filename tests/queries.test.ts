@@ -29,4 +29,11 @@ describe("query aggregation", () => {
     expect(record.protocols).not.toBe(hunts[0]!.protocols);
     expect(Object.isFrozen(record.protocols)).toBe(true);
   });
+
+  test("retains the exact owning hunt detection strategy for every aggregated query", () => {
+    for (const record of aggregateQueries(hunts)) {
+      const hunt = hunts.find(({ slug }) => slug === record.huntSlug)!;
+      expect(record).toHaveProperty("detectionStrategy", hunt.detectionStrategy);
+    }
+  });
 });

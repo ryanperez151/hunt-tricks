@@ -62,6 +62,18 @@ describe("static route discovery", () => {
       sitemap: "https://docs.example.test/guide/sitemap.xml",
     });
   });
+
+  test("keeps all 59 sitemap routes distinct when the deployment path is also a catalog route", () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://docs.example.test/hunts");
+    vi.stubEnv("NEXT_PUBLIC_BASE_PATH", "/hunts");
+
+    const urls = buildSitemapEntries().map(({ url }) => url);
+    expect(urls).toHaveLength(59);
+    expect(new Set(urls).size).toBe(59);
+    expect(urls).toContain("https://docs.example.test/hunts/");
+    expect(urls).toContain("https://docs.example.test/hunts/hunts/");
+    expect(urls).toContain("https://docs.example.test/hunts/hunts/snmp-fan-out/");
+  });
 });
 
 describe("informational routes", () => {

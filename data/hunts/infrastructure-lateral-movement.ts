@@ -53,7 +53,7 @@ const seeds: HuntSeed[] = [
       },
       {
         title: "Zeek firewall-to-router SSH sessions",
-        description: "Zeek conn.log and ssh.log correlation using standard connection UIDs plus local asset-role inventories.",
+        description: "Pseudocode over Zeek logs correlating conn.log and ssh.log using standard connection UIDs plus local asset-role inventories.",
         platform: "zeek",
         query: `from conn.log where proto == "tcp" and id.resp_p == 22
 join ssh.log on uid

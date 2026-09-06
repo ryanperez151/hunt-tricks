@@ -4,6 +4,7 @@ export type AggregatedQuery = Readonly<{
   id: string;
   title: HuntQuery["title"];
   description: HuntQuery["description"];
+  detectionStrategy: Hunt["detectionStrategy"];
   platform: HuntQuery["platform"];
   query: HuntQuery["query"];
   huntId: Hunt["id"];
@@ -27,6 +28,7 @@ export function aggregateQueries(hunts: readonly Hunt[]): readonly AggregatedQue
     id: `${hunt.slug}:${query.platform}:${index}`,
     title: query.title,
     description: query.description,
+    detectionStrategy: hunt.detectionStrategy,
     platform: query.platform,
     query: query.query,
     huntId: hunt.id,

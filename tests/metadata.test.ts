@@ -40,7 +40,7 @@ describe("public metadata URLs", () => {
     vi.stubEnv("NEXT_PUBLIC_BASE_PATH", "/field-guide/");
 
     expect(getPublicUrl("/research")).toBe("https://docs.example.test/field-guide/research/");
-    expect(getPublicUrl("/field-guide/about/")).toBe("https://docs.example.test/field-guide/about/");
+    expect(getPublicUrl("/about/")).toBe("https://docs.example.test/field-guide/about/");
     expect(getPublicUrl("/opengraph-image.png"))
       .toBe("https://docs.example.test/field-guide/opengraph-image.png");
   });
@@ -51,6 +51,20 @@ describe("public metadata URLs", () => {
 
     expect(getPublicUrl("/")).toBe("https://docs.example.test/field-guide/");
     expect(getPublicUrl("/protocols/snmp/")).toBe("https://docs.example.test/field-guide/protocols/snmp/");
+  });
+
+  test.each([
+    ["/", "https://docs.example.test/hunts/"],
+    ["/hunts/", "https://docs.example.test/hunts/hunts/"],
+    ["/hunts/snmp-fan-out/", "https://docs.example.test/hunts/hunts/snmp-fan-out/"],
+  ])("preserves app-relative route %s when its segment matches the deployment path", (path, canonical) => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://docs.example.test/hunts");
+    vi.stubEnv("NEXT_PUBLIC_BASE_PATH", "/hunts");
+
+    expect(createPageMetadata({ title: "Guide", description: "Guide page", path })).toMatchObject({
+      alternates: { canonical },
+      openGraph: { url: canonical },
+    });
   });
 
   test.each([

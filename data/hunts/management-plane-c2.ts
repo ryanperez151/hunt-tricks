@@ -215,7 +215,7 @@ RETURN source.device_id, destination.ip, destination.port, first_seen, bytes_out
       },
       {
         title: "Zeek connection cadence extraction",
-        description: "Zeek connection-log pipeline using standard conn.log fields before local interval analysis.",
+        description: "Pseudocode over Zeek logs using standard conn.log fields before local interval analysis.",
         platform: "zeek",
         query: `zeek-cut -d ts id.orig_h id.resp_h id.resp_p proto duration orig_bytes resp_bytes < conn.log
 | keep rows where id.orig_h belongs to the infrastructure address inventory

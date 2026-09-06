@@ -52,16 +52,11 @@ function normalizePublicPath(value: string, trailingSlash = true): string {
   return !trailingSlash || /\.[a-z0-9]+$/i.test(pathname) ? pathname : `${pathname}/`;
 }
 
+/** Resolve an app-relative route or asset beneath the configured deployment URL. */
 export function getPublicUrl(path: string, options: Readonly<{ trailingSlash?: boolean }> = {}): string {
   const base = deploymentBase();
-  const deploymentPath = normalizePathname(base.pathname);
   const publicPath = normalizePublicPath(path, options.trailingSlash);
-  const routeAlreadyIncludesBase = deploymentPath && (
-    publicPath === `${deploymentPath}/` || publicPath.startsWith(`${deploymentPath}/`)
-  );
-  const relativePath = routeAlreadyIncludesBase
-    ? publicPath.slice(deploymentPath.length).replace(/^\//, "")
-    : publicPath.replace(/^\//, "");
+  const relativePath = publicPath.replace(/^\//, "");
 
   return new URL(relativePath, base).toString();
 }

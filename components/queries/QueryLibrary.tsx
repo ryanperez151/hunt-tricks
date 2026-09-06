@@ -10,6 +10,7 @@ export type QueryDisplayRecord = Readonly<{
   id: string;
   title: string;
   description: string;
+  detectionStrategy: string;
   platform: string;
   query: string;
   highlightedHtml: TrustedHighlightedQueryHtml;
@@ -184,6 +185,10 @@ export function QueryLibrary({ queries }: { queries: readonly QueryDisplayRecord
                 <div><dt>Telemetry</dt><dd>{query.telemetry.map((value) => <Tag key={value}>{labelFor(value)}</Tag>)}</dd></div>
                 {query.techniques.length ? <div><dt>Techniques</dt><dd>{query.techniques.map((value) => <Tag key={value}>{value}</Tag>)}</dd></div> : null}
               </dl>
+              <section aria-label="Detection strategy">
+                <h3>Detection strategy</h3>
+                <p>{query.detectionStrategy}</p>
+              </section>
               <CodeBlock highlightedHtml={query.highlightedHtml} raw={query.query} />
             </article>
           ))}

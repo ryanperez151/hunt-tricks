@@ -4,6 +4,10 @@ import type { AnchorHTMLAttributes } from "react";
 import { describe, expect, test, vi } from "vitest";
 import { QueryLibrary, type QueryDisplayRecord } from "@/components/queries/QueryLibrary";
 import type { TrustedHighlightedQueryHtml } from "@/lib/highlight";
+import QueriesPage from "@/app/queries/page";
+import { hunts } from "@/lib/content";
+
+vi.mock("server-only", () => ({}));
 
 vi.mock("next/link", () => ({
   default: (props: AnchorHTMLAttributes<HTMLAnchorElement>) => <a data-next-link="true" {...props} />,
@@ -18,6 +22,7 @@ const queries: readonly QueryDisplayRecord[] = [
     id: "management-egress:splunk:0",
     title: "Unexpected management egress",
     description: "Find unapproved management-plane destinations.",
+    detectionStrategy: "Compare device-origin traffic with approved management dependencies.",
     platform: "splunk",
     query: "RAW SPLUNK A",
     highlightedHtml: highlighted("HIGHLIGHT SPLUNK A"),
@@ -33,6 +38,7 @@ const queries: readonly QueryDisplayRecord[] = [
     id: "snmp-fan-out:zeek:0",
     title: "Managed-device SNMP fan-out",
     description: "Find routers querying several unexpected SNMP peers.",
+    detectionStrategy: "Compare request initiators and peer breadth with the authorized NMS baseline.",
     platform: "zeek",
     query: "RAW ZEEK B",
     highlightedHtml: highlighted("HIGHLIGHT ZEEK B"),
@@ -48,6 +54,7 @@ const queries: readonly QueryDisplayRecord[] = [
     id: "snmp-fan-out:kql:1",
     title: "SNMP fan-out by source",
     description: "Group distinct SNMP destinations by device.",
+    detectionStrategy: "Compare request initiators and peer breadth with the authorized NMS baseline.",
     platform: "kql",
     query: "RAW KQL C",
     highlightedHtml: highlighted("HIGHLIGHT KQL C"),
@@ -62,6 +69,21 @@ const queries: readonly QueryDisplayRecord[] = [
 ];
 
 describe("QueryLibrary", () => {
+  test("renders each owning hunt strategy verbatim before its query through the page projection", async () => {
+    render(await QueriesPage());
+    const cards = screen.getAllByTestId("query-card");
+    const expected = hunts.flatMap((hunt) => hunt.queries.map(() => hunt.detectionStrategy));
+    expect(cards).toHaveLength(expected.length);
+
+    cards.forEach((card, index) => {
+      const strategy = within(card).getByRole("region", { name: "Detection strategy" });
+      expect(within(strategy).getByText(expected[index]!, { exact: true }).textContent).toBe(expected[index]);
+      const code = card.querySelector("pre")!;
+      expect(code).not.toBeNull();
+      expect(strategy.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+  });
+
   test("filters by platform without duplicating or mismatching highlighted and copied query content", async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue(undefined);
