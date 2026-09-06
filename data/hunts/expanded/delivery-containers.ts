@@ -64,23 +64,39 @@ RETURN WHERE SECRET_NAMESPACE != EXEC_NAMESPACE OR EXEC_OBJECT IS NEW FOR user.n
     rationale: "Workflow files are executable control-plane configuration. Diffing permissions, secret exposure, runner class, triggers, and dependency references reveals security-relevant changes hidden in ordinary commits.",
     expectedBehavior: ["Privilege-affecting workflow changes receive designated review and retain least-privilege tokens, pinned actions, and approved runner classes."],
     severity: "high", confidence: "medium", scopes: ["cicd"], behaviors: ["privilege-change", "trust-boundary"], temporalPatterns: ["stage-transition"], aiRoles: [],
-    temporal: { interpretation: "Correlate merge time to first privileged run, artifact promotion, and token use; batch-created commits can distort ingest order.", baseline: "Compare permission and dependency diffs with repository policy, owners, branch protection, and workflow purpose.", confounders: ["Approved release automation", "OIDC migration", "Runner platform change"] },
+    temporal: { interpretation: "Starting at change event time, select the first run that used the changed workflow revision in the changed repository within the analyst's analysis and retention bounds; later runs of older revisions do not qualify.", baseline: "Compare permission and dependency diffs with repository policy, owners, branch protection, and workflow purpose.", confounders: ["Approved release automation", "OIDC migration", "Runner platform change"] },
     evidence: [
       { claim: "StepSecurity reports that a compromised third-party action exposed CI secrets and that mutable references enabled altered code to run broadly.", sourceIds: ["research-tj-actions-2025"], kind: "observation" },
       { claim: "Editorial hypothesis: an unreviewed workflow privilege expansion followed by a privileged run may create a CI persistence or secret-access path.", sourceIds: ["research-tj-actions-2025"], kind: "hypothesis" },
     ],
-    requiredFields: ["event.time", "repository.id", "commit.sha", "actor.id", "reviewer.id", "review.status", "workflow.path", "workflow.trigger", "token.permissions", "token.use", "secret.ids", "permission.before", "permission.after", "dependency.ref", "runner.id", "runner.class", "run.id", "artifact.destination", "artifact.digest"],
-    limitations: ["Semantic workflow diffs require platform-aware parsing; generated workflows and reusable jobs can hide inherited permissions."],
+    requiredFields: ["event.time", "repository.id", "commit.sha", "actor.id", "reviewer.id", "review.status", "workflow.path", "workflow.effective_revision", "workflow.trigger", "token.permissions", "token.use", "secret.ids", "permission.before", "permission.after", "dependency.ref", "runner.id", "runner.class", "run.id", "artifact.destination", "artifact.digest"],
+    limitations: ["Build audit must provide resolved workflow provenance as well as source diffs and run-scoped token/artifact records. The run's application commit is not necessarily its effective workflow revision; reusable workflows require a resolved repository/path/revision chain.", "Keep expanded revisions with unresolved run lineage or incomplete audit retention as unknown. A fully covered window with no matching run supports only no observed use in that window."],
     techniques: ["T1195 Supply Chain Compromise"], telemetry: { recommended: ["build-audit"], optional: ["saas-audit", "identity-audit"] },
     suspiciousBehavior: ["A workflow adds write permission, secrets, privileged runners, broad triggers, or a floating action reference.", "The first run uses the new authority before designated review."],
     investigationSteps: ["Produce a semantic diff of triggers, tokens, secrets, runners, dependencies, and artifact destinations.", "Validate authorship, review, branch protection, commit signature, and linked change.", "Trace the first affected runs, secret access, network activity, artifacts, and promotions."],
     escalationConditions: ["Unapproved authority was exercised or an artifact was promoted."], falsePositives: ["Approved release workflow redesign", "Emergency pipeline repair"],
-    enrichment: ["CODEOWNERS", "signature", "token claims", "runner group", "artifact digest"], detectionStrategy: "Parse workflow revisions into security-relevant diffs and link them to the first run that exercises each new capability.",
-    queries: [{ title: "Workflow authority diff", description: "AUTHORITY_DIFF compares the literal trigger, token, secret, runner, dependency, and destination fields; EXPANDS_AUTHORITY applies the repository policy.", platform: "pseudocode", query: `FOR each workflow_revision
+    enrichment: ["CODEOWNERS", "signature", "token claims", "runner group", "artifact digest"], detectionStrategy: "Parse workflow revisions into security-relevant diffs and optionally link each to the first run that actually used that exact effective workflow revision in its repository. Attach token use and artifacts only by that run's verified lineage.",
+    queries: [{ title: "Workflow authority diff", description: "Pseudocode: AUTHORITY_DIFF compares the literal trigger, token, secret, runner, dependency, and destination fields; EXPANDS_AUTHORITY applies repository policy. workflow.effective_revision is an immutable source revision or content digest resolved from platform execution metadata, including reusable workflow repository/path/revision chains. Resolve it from commit.sha on the change and from the workflow actually loaded on the run; never substitute the run's application checkout SHA or a mutable tag. RUN_COVERAGE comes from the independent build-audit inventory for the changed repository/workflow and change-to-analysis-end window; sufficient requires complete delivery and retention. ANY_RELEVANT_RUN_LINEAGE_UNRESOLVED is true if a candidate in that boundary lacks resolved workflow provenance, false only after complete candidate review. Select the first verified matching run; unresolved candidates leave first-use timing unknown and receive no token or artifact attribution.", platform: "pseudocode", query: `ANALYSIS_INTERVAL(event.time, ANALYST_START, ANALYST_END)
+LATENESS_POLICY(MAX_INGEST_DELAY, RETENTION_LIMIT)
+FOR each workflow_revision
+CAPTURE CHANGED_REPOSITORY = repository.id, CHANGED_WORKFLOW = workflow.path
+CAPTURE CHANGED_COMMIT = commit.sha, CHANGED_REVISION = workflow.effective_revision, CHANGE_TIME = event.time, CHANGE_REVIEW = review.status
 AUTHORITY_DIFF = DIFF workflow.trigger, token.permissions, secret.ids, runner.class, dependency.ref, artifact.destination
-JOIN first_workflow_run AFTER event.time ON workflow.path
-RETURN WHERE EXPANDS_AUTHORITY(AUTHORITY_DIFF) AND review.status != "approved"
-ENRICH WITH run.id, token.use, runner.id, artifact.digest` }],
+KEEP WHERE EXPANDS_AUTHORITY(AUTHORITY_DIFF) AND (CHANGE_REVIEW IS MISSING OR CHANGE_REVIEW != "approved")
+LEFT JOIN FIRST workflow_run ORDER BY event.time, run.id
+  ON repository.id = CHANGED_REPOSITORY AND workflow.path = CHANGED_WORKFLOW
+  AND CHANGED_REVISION IS NOT NULL AND workflow.effective_revision = CHANGED_REVISION
+  AND event.time >= CHANGE_TIME AND event.time <= ANALYST_END
+CAPTURE MATCHED_RUN = run.id
+RUN_STATUS = CASE
+  WHEN MATCHED_RUN IS PRESENT AND (ANY_RELEVANT_RUN_LINEAGE_UNRESOLVED IS MISSING OR ANY_RELEVANT_RUN_LINEAGE_UNRESOLVED OR RUN_COVERAGE IS MISSING OR RUN_COVERAGE != "sufficient") THEN "verified_revision_run_first_use_unknown"
+  WHEN MATCHED_RUN IS PRESENT THEN "verified_revision_run"
+  WHEN CHANGED_REPOSITORY IS MISSING OR CHANGED_WORKFLOW IS MISSING OR CHANGED_REVISION IS MISSING OR ANY_RELEVANT_RUN_LINEAGE_UNRESOLVED IS MISSING OR ANY_RELEVANT_RUN_LINEAGE_UNRESOLVED THEN "unknown_revision_lineage"
+  WHEN RUN_COVERAGE != "sufficient" OR RUN_COVERAGE IS MISSING THEN "unknown_run_coverage"
+  ELSE "no_matching_run_in_covered_window"
+OPTIONALLY ENRICH token_and_artifact_records ON MATCHED_RUN IS NOT NULL
+  AND repository.id = CHANGED_REPOSITORY AND run.id = MATCHED_RUN
+RETURN ALL CHANGED_REPOSITORY, CHANGED_COMMIT, CHANGED_REVISION, MATCHED_RUN, RUN_STATUS, token.use, runner.id, artifact.digest` }],
     references: [refs.tjActions], relatedHunts: ["runner-egress-after-action-update", "floating-release-tag-retargeted"],
   },
   {

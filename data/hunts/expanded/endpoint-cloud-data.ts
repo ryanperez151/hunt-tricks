@@ -39,23 +39,38 @@ RETURN process.path, session.id, cloud.action, cloud.resource` }],
     rationale: "Signature trust identifies a publisher, not intent. Parent process, arguments, destination ownership, transferred bytes, and later child activity provide the behavioral context.",
     expectedBehavior: ["Administrative and synchronization utilities run from approved parents and contact documented service endpoints for their host role."],
     severity: "high", confidence: "medium", scopes: ["endpoints", "network-edge"], behaviors: ["role-deviation", "new-relationships"], temporalPatterns: ["stage-transition"], aiRoles: [],
-    temporal: { interpretation: "Treat the first external relationship and any file or child-process consequence as an ordered sequence, not a speed signature.", baseline: "Inventory signed utility destinations, parent processes, and invocation cadence by endpoint role.", confounders: ["Vendor endpoint changes", "Certificate renewal", "New management rollout"] },
+    temporal: { interpretation: "Require the linked file creation or child-process start to follow the connection within the illustrative forward 30-minute window. Keep host-only proximity as a weaker lead when process lineage is missing; ordering is not a speed signature.", baseline: "Inventory signed utility destinations, parent processes, and invocation cadence by endpoint role.", confounders: ["Vendor endpoint changes", "Certificate renewal", "New management rollout"] },
     evidence: [
       { claim: "Microsoft observed Volt Typhoon using command-line and built-in tools for discovery, credential collection, staging, and proxy setup.", sourceIds: ["research-volt-typhoon-2023"], kind: "observation" },
       { claim: "Editorial hypothesis: a trusted binary crossing a new network boundary and producing an unexpected artifact or child process may represent role abuse.", sourceIds: ["research-volt-typhoon-2023"], kind: "hypothesis" },
     ],
-    requiredFields: ["event.time", "host.id", "host.role", "user.id", "process.path", "process.signer", "process.parent", "destination.domain", "destination.ip", "network.bytes", "file.created", "child_process.path"],
-    limitations: ["CDNs and vendor service changes create destination churn; encrypted content prevents payload confirmation."],
+    requiredFields: ["event.time", "host.id", "host.role", "user.id", "process.instance_id", "process.parent_instance_id", "process.path", "process.signer", "process.parent", "destination.domain", "destination.ip", "network.bytes", "file.created", "file.creator_instance_id", "child_process.instance_id", "child_process.parent_instance_id", "child_process.path"],
+    limitations: ["Endpoint network, process-start, and file-create records need stable process-instance IDs and retained parent lineage; a reused PID or same host/time cannot establish a utility consequence. Missing lineage remains a weaker host-level lead, while known unrelated processes are excluded.", "CDNs and vendor service changes create destination churn; encrypted content prevents payload confirmation. Incomplete endpoint coverage leaves absence of consequences unknown."],
     techniques: ["T1218 System Binary Proxy Execution"], telemetry: { recommended: ["endpoint-events", "dns"], optional: ["netflow-ipfix", "zeek"] },
-    suspiciousBehavior: ["A signed utility is launched by an unusual parent or account and contacts a first-seen domain.", "The connection precedes a new executable, archive, or child process."],
-    investigationSteps: ["Verify binary path, hash, signer, parent, arguments, and user session.", "Resolve domain ownership, certificate, historical prevalence, bytes, and peer endpoints.", "Inspect created artifacts and child processes, then validate any software deployment or support change."],
+    suspiciousBehavior: ["A signed utility is launched by an unusual parent or account and contacts a first-seen domain.", "The same process or a verified descendant creates an artifact or starts a child after the connection."],
+    investigationSteps: ["Verify binary path, hash, signer, stable process-instance ID, parent lineage, arguments, and user session.", "Resolve domain ownership, certificate, historical prevalence, bytes, and peer endpoints.", "Verify that artifact creators or child parents descend from the network process and occur afterward; separate unknown host-level leads from known unrelated events, then validate deployment or support changes."],
     escalationConditions: ["Unapproved invocation produces executable content or reaches an unrelated external owner."], falsePositives: ["New vendor CDN", "Approved remote-support rollout"],
-    enrichment: ["publisher", "certificate", "domain age", "artifact hash", "change ticket"], detectionStrategy: "Baseline trusted utility relationships by role, then require a novel destination plus a downstream endpoint effect.",
-    queries: [{ title: "Trusted utility relationship drift", description: "TRUSTED_PUBLISHERS and EXPECTED_DESTINATIONS are derived from signed-binary inventory and the approved destinations for each host.role and process.path.", platform: "pseudocode", query: `FOR each network_event WHERE process.signer IN TRUSTED_PUBLISHERS
+    enrichment: ["publisher", "certificate", "domain age", "artifact hash", "change ticket"], detectionStrategy: "Baseline trusted utility relationships by role and correlate novel destinations with forward effects from the same process instance or verified descendants. Preserve missing-lineage leads without claiming a utility consequence.",
+    queries: [{ title: "Trusted utility relationship drift", description: "Pseudocode: TRUSTED_PUBLISHERS and EXPECTED_DESTINATIONS derive from inventory and approved host-role/process relationships. SAME_OR_DESCENDANT traverses retained process.instance_id/process.parent_instance_id records on the same host using stable instance IDs, not reusable PIDs. For file creation its input is the file creator; for a child start it is the child's parent. It returns true for verified lineage, false for verified unrelated lineage, and unknown for missing/ambiguous IDs or ancestry. ENDPOINT_COVERAGE comes from independent process/file collection and retention checks for the forward window. Linked effects establish process relationship and ordering, not that network content caused the effect.", platform: "pseudocode", query: `FOR each network_event WHERE process.signer IN TRUSTED_PUBLISHERS
 EXPECTED_DESTINATIONS = LOOKUP expected_process_relationships BY host.role, process.path
-JOIN file_and_process_events BY host.id WITHIN 30m
-RETURN WHERE destination.domain NOT IN EXPECTED_DESTINATIONS
-  AND (file.created = true OR child_process.path IS NOT NULL)` }],
+KEEP WHERE destination.domain NOT IN EXPECTED_DESTINATIONS
+CAPTURE NETWORK_HOST = host.id, NETWORK_PROCESS = process.instance_id, NETWORK_TIME = event.time
+LEFT JOIN file_and_process_events ON host.id = NETWORK_HOST
+  AND event.time > NETWORK_TIME AND event.time <= NETWORK_TIME + 30m
+  AND (file.created = true OR child_process.instance_id IS PRESENT OR child_process.path IS PRESENT)
+FOR each candidate CALCULATE LINEAGE = CASE
+  WHEN file.created = true THEN SAME_OR_DESCENDANT(file.creator_instance_id, NETWORK_PROCESS)
+  ELSE SAME_OR_DESCENDANT(child_process.parent_instance_id, NETWORK_PROCESS)
+SUMMARIZE PER network_event KEEPING ALL network_events
+  LINKED_EFFECTS = candidates WHERE LINEAGE = true
+  HOST_ONLY_LEADS = candidates WHERE LINEAGE = unknown
+  EXCLUDE candidates WHERE LINEAGE = false
+EFFECT_STATUS = CASE
+  WHEN LINKED_EFFECTS IS NOT EMPTY THEN "verified_process_effect"
+  WHEN NETWORK_PROCESS IS MISSING OR HOST_ONLY_LEADS IS NOT EMPTY THEN "unknown_lineage_host_level_lead"
+  WHEN ENDPOINT_COVERAGE IS MISSING OR ENDPOINT_COVERAGE != "sufficient" THEN "unknown_endpoint_coverage"
+  ELSE "no_linked_effect_in_covered_window"
+RETURN ALL NETWORK_HOST, NETWORK_PROCESS, NETWORK_TIME, EFFECT_STATUS, LINKED_EFFECTS, HOST_ONLY_LEADS` }],
     references: [refs.voltTyphoon], relatedHunts: ["credential-store-read-then-cloud-auth", "unexpected-management-interface-egress"],
   },
   {

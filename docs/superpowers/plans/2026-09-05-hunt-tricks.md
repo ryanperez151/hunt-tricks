@@ -72,7 +72,7 @@ Consumes all registries. Evidence sections resolve sourceIds via researchEntries
 
 Files: tests/e2e/hunt-tricks.spec.ts, existing regression tests only for intentional changes; docs/superpowers/plans/2026-09-05-hunt-tricks.md and verification notes.
 
-- [ ] Run `npm run check` and `npm run build`; inspect errors and fix root causes with focused regression coverage.
-- [ ] Add browser journeys for scope + temporal filter persistence, back/reset, evidence navigation, AI methodology and timeline keyboard interaction. Test existing journeys.
-- [ ] Run Playwright against the static export and inspect home, filtered catalog, new hunt detail, research and methodology at 1440px and 390px. Confirm no horizontal page overflow, readable diagrams and keyboard focus.
-- [ ] Conduct final independent code/spec and citation review. Resolve material findings, rerun affected checks, record actual results, and leave completed work in its isolated worktree with preview instructions. No merge/publish.
+- [x] Run `npm run check` and `npm run build`; inspect errors and fix root causes with focused regression coverage.
+- [x] Add browser journeys for scope + temporal filter persistence, back/reset, evidence navigation, AI methodology and timeline keyboard interaction. Test existing journeys.
+- [x] Run Playwright against the static export and inspect home, filtered catalog, new hunt detail, research and methodology at 1440px and 390px. Confirm no horizontal page overflow, readable diagrams and keyboard focus.
+- [x] Conduct final independent code/spec and citation review. Resolve material findings, rerun affected checks, record actual results, and leave completed work in its isolated worktree with preview instructions. No merge/publish.

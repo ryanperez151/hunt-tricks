@@ -97,7 +97,7 @@ const seeds: ResearchInput[] = [
     id: "research-snowflake-2024",
     title: "UNC5537 Targets Snowflake Customer Instances for Data Theft and Extortion",
     organization: "Mandiant",
-    publishedAt: "2024-06-11",
+    publishedAt: "2024-06-10",
     threatActor: "UNC5537",
     affectedTechnology: ["Cloud data warehouses", "Snowflake customer instances", "Contractor endpoints"],
     relevantBehaviors: ["Use of stolen credentials", "Database discovery", "Temporary-stage creation", "Bulk data export"],

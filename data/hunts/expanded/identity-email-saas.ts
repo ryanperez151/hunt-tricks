@@ -101,19 +101,29 @@ RETURN WHERE mailbox.id NOT IN APPROVED_MAILBOX_SCOPE(application.id)` }],
       { claim: "Microsoft reports elevated OAuth application permissions followed by application access to mailboxes in its Midnight Blizzard investigation.", sourceIds: ["research-midnight-2024"], kind: "observation" },
       { claim: "Editorial hypothesis: an unreviewed permission expansion followed quickly by a new export destination warrants investigation across SaaS products.", sourceIds: ["research-midnight-2024", "research-snowflake-2024"], kind: "hypothesis" },
     ],
-    requiredFields: ["event.time", "event.result", "actor.id", "application.id", "permission.before", "permission.after", "object.type", "object.count", "transfer.bytes", "export.destination"],
-    limitations: ["Providers may summarize exports or omit bytes; a high count cannot establish what content left the tenant."],
+    requiredFields: ["event.time", "event.result", "tenant.id", "actor.id", "permission.grantee_id", "permission.grantee_type", "permission.resource_scope", "principal.id", "principal.type", "resource.service_id", "resource.id", "permission.before", "permission.after", "object.type", "object.count", "transfer.bytes", "export.destination"],
+    limitations: ["SaaS audit and the authoritative identity/entitlement directory must identify the grant recipient and exporting principal within tenant, service, and resource boundaries. Missing or ambiguous identity mappings remain unknown; an administrator's later export does not establish recipient use.", "Providers may summarize exports or omit bytes; a high count cannot establish what content left the tenant. Incomplete export logging leaves exercise of the grant unknown."],
     techniques: ["T1530 Data from Cloud Storage"], telemetry: { recommended: ["saas-audit"], optional: ["identity-audit", "data-audit", "cloud-audit"] },
     suspiciousBehavior: ["A new permission or sharing scope precedes discovery and export of unfamiliar object classes.", "An interactive identity creates an export destination normally used only by managed applications."],
-    investigationSteps: ["Resolve the permission diff, grant actor, approval, and affected object boundary.", "Reconstruct searches, previews, export job creation, object counts, bytes, and destination ownership.", "Compare with the identity's historical exports and confirm the business owner expected both scope and timing."],
+    investigationSteps: ["Resolve the permission diff, grant initiator, affected user or application principal, approval, and tenant/service/resource boundary through authoritative identity records.", "Match the exporter to the recipient and reconstruct searches, previews, export completion, object counts, bytes, and destination ownership; retain unresolved mappings for review.", "Compare with the recipient's historical exports and confirm the business owner expected both scope and timing."],
     escalationConditions: ["The grant or destination is unapproved and export completed.", "Sensitive records were accessed by an unfamiliar application."],
     falsePositives: ["Approved tenant migration", "New backup integration"], enrichment: ["data classification", "destination tenant", "grant ticket", "app publisher", "export checksum"],
-    detectionStrategy: "Correlate permission diffs with export creation and completion, then baseline by workload class and require destination and data-sensitivity context.",
-    queries: [{ title: "Permission-to-export transition", description: "Cross-SaaS pseudocode using normalized audit fields; APPROVED_DESTINATIONS is the sanctioned export target set for the workload class.", platform: "pseudocode", query: `SEQUENCE BY actor.id, application.id WITHIN 72h
-  permission_change WHERE expands_scope(permission.before, permission.after)
-  export WHERE event.result = "success"
-RETURN permission_change, export, TIME_BETWEEN, object.count, transfer.bytes
-WHERE export.destination NOT IN APPROVED_DESTINATIONS` }],
+    detectionStrategy: "Correlate permission diffs with completed exports by the affected principal within the granted tenant, service, and resource scope. Preserve the grant initiator as context and keep unknown identity or coverage cases separate from verified recipient use.",
+    queries: [{ title: "Permission-to-export transition", description: "Cross-SaaS pseudocode: AUTHORITATIVE_PRINCIPAL maps a tenant-scoped typed user or application/service-principal ID to the same canonical identity using event-time directory records; missing, ambiguous, or delegated identities require verified mapping and remain unknown otherwise. Interactive users need no application ID. RESOURCE_IN_SCOPE checks the exported resource against the grant's service/resource scope. APPROVED_DESTINATIONS is the sanctioned export set for that recipient's workload class. EXPORT_COVERAGE and UNRESOLVED_EXPORT_CANDIDATES come from the audit coverage inventory and same-boundary candidate review for the forward 72h window; unresolved candidates are not attached as recipient exports.", platform: "pseudocode", query: `FOR each permission_change WHERE expands_scope(permission.before, permission.after)
+CAPTURE GRANT_TIME = event.time, GRANT_ACTOR = actor.id, GRANT_TENANT = tenant.id
+CAPTURE GRANT_SERVICE = resource.service_id, GRANTED_SCOPE = permission.resource_scope
+CAPTURE GRANTEE = AUTHORITATIVE_PRINCIPAL(tenant.id, permission.grantee_type, permission.grantee_id, GRANT_TIME)
+LEFT JOIN export ON GRANTEE IS NOT NULL AND tenant.id = GRANT_TENANT
+  AND resource.service_id = GRANT_SERVICE AND RESOURCE_IN_SCOPE(resource.id, GRANTED_SCOPE)
+  AND AUTHORITATIVE_PRINCIPAL(tenant.id, principal.type, principal.id, event.time) = GRANTEE
+  AND event.time > GRANT_TIME AND event.time <= GRANT_TIME + 72h AND event.result = "success"
+EXPORT_STATUS = CASE
+  WHEN export IS PRESENT THEN "verified_recipient_export"
+  WHEN GRANTEE IS MISSING OR GRANT_TENANT IS MISSING OR GRANT_SERVICE IS MISSING OR GRANTED_SCOPE IS MISSING OR UNRESOLVED_EXPORT_CANDIDATES IS MISSING OR UNRESOLVED_EXPORT_CANDIDATES THEN "unknown_identity_or_scope"
+  WHEN EXPORT_COVERAGE IS MISSING OR EXPORT_COVERAGE != "sufficient" THEN "unknown_export_coverage"
+  ELSE "no_recipient_export_in_covered_window"
+RETURN ALL GRANT_ACTOR, GRANTEE, GRANT_TENANT, GRANT_SERVICE, GRANTED_SCOPE, EXPORT_STATUS, object.count, transfer.bytes, export.destination
+PRIORITIZE verified_recipient_export WHERE export.destination NOT IN APPROVED_DESTINATIONS` }],
     references: [refs.midnight, refs.snowflake], relatedHunts: ["oauth-app-mailbox-expansion", "data-warehouse-discovery-export"],
   },
   {
@@ -130,8 +140,8 @@ WHERE export.destination NOT IN APPROVED_DESTINATIONS` }],
       { claim: "Editorial hypothesis: a novel rule that suppresses security or financial messages after a context-discontinuous session may support persistence or concealment.", sourceIds: ["research-aitm-2023"], kind: "hypothesis" },
     ],
     requiredFields: ["event.time", "mailbox.id", "actor.id", "session.id", "session.risk", "source.ip", "device.id", "rule.id", "rule.predicate", "rule.action", "forward.destination"],
-    limitations: ["Rule text may be localized or partially logged, and mobile or delegated clients can create rules through unfamiliar contexts."],
-    techniques: ["T1098 Additional Cloud Roles"], telemetry: { recommended: ["email-audit", "identity-audit"], optional: ["saas-audit"] },
+    limitations: ["Rule text may be localized or partially logged, and mobile or delegated clients can create rules through unfamiliar contexts. T1114.003 applies to forwarding for collection; delete, move, and mark-read concealment actions need separate action-specific assessment and are not automatically mapped to that technique."],
+    techniques: ["T1114.003 Email Forwarding Rule"], telemetry: { recommended: ["email-audit", "identity-audit"], optional: ["saas-audit"] },
     suspiciousBehavior: ["A risky or replay-like session creates a delete, move, mark-read, or external-forward rule.", "Subsequent messages matching financial or security terms are acted on by the new rule."],
     investigationSteps: ["Recover the complete rule predicate, action, destination, creator, and session.", "Review authentication, device, MFA, token, delegation, and administrator context around creation.", "Trace matched messages, outbound replies, forwarding delivery, and any MFA or consent changes."],
     escalationConditions: ["User denies the rule and it moved or forwarded sensitive messages.", "The same session changed authentication methods or sent fraudulent mail."],

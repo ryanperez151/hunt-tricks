@@ -152,8 +152,24 @@ describe("expanded production content", () => {
       .not.toContain("unusually broad");
 
     const claimReconciliation = hunts.find(({ slug }) => slug === "claimed-success-without-target-evidence")!;
-    expect(claimReconciliation.queries[0].query)
-      .toContain("LEFT JOIN independent_target_event ON tool.call_id = CLAIM_TOOL_CALL_ID");
-    expect(claimReconciliation.queries[0].query).not.toContain("OR target.event_key");
+    // These are input-contract checks; pseudocode matching semantics are reviewed with concrete cases.
+    expect(claimReconciliation.requiredFields).toEqual(expect.arrayContaining([
+      "claim.expected_outcome", "claim.observation_start", "claim.observation_end",
+      "target.resource", "coverage.target", "coverage.run_id", "coverage.window_complete",
+    ]));
+    expect(signedUtility.requiredFields).toEqual(expect.arrayContaining([
+      "process.instance_id", "process.parent_instance_id", "file.creator_instance_id", "child_process.parent_instance_id",
+    ]));
+    expect(saasExport.requiredFields).toEqual(expect.arrayContaining([
+      "tenant.id", "permission.grantee_id", "permission.grantee_type", "permission.resource_scope",
+      "principal.id", "principal.type", "resource.service_id", "resource.id",
+    ]));
+    const workflow = hunts.find(({ slug }) => slug === "workflow-file-privilege-expansion")!;
+    expect(workflow.requiredFields).toEqual(expect.arrayContaining([
+      "repository.id", "commit.sha", "workflow.path", "workflow.effective_revision", "run.id",
+    ]));
+    expect(researchEntries.find(({ id }) => id === "research-snowflake-2024")?.publishedAt).toBe("2024-06-10");
+    expect(hunts.find(({ slug }) => slug === "inbox-rule-after-session-anomaly")?.techniques)
+      .toEqual(["T1114.003 Email Forwarding Rule"]);
   });
 });

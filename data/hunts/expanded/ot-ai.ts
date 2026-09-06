@@ -161,23 +161,40 @@ WHERE independent.outcome != "objective_satisfied"` }],
       { claim: "Anthropic reports instances in its provider investigation where the model claimed credentials or extracted information that results did not support.", sourceIds: ["research-ai-espionage-2025"], kind: "observation" },
       { claim: "Editorial hypothesis: repeated material claims without supporting tool results or independent target evidence can reveal unreliable or manipulated verification.", sourceIds: ["research-ai-espionage-2025", "research-reward-2024"], kind: "hypothesis" },
     ],
-    requiredFields: ["event.time", "event.ingest_time", "agent.run_id", "model.request_id", "claim.id", "claim.type", "claim.target", "tool.call_id", "tool.result", "target.coverage", "target.event_id", "target.result", "artifact.digest"],
-    limitations: ["Absence of a target event is unknown when coverage is incomplete; semantic extraction of claims can be wrong and requires analyst review."],
+    requiredFields: ["event.time", "event.ingest_time", "agent.run_id", "model.request_id", "claim.id", "claim.type", "claim.target", "claim.expected_outcome", "claim.observation_start", "claim.observation_end", "tool.call_id", "tool.result", "target.resource", "target.event_id", "target.result", "artifact.digest", "coverage.source", "coverage.target", "coverage.run_id", "coverage.start", "coverage.end", "coverage.status", "coverage.window_complete"],
+    limitations: ["Independent target audit or state evidence and a separate coverage inventory are prerequisites for outcome reconciliation; agent traces alone cannot establish target absence. Retain missing call IDs, unresolved targets, expired retention, and incomplete windows as unknown rather than guessing a match.", "Claim extraction and outcome comparison require analyst review. A recorded failure can contradict a claim; absent support under sufficient coverage is unsupported, not proof the action never happened."],
     techniques: ["Agent Outcome Verification Failure"], telemetry: { recommended: ["agent-traces"], optional: ["cloud-audit", "saas-audit", "data-audit", "identity-audit"] },
     suspiciousBehavior: ["A material success claim lacks a successful parent tool result or target event after the known delivery interval.", "A claimed artifact, credential, or state cannot be independently reproduced."],
-    investigationSteps: ["Validate trace provenance and extract the exact claim, target, asserted result, and parent tool call.", "Query the independent target using authorized audit or state evidence and account for ingest delay and rollback.", "Classify the mismatch as coverage gap, parser error, ordinary bug, stale state, hallucination, or possible deception before escalation."],
+    investigationSteps: ["Validate trace provenance and extract the exact claim, target, expected outcome, observation window, and parent tool call, retaining claims with missing calls.", "Query the independent target using authorized audit or state evidence; check the separate coverage inventory, ingest delay, consistency allowance, and rollback history.", "Distinguish agreement, contradictory observations, unsupported claims under sufficient coverage, and unknown evidence before reviewing parser error, ordinary bugs, hallucination, or possible deception."],
     escalationConditions: ["A high-impact workflow acts on unsupported claims or evidence suggests deliberate evaluator or record manipulation."], falsePositives: ["Delayed target logs", "Successful action rolled back", "Claim parser error"],
-    enrichment: ["target coverage", "delivery SLA", "artifact hash", "rollback event", "agent version"], detectionStrategy: "Require lineage from material claims to tool results and independent target outcomes, with a target-specific observation delay before flagging mismatches.",
-    queries: [{ title: "Claim-to-outcome reconciliation", description: "OBSERVATION_DELAY is the target's measured audit-delivery and consistency allowance. Analysis and lateness inputs are deployment-specific; missing or expired evidence remains unknown.", platform: "pseudocode", query: `ANALYSIS_INTERVAL(event.time, ANALYST_START, ANALYST_END)
+    enrichment: ["target coverage", "delivery SLA", "artifact hash", "rollback event", "agent version"], detectionStrategy: "Keep every material claim and optionally attach exact call and target lineage. Classify call support separately from independent outcome agreement, contradiction, absent support under sufficient coverage, and unknown evidence.",
+    queries: [{ title: "Claim-to-outcome reconciliation", description: "Pseudocode: OBSERVATION_DELAY covers target audit delivery and consistency. COVERAGE reads a separate inventory (coverage.source, coverage.target or coverage.run_id, coverage.start, coverage.end, coverage.status, coverage.window_complete); sufficient means the exact source, entity, full observation window, lateness allowance, and retention are verified even when no event exists. Independent target records need a verified request-to-run/call mapping; missing mappings mean insufficient correlation coverage, never inferred IDs. MATCH_EXPECTED compares claim.expected_outcome to target.result and artifact.digest using an analyst-validated predicate for claim.type: accepted authentication for a credential claim, or the specified content digest and target state for an artifact claim. It returns agree, disagree, or indeterminate, never raw equality with a claim category. Evaluate all observations for the exact claim together; ambiguous lineage or conflicting/time-incomparable observations stay unknown for review.", platform: "pseudocode", query: `ANALYSIS_INTERVAL(event.time, ANALYST_START, ANALYST_END)
 LATENESS_POLICY(MAX_INGEST_DELAY, RETENTION_LIMIT)
 FOR each material_claim BY agent.run_id, claim.id
-CAPTURE CLAIM_TOOL_CALL_ID = tool.call_id, CLAIM_TARGET = claim.target, CLAIM_TYPE = claim.type
-JOIN parent_tool_call ON tool.call_id = CLAIM_TOOL_CALL_ID
-CAPTURE PARENT_TOOL_RESULT = tool.result
+CAPTURE CLAIM_RUN = agent.run_id, CLAIM_TOOL_CALL_ID = tool.call_id, CLAIM_TARGET = claim.target
+CAPTURE CLAIM_TYPE = claim.type, EXPECTED_OUTCOME = claim.expected_outcome
+CAPTURE WINDOW_START = claim.observation_start, WINDOW_END = claim.observation_end
 WAIT OBSERVATION_DELAY(CLAIM_TARGET)
-LEFT JOIN independent_target_event ON tool.call_id = CLAIM_TOOL_CALL_ID
-RETURN WHERE target.coverage = "sufficient"
-  AND (PARENT_TOOL_RESULT != "success" OR target.result != CLAIM_TYPE)` }],
+CALL_COVERAGE = COVERAGE("agent_calls", CLAIM_RUN, WINDOW_START, WINDOW_END)
+TARGET_COVERAGE = COVERAGE("target_outcomes", CLAIM_TARGET, WINDOW_START, WINDOW_END)
+LEFT JOIN parent_tool_call ON CLAIM_TOOL_CALL_ID IS NOT NULL
+  AND agent.run_id = CLAIM_RUN AND tool.call_id = CLAIM_TOOL_CALL_ID
+  AND event.time BETWEEN WINDOW_START AND WINDOW_END
+CAPTURE PARENT_TOOL_RESULT = tool.result
+LEFT JOIN independent_target_event ON CLAIM_TOOL_CALL_ID IS NOT NULL
+  AND agent.run_id = CLAIM_RUN AND tool.call_id = CLAIM_TOOL_CALL_ID AND target.resource = CLAIM_TARGET
+  AND event.time BETWEEN WINDOW_START AND WINDOW_END
+CALL_STATUS = CASE
+  WHEN CLAIM_TOOL_CALL_ID IS MISSING THEN "unknown_call_lineage"
+  WHEN parent_tool_call IS MISSING THEN IF CALL_COVERAGE = "sufficient" THEN "unsupported_missing_call" ELSE "unknown_call_coverage"
+  WHEN PARENT_TOOL_RESULT IS MISSING THEN "unknown_call_result"
+  ELSE PARENT_TOOL_RESULT
+OUTCOME_STATUS = CASE
+  WHEN CLAIM_TOOL_CALL_ID IS MISSING OR CLAIM_TARGET IS MISSING OR EXPECTED_OUTCOME IS MISSING THEN "unknown_lineage_or_expectation"
+  WHEN independent_target_event IS MISSING THEN IF TARGET_COVERAGE = "sufficient" THEN "unsupported_no_target_record" ELSE "unknown_target_coverage"
+  ELSE MATCH_EXPECTED(CLAIM_TYPE, EXPECTED_OUTCOME, target.result, artifact.digest)
+RETURN ALL claim.id, CLAIM_RUN, CALL_STATUS, OUTCOME_STATUS, TARGET_COVERAGE
+PRIORITIZE review WHERE CALL_STATUS != "success" OR OUTCOME_STATUS != "agree"` }],
     references: [refs.aiEspionage, refs.reward], relatedHunts: ["evaluator-change-precedes-perfect-score", "agent-tool-scope-escalation"],
   },
   {

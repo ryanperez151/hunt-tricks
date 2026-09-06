@@ -7,11 +7,12 @@ The expansion contains 45 hunts (20 preserved, 25 added), 12 scopes, 27 research
 - `npm run check`: lint, typecheck, and 38 files / 189 tests passed.
 - `npm run build`: content validation and production static export passed; Next generated 95 pages, with 92 exported HTML files.
 - `npx playwright test --workers=2`: 20 passed, two intentional viewport-specific skips (desktop-only check on mobile and mobile-only check on desktop).
+- After the final content corrections, `npm run check` and `npm run build` passed again; `npx playwright test tests/e2e/hunt-tricks.spec.ts --workers=2` passed all 10 affected browser checks, and the export link audit again found zero errors.
 - Export audit: 2,468 internal links/anchors checked across 92 HTML pages; zero missing targets.
 - Desktop (1440px) and mobile (390px) browser checks cover existing journeys, combined scope/temporal filters, browser back/reset, research anchors, search, query copying, keyboard timeline interaction, mobile navigation, reduced motion, and page overflow.
 - Visual review covered home, filtered catalog, AI hunt evidence, research, velocity, and AI-autonomy pages. A mobile footer flex-basis regression was fixed and independently re-reviewed; its content now measures about 433px high at 390px, with automatic child heights.
 
-Independent task reviews approved the contracts, research/query content, and workbench after fixes. Whole-change review is the final delivery gate.
+Independent task reviews approved the contracts, research/query content, and workbench after fixes. Whole-change review identified four query-semantic issues and two metadata corrections; scoped re-review approved all six corrections with no remaining findings. The fixes preserve missing claims with independent coverage checks, bind CI runs to repository and effective workflow revision, distinguish grant initiator from recipient, require stable process lineage, and correct the Snowflake date and inbox-forwarding ATT&CK mapping.
 
 ## Research and operational limits
 
