@@ -27,6 +27,7 @@ describe("HuntFilters", () => {
     };
     render(<HuntFilters filters={filters} options={filterOptions} onChange={onChange} />);
 
+    await user.click(screen.getByText("Infrastructure and advanced filters"));
     await user.selectOptions(screen.getByLabelText("Protocol"), "SNMP");
 
     expect(onChange).toHaveBeenCalledWith({

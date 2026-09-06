@@ -1,6 +1,54 @@
 import { ResearchSchema, type ResearchInput } from "@/lib/schemas";
 
 const seeds: ResearchInput[] = [
+{
+  "id": "research-nist-logs-2006",
+  "title": "Guide to Computer Security Log Management",
+  "organization": "NIST",
+  "publishedAt": "2006-09",
+  "affectedTechnology": [
+    "Security log infrastructure"
+  ],
+  "relevantBehaviors": [
+    "Baseline comparison",
+    "Timestamp consistency",
+    "Log retention and preservation"
+  ],
+  "relatedHunts": [],
+  "sourceUrl": "https://csrc.nist.gov/pubs/sp/800/92/final",
+  "summary": "NIST SP 800-92 provides foundational guidance on log management, including baselines, inconsistent timestamps, retention, and preservation of original records.",
+  "evidenceType": "framework",
+  "supportedClaims": [
+    "Reliable log analysis requires attention to baselines, timestamp consistency, retention, and original log records."
+  ],
+  "limitations": [
+    "Historical log-management guidance is an engineering foundation, not validation of a current threat threshold or a specific query."
+  ]
+},
+{
+  "id": "research-dataflow-2015",
+  "title": "The Dataflow Model: A Practical Approach to Balancing Correctness, Latency, and Cost in Massive-Scale, Unbounded, Out-of-Order Data Processing",
+  "organization": "Google Research",
+  "publishedAt": "2015",
+  "affectedTechnology": [
+    "Streaming data processing"
+  ],
+  "relevantBehaviors": [
+    "Event-time windowing",
+    "Late and out-of-order observations"
+  ],
+  "relatedHunts": [],
+  "sourceUrl": "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
+  "summary": "The Dataflow paper examines event-time processing and windowing in incomplete, unbounded, and out-of-order data streams.",
+  "evidenceType": "historical-research",
+  "supportedClaims": [
+    "Processing order and event-time order can differ; windowing requires explicit treatment of late and incomplete data."
+  ],
+  "limitations": [
+    "This is a data-processing foundation, not a threat-detection study or validation of maliciousness cutoffs."
+  ]
+},
+
   {
     id: "research-midnight-2024",
     title: "Midnight Blizzard: Guidance for responders on nation-state attack",
@@ -233,7 +281,7 @@ const seeds: ResearchInput[] = [
   },
   {
     id: "research-copilot-2024",
-    title: "Randomized Controlled Trials for Microsoft Security Copilot",
+    title: "Randomized Controlled Trials for Security Copilot for IT Administrators",
     organization: "Microsoft Research",
     publishedAt: "2024-11-01",
     affectedTechnology: ["Security Copilot", "IT administration tasks"],
@@ -247,7 +295,7 @@ const seeds: ResearchInput[] = [
   },
   {
     id: "research-reward-2025",
-    title: "Reward Hacking in Production RL Environments",
+    title: "Natural Emergent Misalignment from Reward Hacking in Production RL",
     organization: "Anthropic researchers",
     publishedAt: "2025-11-23",
     affectedTechnology: ["Production reinforcement-learning environments", "Evaluators"],

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-export const DEFAULT_SITE_URL = "https://hunt-the-infrastructure.example";
-export const SITE_NAME = "Hunt the Infrastructure";
-export const SITE_DESCRIPTION = "Threat hunting beyond the endpoint.";
+export const DEFAULT_SITE_URL = "https://hunt-tricks.example";
+export const SITE_NAME = "hunt-tricks";
+export const SITE_DESCRIPTION = "Follow behavior, timing, and evidence across identities, systems, and AI.";
 
 type PageMetadataInput = Readonly<{
   title: string;

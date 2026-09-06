@@ -9,8 +9,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(getPublicUrl("/")),
   title: {
-    default: "Hunt the Infrastructure",
-    template: "%s | Hunt the Infrastructure",
+    default: "hunt-tricks",
+    template: "%s | hunt-tricks",
   },
   description: SITE_DESCRIPTION,
 };

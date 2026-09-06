@@ -77,7 +77,7 @@ describe("global search dialog", () => {
     expect(screen.getByRole("option", { name: /HUNT SNMP Fan-Out/ })).toHaveTextContent("HUNT");
 
     await user.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog", { name: "Search the field guide" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Search hunt-tricks" })).not.toBeInTheDocument();
     expect(invoker).toHaveFocus();
   });
 
@@ -160,7 +160,7 @@ describe("global search dialog", () => {
     expect(option).toHaveAttribute("data-next-link", "true");
     expect(option).toHaveAttribute("href", "/hunts/snmp-fan-out/");
     await user.keyboard("{Enter}");
-    expect(screen.queryByRole("dialog", { name: "Search the field guide" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Search hunt-tricks" })).not.toBeInTheDocument();
   });
 
   test("ignores editable origins, repeat presses, and conflicting shortcut modifiers", () => {
@@ -180,11 +180,11 @@ describe("global search dialog", () => {
     fireEvent.keyDown(invoker, { key: "k", ctrlKey: true, altKey: true });
     fireEvent.keyDown(invoker, { key: "k", ctrlKey: true, metaKey: true });
     fireEvent.keyDown(invoker, { key: "k", ctrlKey: true, repeat: true });
-    expect(screen.queryByRole("dialog", { name: "Search the field guide" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Search hunt-tricks" })).not.toBeInTheDocument();
 
     invoker.focus();
     fireEvent.keyDown(invoker, { key: "K", metaKey: true });
-    expect(screen.getByRole("dialog", { name: "Search the field guide" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Search hunt-tricks" })).toBeInTheDocument();
   });
 
   test("traps Tab, hides and inerts only the background, and restores prior page state", async () => {
@@ -194,7 +194,7 @@ describe("global search dialog", () => {
     container.setAttribute("aria-hidden", "false");
     await user.click(screen.getByRole("button", { name: "Search guide" }));
 
-    const dialog = screen.getByRole("dialog", { name: "Search the field guide" });
+    const dialog = screen.getByRole("dialog", { name: "Search hunt-tricks" });
     const portalRoot = dialog.parentElement!;
     const close = within(dialog).getByRole("button", { name: "Close search" });
     const lastOption = within(dialog).getAllByRole("option").at(-1)!;
@@ -225,9 +225,9 @@ describe("global search dialog", () => {
     await user.type(screen.getByRole("combobox", { name: "Search guide" }), "no-match-anywhere");
     expect(screen.getByRole("status")).toHaveTextContent("No guide entries match your search.");
 
-    const dialog = screen.getByRole("dialog", { name: "Search the field guide" });
+    const dialog = screen.getByRole("dialog", { name: "Search hunt-tricks" });
     fireEvent.mouseDown(dialog.parentElement!);
-    expect(screen.queryByRole("dialog", { name: "Search the field guide" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Search hunt-tricks" })).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
 
     await user.click(trigger);
@@ -244,7 +244,7 @@ describe("global search dialog", () => {
     rerender(<SearchHarness showTrigger={false} />);
     await user.keyboard("{Escape}");
 
-    expect(screen.queryByRole("dialog", { name: "Search the field guide" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Search hunt-tricks" })).not.toBeInTheDocument();
     expect(screen.getByText("Trigger removed")).toBeInTheDocument();
     expect(document.body.style.overflow).toBe("");
   });
@@ -256,18 +256,18 @@ describe("global search dialog", () => {
     await user.click(screen.getByRole("button", { name: "Open navigation" }));
     expect(screen.getByRole("dialog", { name: "Navigation" })).toBeInTheDocument();
     fireEvent.keyDown(document, { key: "k", ctrlKey: true });
-    expect(screen.queryByRole("dialog", { name: "Search the field guide" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Search hunt-tricks" })).not.toBeInTheDocument();
     expect(screen.getByRole("dialog", { name: "Navigation" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Close navigation" }));
     await user.click(screen.getByRole("button", { name: "Search guide" }));
-    expect(screen.getByRole("dialog", { name: "Search the field guide" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Search hunt-tricks" })).toBeInTheDocument();
   });
 
   test("removes the global keyboard listener when the provider unmounts", () => {
     const { unmount } = render(<SearchHarness />);
     unmount();
     fireEvent.keyDown(document, { key: "k", ctrlKey: true });
-    expect(screen.queryByRole("dialog", { name: "Search the field guide" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Search hunt-tricks" })).not.toBeInTheDocument();
   });
 });

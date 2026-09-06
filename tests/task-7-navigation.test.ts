@@ -18,7 +18,7 @@ describe("Task 7 internal navigation contract", () => {
       const explicitInternalRoutes = [...source.matchAll(explicitInternalHref)];
       expect(explicitInternalRoutes.length, file).toBeGreaterThan(0);
       for (const match of explicitInternalRoutes) {
-        expect(match[2], `${file}: ${match[2]}`).toMatch(/\/$/);
+        expect(match[2].split(/[?#]/)[0], `${file}: ${match[2]}`).toMatch(/\/$/);
       }
     }
 

@@ -137,8 +137,8 @@ export function SearchDialog({ entries, onClose, onActivate }: SearchDialogProps
       >
         <header className="search-dialog__header">
           <div>
-            <p className="eyebrow">Global guide search</p>
-            <h2 id={titleId}>Search the field guide</h2>
+            <p className="eyebrow">hunt-tricks search</p>
+            <h2 id={titleId}>Search hunt-tricks</h2>
           </div>
           <button className="search-dialog__close" onClick={onClose} type="button">Close search</button>
         </header>
@@ -156,7 +156,7 @@ export function SearchDialog({ entries, onClose, onActivate }: SearchDialogProps
               setActiveIndex(0);
             }}
             onKeyDown={handleInputKeyDown}
-            placeholder="Search by behavior, protocol, telemetry, or technique"
+            placeholder="Search scope, behavior, timing, sources, or techniques"
             ref={inputRef}
             role="combobox"
             type="search"

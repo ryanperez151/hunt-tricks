@@ -86,7 +86,7 @@ export function buildSearchIndex(huntRecords: readonly Hunt[] = hunts): readonly
     type: "RESEARCH",
     title: entry.title,
     description: entry.summary,
-    href: "/research/",
+    href: `/research/#${entry.id}`,
     tags: [entry.organization, entry.evidenceType, ...(entry.threatActor ? [entry.threatActor] : []), ...entry.affectedTechnology],
     body: [
       entry.id,

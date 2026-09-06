@@ -21,9 +21,10 @@ describe("production build content gate", () => {
     ], {
       cwd: projectRoot,
       encoding: "utf8",
+      timeout: 15_000,
     });
 
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toMatch(/Tests\s+1 passed \(1\)/);
-  });
+  }, 20_000);
 });

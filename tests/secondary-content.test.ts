@@ -90,7 +90,7 @@ describe("secondary content registries", () => {
     expect(telemetrySources.length).toBeGreaterThanOrEqual(18);
     expect(huntFamilies).toHaveLength(6);
     expect(homeContent.originQuestion).toMatch(/forwarded BY|initiated FROM/);
-    expect(methodologyEntries).toHaveLength(3);
+    expect(methodologyEntries).toHaveLength(6);
     expect(attackPaths.map((item) => item.title)).toEqual([
       "Infrastructure Pivot", "Credential Collection", "Covert Tunnel", "Telemetry Suppression",
     ]);

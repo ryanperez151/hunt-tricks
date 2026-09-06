@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { methodologyEntries } from "@/data/methodology";
 import { huntFamilies } from "@/data/families";
 import { hunts, protocols } from "@/lib/content";
 import { getPublicUrl } from "@/lib/metadata";
@@ -13,9 +14,7 @@ export const publicStaticRoutes = Object.freeze([
   "/protocols/",
   "/queries/",
   "/research/",
-  "/methodology/baselining/",
-  "/methodology/rarity/",
-  "/methodology/independent-observation/",
+  ...methodologyEntries.map(({ route }) => `${route}/`),
   "/about/",
   ...huntFamilies.map(({ id }) => `/hunts/${id}/`),
   ...hunts.map(({ slug }) => `/hunts/${slug}/`),

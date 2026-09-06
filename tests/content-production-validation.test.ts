@@ -12,7 +12,7 @@ test("loads every validated production content registry", () => {
     hunts: 45,
     protocols: 24,
     telemetry: 18,
-    research: 25,
+    research: 27,
     attackPaths: 4,
   });
 });

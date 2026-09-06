@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { HuntEvidence } from "@/components/hunts/HuntEvidence";
+import { HuntContext } from "@/components/hunts/HuntContext";
 import { OriginMatters } from "@/components/common/OriginMatters";
 import { BehaviorComparison } from "@/components/hunts/BehaviorComparison";
 import { HuntCard } from "@/components/hunts/HuntCard";
@@ -101,11 +103,13 @@ async function HuntDetailPage({ hunt }: { hunt: Hunt }) {
       </section>
       {hunt.showOriginMatters ? <OriginMatters /> : null}
       <BehaviorSection hunt={hunt} />
+      <HuntContext hunt={hunt} />
       <section className="hunt-detail__section">
         <h2>Why this matters</h2>
         <p>{hunt.rationale}</p>
       </section>
       <TelemetryRequirements {...hunt.telemetry} sources={telemetrySources} />
+      {hunt.requiredFields.length > 0 && <ListSection title="Required fields" items={hunt.requiredFields} />}
       <section className="hunt-detail__section">
         <h2>Detection strategy</h2>
         <p>{hunt.detectionStrategy}</p>
@@ -123,6 +127,8 @@ async function HuntDetailPage({ hunt }: { hunt: Hunt }) {
         <div><h3>Likely false positives</h3><ul>{hunt.falsePositives.map((item) => <li key={item}>{item}</li>)}</ul></div>
         <div><h3>Useful enrichment</h3><ul>{hunt.enrichment.map((item) => <li key={item}>{item}</li>)}</ul></div>
       </section>
+      {hunt.limitations.length > 0 && <ListSection title="Limitations" items={hunt.limitations} />}
+      <HuntEvidence evidence={hunt.evidence} />
       <ListSection title="ATT&CK techniques" items={hunt.techniques} />
       <section className="hunt-detail__section">
         <h2>Related hunts</h2>

@@ -21,6 +21,9 @@ const fixedRoutes = [
   "/protocols/",
   "/queries/",
   "/research/",
+  "/methodology/behavior/",
+  "/methodology/velocity/",
+  "/methodology/ai-autonomy/",
   "/methodology/baselining/",
   "/methodology/rarity/",
   "/methodology/independent-observation/",
@@ -95,10 +98,12 @@ describe("informational routes", () => {
   test("renders grouped research cards with safe sources and related hunt links", () => {
     render(createElement(ResearchPage));
 
-    expect(screen.getAllByRole("article")).toHaveLength(researchEntries.length);
+    const cards = screen.getAllByRole("article");
+    expect(cards).toHaveLength(researchEntries.length);
     for (const entry of researchEntries) {
-      const heading = screen.getByRole("heading", { name: entry.title, level: 3 });
-      const card = heading.closest("article");
+      const card = cards.find((candidate) => candidate.id === entry.id)!;
+      expect(card).toBeDefined();
+      expect(within(card).getByRole("heading", { name: entry.title, level: 3 })).toBeInTheDocument();
       const source = within(card!).getByRole("link", { name: `Read ${entry.organization} primary source` });
       expect(within(card!).getByText(entry.publishedAt)).toHaveAttribute("datetime", entry.publishedAt);
       expect(within(card!).getByText(entry.affectedTechnology[0])).toBeInTheDocument();

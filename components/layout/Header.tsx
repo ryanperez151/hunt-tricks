@@ -10,9 +10,9 @@ export function Header() {
         Skip to content
       </a>
       <div className="site-header__inner workspace-width">
-        <Link aria-label="Hunt the Infrastructure home" className="brand" href="/">
-          <span>Hunt the Infrastructure</span>
-          <small>Threat Hunting Beyond the Endpoint</small>
+        <Link aria-label="hunt-tricks home" className="brand" href="/">
+          <span>hunt-tricks</span>
+          <small>Behavior / Timing / Evidence</small>
         </Link>
         <nav aria-label="Primary" className="desktop-navigation">
           <ul>

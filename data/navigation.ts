@@ -1,5 +1,6 @@
 export const navigation = [
   { href: "/hunts", label: "Hunts" },
+  { href: "/methodology/behavior", label: "Methodology" },
   { href: "/protocols", label: "Protocols" },
   { href: "/telemetry", label: "Telemetry" },
   { href: "/queries", label: "Queries" },

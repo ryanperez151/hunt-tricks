@@ -1,6 +1,8 @@
-# Hunt the Infrastructure
+# hunt-tricks
 
-A static Next.js field guide for threat hunting on routers, firewalls, switches, VPN gateways, and other network infrastructure.
+A static Next.js threat-hunting workbench across identities, systems, networks, and AI. Scope, behavior, and temporal filters connect operational hypotheses to telemetry, adaptable queries, and claim-linked research. Existing infrastructure routes remain available.
+
+High velocity can be scripted just as readily as AI-driven. Speed alone does not identify AI involvement. Methodology covers behavior, velocity, and AI/autonomy, alongside the original baselining, rarity, and independent-observation guides.
 
 ## Local commands
 

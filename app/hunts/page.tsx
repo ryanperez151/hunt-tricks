@@ -4,8 +4,8 @@ import { hunts } from "@/lib/content";
 import { createPageMetadata } from "@/lib/metadata";
 
 export const metadata = createPageMetadata({
-  title: "Infrastructure Hunt Catalog",
-  description: "Filter twenty operational threat hunts by family, device, protocol, plane, severity, and telemetry.",
+  title: "Hunt Catalog",
+  description: "Filter operational hunts by scope, behavior, temporal pattern, AI role, and infrastructure context.",
   path: "/hunts/",
 });
 
@@ -14,8 +14,8 @@ export default function HuntsPage() {
     <div className="catalog-page workspace-width">
       <header className="page-header">
         <p className="eyebrow">Operational field guide</p>
-        <h1>Infrastructure hunt catalog</h1>
-        <p>Start with an observed role reversal, protocol anomaly, or telemetry gap. Each hunt moves from hypothesis to independent evidence, adaptable detection logic, and a concrete investigation workflow.</p>
+        <h1>Hunt catalog</h1>
+        <p>Start with a scope, behavior, or temporal pattern. Each hunt moves from hypothesis to independent evidence, adaptable detection logic, and a concrete investigation workflow.</p>
       </header>
       <Suspense fallback={<HuntCatalogFallback hunts={hunts} />}>
         <HuntCatalog hunts={hunts} />

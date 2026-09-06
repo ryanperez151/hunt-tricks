@@ -19,15 +19,15 @@ describe("public metadata URLs", () => {
 
     expect(metadata).toMatchObject({
       alternates: {
-        canonical: "https://hunt-the-infrastructure.example/hunts/snmp-fan-out/",
+        canonical: "https://hunt-tricks.example/hunts/snmp-fan-out/",
       },
       openGraph: {
         title: "SNMP Fan-Out",
         description: "Hunt SNMP fan-out.",
         type: "article",
-        url: "https://hunt-the-infrastructure.example/hunts/snmp-fan-out/",
+        url: "https://hunt-tricks.example/hunts/snmp-fan-out/",
         images: [{
-          url: "https://hunt-the-infrastructure.example/opengraph-image.png",
+          url: "https://hunt-tricks.example/opengraph-image.png",
           width: 1200,
           height: 630,
         }],

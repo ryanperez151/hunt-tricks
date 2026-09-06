@@ -1,7 +1,7 @@
 export const homeContent = {
-  eyebrow: "Threat Hunting Beyond the Endpoint",
-  title: "Hunt the Infrastructure",
-  heroCopy: "Investigate the devices that route, protect, and manage your network as potential hosts—not merely passive sensors.",
+  eyebrow: "hunt-tricks / defensive field guide",
+  title: "Hunt the behavior. Follow the change.",
+  heroCopy: "A research-backed field guide to suspicious behavior across identities, systems, and AI. Start with a scope, examine the sequence, then test the hypothesis.",
   originQuestion: "Was this traffic forwarded BY the appliance, or initiated FROM it?",
   heroNetwork: {
     nodes: ["Internet", "Firewall", "Router", "Core", "Servers", "Endpoints"],

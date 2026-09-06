@@ -6,7 +6,7 @@ import { Header } from "@/components/layout/Header";
 test("exposes primary navigation and an operable mobile menu", async () => {
   const user = userEvent.setup();
   render(<Header />);
-  expect(screen.getByRole("link", { name: /hunt the infrastructure/i })).toHaveAttribute("href", "/");
+  expect(screen.getByRole("link", { name: /hunt-tricks/i })).toHaveAttribute("href", "/");
   expect(screen.getByRole("navigation", { name: /primary/i })).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: /open navigation/i }));
   expect(screen.getByRole("dialog", { name: /navigation/i })).toBeVisible();

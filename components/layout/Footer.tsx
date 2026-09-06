@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { methodologyEntries } from "@/data/methodology";
 import { navigation } from "@/data/navigation";
 
 export function Footer() {
@@ -8,8 +9,7 @@ export function Footer() {
         <div>
           <p className="eyebrow">Threat-hunting field guide</p>
           <p>
-            A practical reference for investigating infrastructure as a potential host, not just a source of
-            telemetry.
+            hunt-tricks connects suspicious behavior across identities, systems, and AI to testable hypotheses and cited evidence.
           </p>
         </div>
         <div>
@@ -25,6 +25,7 @@ export function Footer() {
             ))}
           </ul>
         </nav>
+        <nav aria-label="Methods"><ul>{methodologyEntries.map((entry) => <li key={entry.id}><Link href={`${entry.route}/`}>{entry.title}</Link></li>)}</ul></nav>
       </div>
     </footer>
   );

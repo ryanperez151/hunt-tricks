@@ -39,6 +39,7 @@ describe("HuntCatalog", () => {
     expect(screen.queryByRole("option", { name: "OpenVPN" })).not.toBeInTheDocument();
     expect(screen.getByText("1 hunt")).toBeInTheDocument();
 
+    await user.click(screen.getByText("Infrastructure and advanced filters"));
     await user.selectOptions(screen.getByLabelText("Protocol"), "SNMP");
 
     expect(navigation.push).toHaveBeenCalledWith("/hunts/?protocol=SNMP", { scroll: false });

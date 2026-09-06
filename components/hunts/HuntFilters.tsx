@@ -1,5 +1,6 @@
 "use client";
 
+import { displayLabel } from "@/lib/display-labels";
 import { emptyHuntFilters, type HuntFilters as HuntFilterState } from "@/lib/filters";
 
 export type HuntFilterOptions = {
@@ -13,16 +14,16 @@ type HuntFiltersProps = {
 };
 
 const definitions = [
+  ["scopes", "Scope"],
+  ["behaviors", "Behavior"],
+  ["temporalPatterns", "Temporal pattern"],
+  ["aiRoles", "AI role"],
   ["families", "Family"],
   ["devices", "Device"],
   ["protocols", "Protocol"],
   ["planes", "Plane"],
   ["severities", "Severity"],
   ["telemetry", "Telemetry"],
-  ["scopes", "Scope"],
-  ["behaviors", "Behavior"],
-  ["temporalPatterns", "Temporal pattern"],
-  ["aiRoles", "AI role"],
 ] as const satisfies ReadonlyArray<readonly [keyof HuntFilterState, string]>;
 
 const labels: Record<string, string> = {
@@ -37,7 +38,7 @@ const labels: Record<string, string> = {
 };
 
 function labelFor(value: string) {
-  return labels[value] ?? value.replaceAll("-", " ");
+  return labels[value] ?? displayLabel(value);
 }
 
 function replaceCategory(
@@ -63,7 +64,7 @@ export function HuntFilters({ filters, options, onChange }: HuntFiltersProps) {
         <p>Select one or more values. Categories combine to narrow the results.</p>
       </div>
       <div className="hunt-filters__controls">
-        {definitions.map(([key, label]) => (
+        {definitions.slice(0, 4).map(([key, label]) => (
           <label key={key}>
             <span>{label}</span>
             <select
@@ -81,6 +82,28 @@ export function HuntFilters({ filters, options, onChange }: HuntFiltersProps) {
           </label>
         ))}
       </div>
+      <p className="filter-perspective">AI role describes the content perspective: defender assistance, attacker capability, or AI attack surface. It is not an attribution result about an observed event.</p>
+      <details className="advanced-filters"><summary>Infrastructure and advanced filters</summary>
+      <div className="hunt-filters__controls">
+        {definitions.slice(4).map(([key, label]) => (
+          <label key={key}>
+            <span>{label}</span>
+            <select
+              aria-describedby="hunt-filter-guidance"
+              multiple
+              onChange={(event) => onChange(replaceCategory(
+                filters,
+                key,
+                Array.from(event.currentTarget.selectedOptions, (option) => option.value),
+              ))}
+              value={[...filters[key]]}
+            >
+              {options[key].map((value) => <option key={value} value={value}>{labelFor(value)}</option>)}
+            </select>
+          </label>
+        ))}
+      </div>
+      </details>
       <p className="sr-only" id="hunt-filter-guidance">Hold Control or Command to select more than one value.</p>
       {activeFilters.length ? (
         <div className="hunt-filters__active">

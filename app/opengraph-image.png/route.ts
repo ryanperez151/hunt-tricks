@@ -50,7 +50,7 @@ export function GET() {
         createElement(
           "div",
           { style: { color: "#9caec3", display: "flex", fontSize: 24 } },
-          "Origin matters. Infrastructure is a host.",
+          "Behavior. Timing. Evidence.",
         ),
       ),
     ),

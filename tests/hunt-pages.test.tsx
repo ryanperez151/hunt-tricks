@@ -97,3 +97,13 @@ describe("shared hunt route page", () => {
     expect(screen.queryByRole("heading", { name: "Treat infrastructure as a host" })).not.toBeInTheDocument();
   });
 });
+
+ test("resolves claim evidence to its library entry and actual primary source", async () => {
+  render(await HuntRoutePage({ params: Promise.resolve({ slug: "evaluator-change-precedes-perfect-score" }) }));
+  const evidence = screen.getByRole("region", { name: "Claim-linked evidence" });
+  expect(evidence.querySelector('a[href="/research/#research-reward-2024"]')).not.toBeNull();
+  expect(evidence.querySelector('a[href="https://www.anthropic.com/research/reward-tampering"]')).not.toBeNull();
+  expect(evidence).toHaveTextContent("Source observation");
+  expect(evidence).toHaveTextContent("Editorial hypothesis");
+  expect(evidence).toHaveTextContent("Controlled experiment");
+});
