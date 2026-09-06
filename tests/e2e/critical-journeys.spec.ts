@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 test("home to filtered hunt to copied query to related hunt", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Explore Hunts" }).click();
+  await page.getByText("Infrastructure and advanced filters", { exact: true }).click();
 
   const protocolFilter = page.getByRole("listbox", { name: "Protocol", exact: true });
   await protocolFilter.selectOption("SNMP");

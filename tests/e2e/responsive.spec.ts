@@ -91,6 +91,7 @@ test("mobile navigation restores focus and filter controls meet touch sizing", a
   await trigger.click();
   await navigationDialog.getByRole("link", { name: "Hunts", exact: true }).click();
   await expect(page).toHaveURL(/\/hunts\/$/);
+  await page.getByText("Infrastructure and advanced filters", { exact: true }).click();
   await page.getByRole("listbox", { name: "Protocol", exact: true }).selectOption("SNMP");
 
   for (const button of [
