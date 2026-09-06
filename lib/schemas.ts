@@ -1,13 +1,17 @@
 import { z } from "zod";
 import {
+  AI_ROLES,
+  BEHAVIORS,
   CONFIDENCE_LEVELS,
   DEVICES,
   HUNT_FAMILIES,
   PLANES,
   PROTOCOL_NAMES,
   QUERY_PLATFORMS,
+  SCOPES,
   SEVERITIES,
   TELEMETRY_KEYS,
+  TEMPORAL_PATTERNS,
 } from "@/lib/taxonomy";
 
 const NonEmptyString = z.string().trim().min(1);
@@ -73,6 +77,24 @@ export const HuntTelemetrySchema = z
     }
   });
 
+export const HuntTemporalSchema = z.object({
+  interpretation: NonEmptyString,
+  baseline: NonEmptyString,
+  confounders: z.array(NonEmptyString),
+});
+
+export const HuntEvidenceSchema = z.object({
+  claim: NonEmptyString,
+  sourceIds: z.array(NonEmptyString).min(1, "Evidence claims require at least one source ID"),
+  kind: z.enum(["observation", "hypothesis"]),
+});
+
+const legacyTemporalDefault = {
+  interpretation: "Interpret timing relative to the infrastructure entity's established behavior.",
+  baseline: "Compare activity with the entity's normal peers, roles, and operating cadence.",
+  confounders: [],
+};
+
 export const HuntSchema = z.object({
   id: NonEmptyString,
   title: NonEmptyString,
@@ -85,8 +107,16 @@ export const HuntSchema = z.object({
   expectedBehavior: z.array(NonEmptyString).optional(),
   severity: z.enum(SEVERITIES),
   confidence: z.enum(CONFIDENCE_LEVELS),
-  planes: z.array(z.enum(PLANES)).min(1),
-  devices: z.array(z.enum(DEVICES)).min(1),
+  scopes: z.array(z.enum(SCOPES)).min(1).default(["network-edge"]),
+  behaviors: z.array(z.enum(BEHAVIORS)).default([]),
+  temporalPatterns: z.array(z.enum(TEMPORAL_PATTERNS)).default([]),
+  aiRoles: z.array(z.enum(AI_ROLES)).default([]),
+  temporal: HuntTemporalSchema.default(legacyTemporalDefault),
+  evidence: z.array(HuntEvidenceSchema).default([]),
+  requiredFields: z.array(NonEmptyString).default([]),
+  limitations: z.array(NonEmptyString).default([]),
+  planes: z.array(z.enum(PLANES)),
+  devices: z.array(z.enum(DEVICES)),
   protocols: z.array(z.enum(PROTOCOL_NAMES)),
   techniques: z.array(NonEmptyString),
   telemetry: HuntTelemetrySchema,
@@ -100,6 +130,41 @@ export const HuntSchema = z.object({
   references: z.array(ReferenceSchema).min(1),
   relatedHunts: z.array(NonEmptyString),
   behaviorComparison: BehaviorComparisonSchema.optional(),
+}).superRefine((hunt, context) => {
+  const expanded = hunt.family === "cross-domain"
+    || hunt.family === "ai-agent-abuse"
+    || hunt.scopes.some((scope) => scope !== "network-edge");
+  if (!expanded) return;
+
+  const requiredCollections = [
+    ["behaviors", hunt.behaviors],
+    ["temporalPatterns", hunt.temporalPatterns],
+    ["evidence", hunt.evidence],
+    ["requiredFields", hunt.requiredFields],
+    ["limitations", hunt.limitations],
+    ["expectedBehavior", hunt.expectedBehavior ?? []],
+  ] as const;
+  for (const [field, values] of requiredCollections) {
+    if (values.length === 0) {
+      context.addIssue({
+        code: "custom",
+        path: [field],
+        message: `Expanded hunts require nonempty ${field}`,
+      });
+    }
+  }
+
+  if (
+    hunt.temporal.interpretation === legacyTemporalDefault.interpretation
+    && hunt.temporal.baseline === legacyTemporalDefault.baseline
+    && hunt.temporal.confounders.length === 0
+  ) {
+    context.addIssue({
+      code: "custom",
+      path: ["temporal"],
+      message: "Expanded hunts require explicit temporal interpretation, baseline, and confounders",
+    });
+  }
 });
 
 export const ProtocolSchema = z.object({
@@ -136,17 +201,26 @@ export const TelemetrySchema = z.object({
   }),
 });
 
+const ResearchPublishedAtSchema = z.union([
+  z.string().regex(/^\d{4}$/, "Invalid publication date"),
+  z.string().regex(/^\d{4}-(?:0[1-9]|1[0-2])$/, "Invalid publication date"),
+  z.string().date(),
+]);
+
 export const ResearchSchema = z.object({
   id: NonEmptyString,
   title: NonEmptyString,
   organization: NonEmptyString,
-  publishedAt: z.string().date(),
+  publishedAt: ResearchPublishedAtSchema,
   threatActor: NonEmptyString.optional(),
   affectedTechnology: z.array(NonEmptyString).min(1),
   relevantBehaviors: z.array(NonEmptyString).min(1),
   relatedHunts: z.array(NonEmptyString),
   sourceUrl: HttpUrlSchema,
   summary: NonEmptyString,
+  evidenceType: z.enum(["incident-report", "experiment", "framework", "historical-research"]).default("incident-report"),
+  supportedClaims: z.array(NonEmptyString).default([]),
+  limitations: z.array(NonEmptyString).default([]),
 });
 
 export const AttackPathSchema = z.object({
@@ -168,7 +242,9 @@ export type HuntQuery = z.infer<typeof HuntQuerySchema>;
 export type Reference = z.infer<typeof ReferenceSchema>;
 export type HuntTelemetry = z.infer<typeof HuntTelemetrySchema>;
 export type Hunt = z.infer<typeof HuntSchema>;
+export type HuntInput = z.input<typeof HuntSchema>;
 export type Protocol = z.infer<typeof ProtocolSchema>;
 export type Telemetry = z.infer<typeof TelemetrySchema>;
 export type Research = z.infer<typeof ResearchSchema>;
+export type ResearchInput = z.input<typeof ResearchSchema>;
 export type AttackPath = z.infer<typeof AttackPathSchema>;

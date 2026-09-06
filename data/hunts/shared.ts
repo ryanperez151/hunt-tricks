@@ -1,6 +1,6 @@
-import { HuntSchema, type Hunt, type Reference } from "@/lib/schemas";
+import { HuntSchema, type Hunt, type HuntInput, type Reference } from "@/lib/schemas";
 
-export type HuntSeed = Omit<Hunt, "id">;
+export type HuntSeed = Omit<HuntInput, "id">;
 
 export const references = {
   cisaRouters: {

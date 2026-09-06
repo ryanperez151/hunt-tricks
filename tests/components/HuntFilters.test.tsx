@@ -11,6 +11,10 @@ const filterOptions: HuntFilterOptions = {
   planes: ["management", "data"],
   severities: ["high", "critical"],
   telemetry: ["netflow-ipfix", "packet-capture"],
+  scopes: ["identity", "network-edge"],
+  behaviors: ["credential-use", "role-deviation"],
+  temporalPatterns: ["burst", "low-and-slow"],
+  aiRoles: ["attacker", "defender"],
 };
 
 describe("HuntFilters", () => {
@@ -36,6 +40,7 @@ describe("HuntFilters", () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const filters: HuntFilterState = {
+      ...emptyHuntFilters,
       families: ["management-plane-c2"],
       devices: ["router"],
       protocols: ["SNMP"],
@@ -45,7 +50,9 @@ describe("HuntFilters", () => {
     };
     render(<HuntFilters filters={filters} options={filterOptions} onChange={onChange} />);
 
-    for (const label of ["Family", "Device", "Protocol", "Plane", "Severity", "Telemetry"]) {
+    for (const label of [
+      "Family", "Device", "Protocol", "Plane", "Severity", "Telemetry", "Scope", "Behavior", "Temporal pattern", "AI role",
+    ]) {
       expect(screen.getByLabelText(label)).toBeInTheDocument();
     }
     expect(screen.getByText("Active filters")).toBeInTheDocument();

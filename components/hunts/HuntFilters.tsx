@@ -1,6 +1,6 @@
 "use client";
 
-import type { HuntFilters as HuntFilterState } from "@/lib/filters";
+import { emptyHuntFilters, type HuntFilters as HuntFilterState } from "@/lib/filters";
 
 export type HuntFilterOptions = {
   readonly [Key in keyof HuntFilterState]: HuntFilterState[Key];
@@ -19,6 +19,10 @@ const definitions = [
   ["planes", "Plane"],
   ["severities", "Severity"],
   ["telemetry", "Telemetry"],
+  ["scopes", "Scope"],
+  ["behaviors", "Behavior"],
+  ["temporalPatterns", "Temporal pattern"],
+  ["aiRoles", "AI role"],
 ] as const satisfies ReadonlyArray<readonly [keyof HuntFilterState, string]>;
 
 const labels: Record<string, string> = {
@@ -94,14 +98,7 @@ export function HuntFilters({ filters, options, onChange }: HuntFiltersProps) {
               </li>
             ))}
           </ul>
-          <button className="hunt-filters__clear" type="button" onClick={() => onChange({
-            families: [],
-            devices: [],
-            protocols: [],
-            planes: [],
-            severities: [],
-            telemetry: [],
-          })}>Clear all filters</button>
+          <button className="hunt-filters__clear" type="button" onClick={() => onChange(emptyHuntFilters)}>Clear all filters</button>
         </div>
       ) : null}
     </section>

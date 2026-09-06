@@ -1,6 +1,6 @@
-import { ResearchSchema, type Research } from "@/lib/schemas";
+import { ResearchSchema, type ResearchInput } from "@/lib/schemas";
 
-const researchSeeds: Research[] = [
+const researchSeeds: ResearchInput[] = [
   {
     id: "research-cisa-aa25-239a",
     title: "Countering Chinese State-Sponsored Actors Compromise of Networks Worldwide to Feed Global Espionage System",

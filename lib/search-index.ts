@@ -1,7 +1,7 @@
 import { methodologyEntries } from "@/data/methodology";
 import { hunts, protocols, researchEntries } from "@/lib/content";
 import { aggregateQueries } from "@/lib/queries";
-import type { FlowDefinition } from "@/lib/schemas";
+import type { FlowDefinition, Hunt } from "@/lib/schemas";
 import type { SearchEntry } from "@/lib/search";
 
 function freezeEntry(entry: Omit<SearchEntry, "tags"> & { tags: readonly string[] }): SearchEntry {
@@ -21,15 +21,40 @@ function flowSearchText(flow: FlowDefinition): readonly string[] {
   ];
 }
 
-export function buildSearchIndex(): readonly SearchEntry[] {
-  const huntEntries = hunts.map((hunt) => freezeEntry({
+export function buildSearchIndex(huntRecords: readonly Hunt[] = hunts): readonly SearchEntry[] {
+  const huntEntries = huntRecords.map((hunt) => freezeEntry({
     id: `hunt:${hunt.slug}`,
     type: "HUNT",
     title: hunt.title,
     description: hunt.summary,
     href: `/hunts/${hunt.slug}/`,
-    tags: [hunt.family, hunt.severity, ...hunt.protocols, ...hunt.devices, ...hunt.planes, ...hunt.telemetry.recommended, ...hunt.telemetry.optional, ...hunt.techniques],
-    body: [hunt.hypothesis, hunt.rationale, hunt.detectionStrategy, ...hunt.suspiciousBehavior, ...hunt.queries.map((query) => query.query)].join(" "),
+    tags: [
+      hunt.family,
+      hunt.severity,
+      ...hunt.scopes,
+      ...hunt.behaviors,
+      ...hunt.temporalPatterns,
+      ...hunt.aiRoles,
+      ...hunt.protocols,
+      ...hunt.devices,
+      ...hunt.planes,
+      ...hunt.telemetry.recommended,
+      ...hunt.telemetry.optional,
+      ...hunt.techniques,
+    ],
+    body: [
+      hunt.hypothesis,
+      hunt.rationale,
+      hunt.detectionStrategy,
+      hunt.temporal.interpretation,
+      hunt.temporal.baseline,
+      ...hunt.temporal.confounders,
+      ...hunt.evidence.map((evidence) => evidence.claim),
+      ...hunt.requiredFields,
+      ...hunt.limitations,
+      ...hunt.suspiciousBehavior,
+      ...hunt.queries.map((query) => query.query),
+    ].join(" "),
   }));
   const protocolEntries = protocols.map((protocol) => freezeEntry({
     id: `protocol:${protocol.slug}`,
@@ -62,10 +87,18 @@ export function buildSearchIndex(): readonly SearchEntry[] {
     title: entry.title,
     description: entry.summary,
     href: "/research/",
-    tags: [entry.organization, ...(entry.threatActor ? [entry.threatActor] : []), ...entry.affectedTechnology],
-    body: [entry.id, entry.sourceUrl, ...entry.relevantBehaviors, ...entry.relatedHunts, entry.publishedAt].join(" "),
+    tags: [entry.organization, entry.evidenceType, ...(entry.threatActor ? [entry.threatActor] : []), ...entry.affectedTechnology],
+    body: [
+      entry.id,
+      entry.sourceUrl,
+      ...entry.relevantBehaviors,
+      ...entry.supportedClaims,
+      ...entry.limitations,
+      ...entry.relatedHunts,
+      entry.publishedAt,
+    ].join(" "),
   }));
-  const queryEntries = aggregateQueries(hunts).map((query) => freezeEntry({
+  const queryEntries = aggregateQueries(huntRecords).map((query) => freezeEntry({
     id: `query:${query.id}`,
     type: "QUERY",
     title: query.title,

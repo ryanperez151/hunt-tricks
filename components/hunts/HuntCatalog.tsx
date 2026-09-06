@@ -12,7 +12,18 @@ import {
   type HuntFilters as HuntFilterState,
 } from "@/lib/filters";
 import type { Hunt } from "@/lib/schemas";
-import { DEVICES, HUNT_FAMILIES, PLANES, PROTOCOL_NAMES, SEVERITIES, TELEMETRY_KEYS } from "@/lib/taxonomy";
+import {
+  AI_ROLES,
+  BEHAVIORS,
+  DEVICES,
+  HUNT_FAMILIES,
+  PLANES,
+  PROTOCOL_NAMES,
+  SCOPES,
+  SEVERITIES,
+  TELEMETRY_KEYS,
+  TEMPORAL_PATTERNS,
+} from "@/lib/taxonomy";
 
 function presentValues<T extends string>(knownValues: readonly T[], usedValues: Iterable<string>): readonly T[] {
   const used = new Set(usedValues);
@@ -30,6 +41,10 @@ export function deriveHuntFilterOptions(hunts: readonly Hunt[]): HuntFilterOptio
       ...hunt.telemetry.recommended,
       ...hunt.telemetry.optional,
     ])),
+    scopes: presentValues(SCOPES, hunts.flatMap((hunt) => hunt.scopes)),
+    behaviors: presentValues(BEHAVIORS, hunts.flatMap((hunt) => hunt.behaviors)),
+    temporalPatterns: presentValues(TEMPORAL_PATTERNS, hunts.flatMap((hunt) => hunt.temporalPatterns)),
+    aiRoles: presentValues(AI_ROLES, hunts.flatMap((hunt) => hunt.aiRoles)),
   };
 }
 

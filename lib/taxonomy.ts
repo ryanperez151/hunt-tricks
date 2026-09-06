@@ -3,7 +3,49 @@ export const HUNT_FAMILIES = [
   "infrastructure-lateral-movement",
   "discovery-credential-access",
   "traffic-manipulation",
+  "cross-domain",
+  "ai-agent-abuse",
 ] as const;
+
+export const SCOPES = [
+  "endpoints",
+  "identity",
+  "cloud",
+  "saas",
+  "email",
+  "network-edge",
+  "containers",
+  "cicd",
+  "supply-chain",
+  "data-stores",
+  "ot-iot",
+  "ai-systems",
+] as const;
+
+export const BEHAVIORS = [
+  "role-deviation",
+  "new-relationships",
+  "privilege-change",
+  "discovery",
+  "credential-use",
+  "persistence",
+  "data-movement",
+  "trust-boundary",
+  "evidence-tampering",
+  "adaptive-sequence",
+] as const;
+
+export const TEMPORAL_PATTERNS = [
+  "burst",
+  "acceleration",
+  "periodicity",
+  "fan-out",
+  "dwell-time",
+  "stage-transition",
+  "low-and-slow",
+] as const;
+
+export const AI_ROLES = ["defender", "attacker", "target"] as const;
 
 export const SEVERITIES = ["low", "medium", "high", "critical"] as const;
 export const CONFIDENCE_LEVELS = ["low", "medium", "high"] as const;
@@ -55,4 +97,14 @@ export const TELEMETRY_KEYS = [
   "zeek",
   "packet-capture",
   "syslog",
+  "endpoint-events",
+  "identity-audit",
+  "cloud-audit",
+  "saas-audit",
+  "email-audit",
+  "kubernetes-audit",
+  "build-audit",
+  "data-audit",
+  "ot-passive",
+  "agent-traces",
 ] as const;

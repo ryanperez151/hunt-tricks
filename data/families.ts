@@ -27,4 +27,14 @@ export const huntFamilies: readonly HuntFamily[] = [
     label: "Traffic Manipulation",
     objective: "Expose unauthorized routes, ACLs, resolvers, tunnels, and telemetry changes that redirect, copy, suppress, or conceal traffic.",
   },
+  {
+    id: "cross-domain",
+    label: "Cross-Domain",
+    objective: "Follow related behavior across identity, endpoint, cloud, SaaS, email, build, network, and data boundaries.",
+  },
+  {
+    id: "ai-agent-abuse",
+    label: "AI & Agent Abuse",
+    objective: "Investigate misuse of AI applications, agent permissions, tools, data, evaluations, and observable action sequences.",
+  },
 ];

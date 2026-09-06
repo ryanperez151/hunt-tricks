@@ -1,11 +1,15 @@
 import type { Hunt } from "@/lib/schemas";
 import {
+  AI_ROLES,
+  BEHAVIORS,
   DEVICES,
   HUNT_FAMILIES,
   PLANES,
   PROTOCOL_NAMES,
+  SCOPES,
   SEVERITIES,
   TELEMETRY_KEYS,
+  TEMPORAL_PATTERNS,
 } from "@/lib/taxonomy";
 
 type HuntFilterValues = {
@@ -15,6 +19,10 @@ type HuntFilterValues = {
   planes: (typeof PLANES)[number];
   severities: (typeof SEVERITIES)[number];
   telemetry: (typeof TELEMETRY_KEYS)[number];
+  scopes: (typeof SCOPES)[number];
+  behaviors: (typeof BEHAVIORS)[number];
+  temporalPatterns: (typeof TEMPORAL_PATTERNS)[number];
+  aiRoles: (typeof AI_ROLES)[number];
 };
 
 export type HuntFilters = {
@@ -28,6 +36,10 @@ export const emptyHuntFilters: HuntFilters = Object.freeze({
   planes: Object.freeze([]),
   severities: Object.freeze([]),
   telemetry: Object.freeze([]),
+  scopes: Object.freeze([]),
+  behaviors: Object.freeze([]),
+  temporalPatterns: Object.freeze([]),
+  aiRoles: Object.freeze([]),
 });
 
 const filterDefinitions = [
@@ -37,6 +49,10 @@ const filterDefinitions = [
   ["planes", "plane", PLANES],
   ["severities", "severity", SEVERITIES],
   ["telemetry", "telemetry", TELEMETRY_KEYS],
+  ["scopes", "scope", SCOPES],
+  ["behaviors", "behavior", BEHAVIORS],
+  ["temporalPatterns", "temporal", TEMPORAL_PATTERNS],
+  ["aiRoles", "ai", AI_ROLES],
 ] as const;
 
 function normalizeValues<T extends string>(values: Iterable<string>, knownValues: readonly T[]): readonly T[] {
@@ -79,5 +95,9 @@ export function filterHunts(hunts: readonly Hunt[], filters: HuntFilters): reado
     && matchesAny(hunt.planes, normalized.planes)
     && matchesAny([hunt.severity], normalized.severities)
     && matchesAny([...hunt.telemetry.recommended, ...hunt.telemetry.optional], normalized.telemetry)
+    && matchesAny(hunt.scopes, normalized.scopes)
+    && matchesAny(hunt.behaviors, normalized.behaviors)
+    && matchesAny(hunt.temporalPatterns, normalized.temporalPatterns)
+    && matchesAny(hunt.aiRoles, normalized.aiRoles)
   ));
 }

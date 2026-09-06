@@ -69,6 +69,7 @@ describe("shared content contracts", () => {
   test("exports the exact supported taxonomy tuples", () => {
     expect(HUNT_FAMILIES).toEqual([
       "management-plane-c2", "infrastructure-lateral-movement", "discovery-credential-access", "traffic-manipulation",
+      "cross-domain", "ai-agent-abuse",
     ]);
     expect(SEVERITIES).toEqual(["low", "medium", "high", "critical"]);
     expect(CONFIDENCE_LEVELS).toEqual(["low", "medium", "high"]);
@@ -81,6 +82,8 @@ describe("shared content contracts", () => {
     ]);
     expect(TELEMETRY_KEYS).toEqual([
       "netflow-ipfix", "dns", "aaa", "configuration-diffs", "cli-audit", "zeek", "packet-capture", "syslog",
+      "endpoint-events", "identity-audit", "cloud-audit", "saas-audit", "email-audit", "kubernetes-audit", "build-audit",
+      "data-audit", "ot-passive", "agent-traces",
     ]);
   });
 

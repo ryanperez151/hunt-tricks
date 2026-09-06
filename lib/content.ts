@@ -154,6 +154,7 @@ export function validateContentRegistries(registries: ContentRegistriesInput): v
   const huntSlugs = new Set(hunts.map((hunt) => hunt.slug));
   const protocolNames = new Set(protocols.map((protocol) => protocol.name));
   const telemetryKeys = new Set(telemetry.map((source) => source.key));
+  const researchIds = new Set(research.map((source) => source.id));
 
   for (const hunt of hunts) {
     if (HUNT_FAMILIES.includes(hunt.slug as (typeof HUNT_FAMILIES)[number])) {
@@ -167,6 +168,13 @@ export function validateContentRegistries(registries: ContentRegistriesInput): v
     for (const telemetryKey of [...hunt.telemetry.recommended, ...hunt.telemetry.optional]) {
       if (!telemetryKeys.has(telemetryKey)) {
         issues.push(`hunt ${hunt.slug} field telemetry: unknown telemetry ${telemetryKey}`);
+      }
+    }
+    for (const evidence of hunt.evidence) {
+      for (const sourceId of evidence.sourceIds) {
+        if (!researchIds.has(sourceId)) {
+          issues.push(`hunt ${hunt.slug} field evidence: unknown evidence source ${sourceId}`);
+        }
       }
     }
   }

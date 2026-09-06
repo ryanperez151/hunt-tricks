@@ -10,12 +10,9 @@ import {
 describe("hunt filters", () => {
   test("combines categories with AND and values within a category with OR", () => {
     const results = filterHunts(hunts, {
+      ...emptyHuntFilters,
       families: ["management-plane-c2", "traffic-manipulation"],
       protocols: ["DNS", "GRE"],
-      devices: [],
-      planes: [],
-      severities: [],
-      telemetry: [],
     });
 
     expect(results.map((hunt) => hunt.slug)).toEqual(expect.arrayContaining([
@@ -34,12 +31,10 @@ describe("hunt filters", () => {
     ));
 
     expect(filters).toEqual({
+      ...emptyHuntFilters,
       families: ["traffic-manipulation"],
       protocols: ["SNMP", "DNS"],
-      devices: [],
-      planes: [],
       severities: ["high", "critical"],
-      telemetry: [],
     });
     expect(serializeHuntFilters(filters).toString()).toBe(
       "family=traffic-manipulation&protocol=SNMP&protocol=DNS&severity=high&severity=critical",
