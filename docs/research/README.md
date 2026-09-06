@@ -55,7 +55,23 @@ The search index projects research records, so new entries become searchable wit
 
 ## Conventions
 
-**Verification.** Every URL was fetched and every title, author, publisher, and date confirmed against the retrieved document on 2026-09-06. Sources that could not be verified were dropped. Where a publisher blocks automated fetching, verification used the browser against the canonical page.
+**Verification.** All verification was performed on 2026-09-06. Sources that could not be confirmed were dropped rather than softened. Two confirmation levels are used, and the difference is recorded honestly:
+
+*Direct* — the document or its canonical publisher page was retrieved and title, author, publisher, and date read from it. This covers 32 of the 39 new records and all 6 amendments.
+
+*Secondary* — the publisher blocks automated retrieval (ACM, IEEE) or the retrieved document carries no explicit date line. Metadata was confirmed from multiple independent references agreeing on the same values, and where a PDF was retrievable its title and authors were read directly from the file even when the date was not present:
+
+| Record | What was read directly | What rests on secondary confirmation |
+|---|---|---|
+| `research-axelsson-2000` | — (ACM blocked) | Title, author, venue, volume, August 2000 date |
+| `research-denning-1987` | — (IEEE blocked) | Title, author, venue, February 1987 date, abstract |
+| `research-beehive-2013` | — (ACM blocked) | Title, seven authors, ACSAC 2013, pages |
+| `research-kill-chain-2011` | Title, authors, affiliation, abstract, case-study content from the PDF | 2011 publication year |
+| `research-diamond-model-2013` | Title, three authors, abstract, core features from the PDF | 2013 publication year |
+| `research-tahiti-2018` | Title, publisher, three phases, six steps, backlog model from the PDF | 2018 year, inferred from the document's own 2018 references |
+| `research-anderson-1980` | Document identity and trace-record content from the PDF | February/April 1980 dates |
+
+Nothing in the corpus depends on these dates being exact to the month; each is used only to place a source in its era.
 
 **Dates.** `publishedAt` is the date the source states. For living resources with no publication date — knowledge bases, community catalogs, control frameworks — the field carries the corpus verification year and the record's `limitations` says so explicitly. Records affected: `research-ads-framework`, `research-cis-control-1`, `research-lolbas`, `research-gtfobins`, `research-mitre-atlas`.
 

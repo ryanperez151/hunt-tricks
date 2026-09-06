@@ -7,7 +7,7 @@
 
 This annex supplies the research layer the `hunt-tricks` design calls for. That spec seeds the work with eight anchors and states that "additional scope-specific primary research is required while authoring hunts." These 39 new records extend the anchors across the six methodology routes, and six existing registry records are amended to carry the claim-level evidence fields the spec requires of every source.
 
-Every URL here was fetched and every title, author, publisher, and date confirmed against the retrieved document during authoring on 2026-09-06. Sources that could not be verified were dropped rather than softened.
+Every URL here resolves and was checked on 2026-09-06. For 32 of the 39 new records and all 6 amendments, title, author, publisher, and date were read directly from the retrieved document or its canonical publisher page. Seven records rest partly on secondary confirmation because the publisher blocks automated retrieval or the document carries no explicit date; those seven and exactly which field is secondary are listed in [`README.md`](README.md#conventions). Sources that could not be confirmed at all were dropped rather than softened.
 
 ---
 
