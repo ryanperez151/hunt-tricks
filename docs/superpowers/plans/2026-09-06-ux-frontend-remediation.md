@@ -1265,6 +1265,65 @@ git commit -m "fix: make multi-select filter guidance accurate for touch input"
 
 ---
 
+### Task 11: Long identifiers stop pushing the query page sideways
+
+**Added after the ten planned tasks, by explicit decision.** This defect is pre-existing — it fails identically at the branch point — so it was not one of the twelve review findings. It is fixed here because this branch made `/queries` responsive behaviour its subject matter and extended `tests/e2e/responsive.spec.ts` in three places; merging with that file's `/queries` overflow assertion red, and nothing in the tree explaining why, would cost every later contributor a diagnosis.
+
+**The defect:** `/queries/` scrolls horizontally at the 390px mobile viewport — `document.documentElement.scrollWidth` is 398 against a 390 client width. The cause is a grid blowout, not a width bug. `.query-card__heading` is a single-column grid at `<= 48rem` (globals.css:400). `1fr` resolves to `minmax(auto, 1fr)`, and that automatic minimum is the largest **min-content** width among the items in the track. The description `<p>` of the "Workflow authority diff" query contains the unbreakable 35-character token `ANY_RELEVANT_RUN_LINEAGE_UNRESOLVED`, giving it a min-content width of 364.9px. The track therefore grows to 364.9px inside a 324px container, both grid items stretch to fill it, and the overflow reaches the document.
+
+Measured on the built site at 390×844: the heading element itself stays 324px while both of its children measure 364.9px and end at x=397.9 — the 398px the test reports.
+
+`overflow-wrap: anywhere` is the right tool because, unlike `break-word`, it **does** reduce a box's intrinsic min-content contribution, which is exactly the quantity driving this failure. The codebase already uses it for long URLs at globals.css:486.
+
+**Files:**
+- Modify: `app/globals.css` (the `@media (max-width: 48rem)` block containing `.query-card__heading`)
+- Test: `tests/e2e/responsive.spec.ts` (already asserts this; no new test needed)
+
+**Interfaces:**
+- Consumes: nothing from other tasks.
+- Produces: nothing other tasks depend on.
+
+- [ ] **Step 1: Confirm the failure**
+
+Run: `npx playwright test tests/e2e/responsive.spec.ts -g "required pages contain overflow" --project=mobile-chromium`
+Expected: FAIL with `scrollWidth: 398` against `clientWidth: 390`, from `expectNoDocumentOverflow` at the `/queries/` navigation.
+
+This is the RED state. The assertion already exists — do not add another.
+
+- [ ] **Step 2: Let long tokens break inside the card heading**
+
+In `app/globals.css`, inside the existing `@media (max-width: 48rem)` block that already contains `.query-card__heading { grid-template-columns: 1fr; }`, add:
+
+```css
+  .query-card__heading > * { min-width: 0; overflow-wrap: anywhere; }
+```
+
+`overflow-wrap: anywhere` lets the long token break, which lowers the item's min-content contribution so the `1fr` track no longer inflates. `min-width: 0` is belt-and-braces for the grid item's automatic minimum. Apply it to both heading children, not just the `<p>` — the sibling `div` stretches to the same inflated track and would otherwise still report an over-wide box.
+
+- [ ] **Step 3: Confirm the page no longer overflows**
+
+Run: `npx playwright test tests/e2e/responsive.spec.ts --project=mobile-chromium`
+Expected: PASS, including the previously failing test.
+
+If the rule above does not clear it on the first attempt, **stop and report** rather than reshaping the card layout. The fallback is to mark the assertion with a reference to this task, not to keep cutting.
+
+- [ ] **Step 4: Confirm nothing else moved**
+
+Run: `npm run check`
+Expected: lint clean, typecheck clean, 204/204 unit tests pass. This is a CSS-only change; the count must not move.
+
+Run: `npm run test:e2e`
+Expected: all specs pass on both `desktop-chromium` and `mobile-chromium`, with no skips beyond the three project-gated ones.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add app/globals.css
+git commit -m "fix: stop long query identifiers scrolling the catalog sideways"
+```
+
+---
+
 ## Final Verification
 
 - [ ] **Step 1: Run the full unit suite**
