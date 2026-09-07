@@ -103,6 +103,19 @@ test("mobile navigation restores focus and filter controls meet touch sizing", a
     expect(box!.width).toBeGreaterThanOrEqual(44);
     expect(box!.height).toBeGreaterThanOrEqual(44);
   }
+
+  await page.goto("/queries/");
+  await page.getByRole("listbox", { name: "Telemetry", exact: true }).selectOption("netflow-ipfix");
+
+  for (const button of [
+    page.getByRole("button", { name: "Remove telemetry NetFlow / IPFIX filter" }),
+    page.getByRole("button", { name: "Clear all filters" }),
+  ]) {
+    const box = await button.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.width).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+  }
 });
 
 test("desktop navigation and comparison retain their wide layout", async ({ page }, testInfo) => {

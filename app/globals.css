@@ -361,7 +361,7 @@ main { min-height: calc(100vh - 15rem); }
 .query-filters__active { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem; }
 .query-filters__active > p { margin: 0; color: var(--text-muted); font-size: .8rem; }
 .query-filters__active ul { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0; padding: 0; list-style: none; }
-.query-filters__active button { border: 1px solid var(--cyan); border-radius: 999px; background: transparent; color: var(--cyan); cursor: pointer; padding: .3rem .55rem; font-size: .75rem; }
+.query-filters__active button { min-height: 2.75rem; border: 1px solid var(--cyan); border-radius: 999px; background: transparent; color: var(--cyan); cursor: pointer; padding: .45rem .7rem; font-size: .75rem; }
 .query-filters__active .query-filters__clear { margin-left: auto; border-color: var(--border); border-radius: .25rem; color: var(--text); }
 .query-library__count { margin: 0; color: var(--cyan); font-family: var(--font-mono); font-weight: 700; }
 .query-library__list { display: grid; gap: 1.5rem; }
