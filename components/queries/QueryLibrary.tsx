@@ -144,7 +144,7 @@ export function QueryLibrary({ queries }: { queries: readonly QueryDisplayRecord
               {activeFilters.map(({ key, singular, value }) => (
                 <li key={`${key}-${value}`}>
                   <button
-                    aria-label={`Remove ${singular} ${value} filter`}
+                    aria-label={`Remove ${singular} ${labelFor(value)} filter`}
                     onClick={() => setFilters(replaceFilter(filters, key, filters[key].filter((item) => item !== value)))}
                     type="button"
                   >

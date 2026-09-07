@@ -79,4 +79,12 @@ describe("HuntFilters", () => {
       severities: ["high"],
     });
   });
+
+  test("names a removal chip with the same label the user can see", () => {
+    const filters: HuntFilterState = { ...emptyHuntFilters, families: ["management-plane-c2"] };
+    render(<HuntFilters filters={filters} options={filterOptions} onChange={vi.fn()} />);
+
+    const chip = screen.getByRole("button", { name: "Remove family Management-Plane C2 filter" });
+    expect(chip).toHaveTextContent("Management-Plane C2");
+  });
 });

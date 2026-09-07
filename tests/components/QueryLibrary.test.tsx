@@ -156,4 +156,14 @@ describe("QueryLibrary", () => {
     await user.click(screen.getByRole("button", { name: "Reset query filters" }));
     expect(screen.getByText("3 queries")).toBeInTheDocument();
   });
+
+  test("names a removal chip with the same label the user can see", async () => {
+    const user = userEvent.setup();
+    render(<QueryLibrary queries={queries} />);
+
+    await user.selectOptions(screen.getByLabelText("Telemetry"), "netflow-ipfix");
+
+    const chip = screen.getByRole("button", { name: "Remove telemetry NetFlow / IPFIX filter" });
+    expect(chip).toHaveTextContent("NetFlow / IPFIX");
+  });
 });

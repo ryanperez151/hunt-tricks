@@ -113,7 +113,7 @@ export function HuntFilters({ filters, options, onChange }: HuntFiltersProps) {
               <li key={`${key}-${value}`}>
                 <button
                   type="button"
-                  aria-label={`Remove ${singular} ${value} filter`}
+                  aria-label={`Remove ${singular} ${labelFor(value)} filter`}
                   onClick={() => onChange(replaceCategory(filters, key, filters[key].filter((item) => item !== value)))}
                 >
                   {labelFor(value)} <span aria-hidden="true">×</span>
