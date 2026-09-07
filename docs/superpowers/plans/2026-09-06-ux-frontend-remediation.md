@@ -1074,10 +1074,16 @@ In `components/search/SearchDialog.tsx`, add the ref immediately after `const in
 
 ```tsx
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 ```
 
-Assigning during render (rather than in an effect) keeps the ref current before any event can fire. Then, inside `handleModalKeyDown`, replace the `onClose()` call at line 62:
+**Do not assign the ref during render.** `eslint-plugin-react-hooks` 7.x (via `eslint-config-next` 16) enforces `react-hooks/refs`, which errors with "Cannot access refs during render" on a render-phase `onCloseRef.current = onClose`. Sync it in an effect instead — this is the standard latest-ref pattern.
+
+There is no meaningful staleness window: `useRef(onClose)` seeds the correct value on the first render, and the keydown handler reads `onCloseRef.current` at event time rather than capturing it at registration. Even if an event landed between a re-render and the effect flush, the previous `onClose` is behaviourally identical, because it closes over `closeSearch`, which `SearchProvider` already defines as a `useCallback` with an empty dependency list.
+
+Then, inside `handleModalKeyDown`, replace the `onClose()` call at line 62:
 
 ```tsx
         onCloseRef.current();
