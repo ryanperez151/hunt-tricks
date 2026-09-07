@@ -76,7 +76,7 @@ describe("QueryLibrary", () => {
     expect(cards).toHaveLength(expected.length);
 
     cards.forEach((card, index) => {
-      const strategy = within(card).getByRole("region", { name: "Detection strategy" });
+      const strategy = within(card).getByRole("heading", { name: "Detection strategy" }).parentElement!;
       expect(within(strategy).getByText(expected[index]!, { exact: true }).textContent).toBe(expected[index]);
       const code = card.querySelector("pre")!;
       expect(code).not.toBeNull();

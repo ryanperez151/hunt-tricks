@@ -20,7 +20,7 @@ async function expectNoDocumentOverflow(page: Page) {
   }))).toEqual({ clientWidth: page.viewportSize()!.width, scrollWidth: page.viewportSize()!.width });
 }
 
-async function expectLocalScroller(scroller: Locator) {
+async function expectLocalScroller(scroller: Locator, role: "region" | "group" = "region") {
   await expect(scroller).toBeVisible();
   const dimensions = await scroller.evaluate((element) => ({
     clientWidth: element.clientWidth,
@@ -28,7 +28,7 @@ async function expectLocalScroller(scroller: Locator) {
   }));
   expect(dimensions.scrollWidth).toBeGreaterThanOrEqual(dimensions.clientWidth);
   await expect(scroller).toHaveAttribute("tabindex", "0");
-  await expect(scroller).toHaveAttribute("role", "region");
+  await expect(scroller).toHaveAttribute("role", role);
   await expect(scroller).toHaveAccessibleName(/scroll horizontally/i);
 }
 
@@ -43,7 +43,7 @@ test("required pages contain overflow locally and produce release-review screens
 
   await page.goto("/hunts/snmp-fan-out/");
   await expectNoDocumentOverflow(page);
-  await expectLocalScroller(page.locator(".code-block__source").first());
+  await expectLocalScroller(page.locator(".code-block__source").first(), "group");
   await expectLocalScroller(page.locator(".network-flow__canvas").first());
   await capture(page, testInfo, "flagship-hunt");
 
@@ -65,7 +65,7 @@ test("required pages contain overflow locally and produce release-review screens
 
   await page.goto("/queries/");
   await expectNoDocumentOverflow(page);
-  await expectLocalScroller(page.locator(".code-block__source").first());
+  await expectLocalScroller(page.locator(".code-block__source").first(), "group");
   await capture(page, testInfo, "query-library");
   await capture(page, testInfo, "query-library-viewport", false);
 
@@ -168,6 +168,16 @@ test("mobile navigation scrolls to its last link in a short viewport", async ({ 
   await expect(about).toBeInViewport();
   await about.click();
   await expect(page).toHaveURL(/\/about\/$/);
+});
+
+test("query library keeps its landmark list navigable", async ({ page }) => {
+  await page.goto("/queries/");
+  await expect(page.getByTestId("query-card").first()).toBeVisible();
+  expect(await page.getByTestId("query-card").count()).toBeGreaterThan(10);
+
+  await expect(page.locator('.query-library__list [role="region"]')).toHaveCount(0);
+  await expect(page.locator(".query-library__list section[aria-label]")).toHaveCount(0);
+  await expect(page.locator('.query-library__list [role="group"]').first()).toHaveAttribute("tabindex", "0");
 });
 
 test("reduced motion removes meaningful transitions", async ({ page }) => {

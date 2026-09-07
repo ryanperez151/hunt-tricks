@@ -185,10 +185,10 @@ export function QueryLibrary({ queries }: { queries: readonly QueryDisplayRecord
                 {query.telemetry.length ? <div><dt>Telemetry</dt><dd>{query.telemetry.map((value) => <Tag key={value}>{labelFor(value)}</Tag>)}</dd></div> : null}
                 {query.techniques.length ? <div><dt>Techniques</dt><dd>{query.techniques.map((value) => <Tag key={value}>{value}</Tag>)}</dd></div> : null}
               </dl>
-              <section aria-label="Detection strategy">
+              <div className="query-card__strategy">
                 <h3>Detection strategy</h3>
                 <p>{query.detectionStrategy}</p>
-              </section>
+              </div>
               <CodeBlock highlightedHtml={query.highlightedHtml} raw={query.query} />
             </article>
           ))}
