@@ -1,4 +1,5 @@
-import { QueryLibrary, type QueryDisplayRecord } from "@/components/queries/QueryLibrary";
+import { Suspense } from "react";
+import { QueryLibrary, QueryLibraryFallback, type QueryDisplayRecord } from "@/components/queries/QueryLibrary";
 import { hunts } from "@/lib/content";
 import { highlightQuery } from "@/lib/highlight";
 import { createPageMetadata } from "@/lib/metadata";
@@ -39,7 +40,9 @@ export default async function QueriesPage() {
         <h1>Infrastructure query library</h1>
         <p>Start from a behavior and independent telemetry, then adapt these examples to your local fields, approved dependencies, and data model. Query text is displayed and copied only; it is never executed here.</p>
       </header>
-      <QueryLibrary queries={queries} />
+      <Suspense fallback={<QueryLibraryFallback queries={queries} />}>
+        <QueryLibrary queries={queries} />
+      </Suspense>
     </div>
   );
 }

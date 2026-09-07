@@ -81,3 +81,20 @@ test("new workbench pages fit the viewport and produce review screenshots", asyn
     await page.screenshot({ path: resolve(directory, `${testInfo.project.name}-${name}.png`), fullPage: true, animations: "disabled" });
   }
 });
+
+test("query library filters survive a link out and back", async ({ page }) => {
+  await page.goto("/queries/");
+  await page.getByRole("listbox", { name: "Platform", exact: true }).selectOption("zeek");
+  await expect(page).toHaveURL(/\/queries\/\?platform=zeek$/);
+
+  const filteredCount = await page.getByTestId("query-card").count();
+  expect(filteredCount).toBeGreaterThan(0);
+
+  await page.getByTestId("query-card").first().getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/hunts\/[a-z0-9-]+\/$/);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/queries\/\?platform=zeek$/);
+  await expect(page.getByRole("listbox", { name: "Platform", exact: true })).toHaveValues(["zeek"]);
+  await expect(page.getByTestId("query-card")).toHaveCount(filteredCount);
+});

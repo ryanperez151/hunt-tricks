@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { AnchorHTMLAttributes } from "react";
-import { describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { QueryLibrary, type QueryDisplayRecord } from "@/components/queries/QueryLibrary";
 import type { TrustedHighlightedQueryHtml } from "@/lib/highlight";
 import QueriesPage from "@/app/queries/page";
@@ -11,6 +11,19 @@ vi.mock("server-only", () => ({}));
 
 vi.mock("next/link", () => ({
   default: (props: AnchorHTMLAttributes<HTMLAnchorElement>) => <a data-next-link="true" {...props} />,
+}));
+
+const navigation = vi.hoisted(() => ({
+  pathname: "/queries/",
+  push: vi.fn(),
+  replace: vi.fn(),
+  search: new URLSearchParams(),
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => navigation.pathname,
+  useRouter: () => ({ push: navigation.push, replace: navigation.replace }),
+  useSearchParams: () => navigation.search,
 }));
 
 function highlighted(label: string) {
@@ -69,6 +82,13 @@ const queries: readonly QueryDisplayRecord[] = [
 ];
 
 describe("QueryLibrary", () => {
+  beforeEach(() => {
+    navigation.pathname = "/queries/";
+    navigation.push.mockReset();
+    navigation.replace.mockReset();
+    navigation.search = new URLSearchParams();
+  });
+
   test("renders each owning hunt strategy verbatim before its query through the page projection", async () => {
     render(await QueriesPage());
     const cards = screen.getAllByTestId("query-card");
@@ -87,9 +107,11 @@ describe("QueryLibrary", () => {
   test("filters by platform without duplicating or mismatching highlighted and copied query content", async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue(undefined);
-    render(<QueryLibrary queries={queries} />);
+    const { rerender } = render(<QueryLibrary queries={queries} />);
 
     await user.selectOptions(screen.getByLabelText("Platform"), "zeek");
+    navigation.search = new URLSearchParams("platform=zeek");
+    rerender(<QueryLibrary queries={queries} />);
 
     const cards = screen.getAllByTestId("query-card");
     expect(cards).toHaveLength(1);
@@ -104,14 +126,19 @@ describe("QueryLibrary", () => {
 
   test("offers every dimension and applies OR within categories plus AND across populated categories", async () => {
     const user = userEvent.setup();
-    render(<QueryLibrary queries={queries} />);
+    const { rerender } = render(<QueryLibrary queries={queries} />);
 
     for (const label of ["Platform", "Family", "Protocol", "Device", "Telemetry", "Technique"]) {
       expect(screen.getByLabelText(label)).toBeInTheDocument();
     }
 
     await user.selectOptions(screen.getByLabelText("Platform"), ["splunk", "zeek"]);
+    navigation.search = new URLSearchParams("platform=splunk&platform=zeek");
+    rerender(<QueryLibrary queries={queries} />);
+
     await user.selectOptions(screen.getByLabelText("Protocol"), "SNMP");
+    navigation.search = new URLSearchParams("platform=splunk&platform=zeek&protocol=SNMP");
+    rerender(<QueryLibrary queries={queries} />);
 
     expect(screen.getByText("1 query")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Managed-device SNMP fan-out" })).toBeInTheDocument();
@@ -121,24 +148,33 @@ describe("QueryLibrary", () => {
 
   test("shows active filter chips, supports individual removal and clears all filters", async () => {
     const user = userEvent.setup();
-    render(<QueryLibrary queries={queries} />);
+    const { rerender } = render(<QueryLibrary queries={queries} />);
 
     await user.selectOptions(screen.getByLabelText("Technique"), "T1046");
+    navigation.search = new URLSearchParams("technique=T1046");
+    rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByText("2 queries")).toBeInTheDocument();
     expect(screen.getByText("Active filters")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Remove technique T1046 filter" }));
+    navigation.search = new URLSearchParams();
+    rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByText("3 queries")).toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText("Device"), "firewall");
+    navigation.search = new URLSearchParams("device=firewall");
+    rerender(<QueryLibrary queries={queries} />);
+
     await user.click(screen.getByRole("button", { name: "Clear all filters" }));
+    navigation.search = new URLSearchParams();
+    rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByText("3 queries")).toBeInTheDocument();
     expect(screen.queryByText("Active filters")).not.toBeInTheDocument();
   });
 
   test("provides a resettable empty state and preserves inherited hunt context", async () => {
     const user = userEvent.setup();
-    render(<QueryLibrary queries={queries} />);
+    const { rerender } = render(<QueryLibrary queries={queries} />);
 
     const firstCard = screen.getAllByTestId("query-card")[0]!;
     expect(within(firstCard).getByRole("link", { name: "Unexpected Management Interface Egress" }))
@@ -149,19 +185,28 @@ describe("QueryLibrary", () => {
     expect(within(firstCard).getByText("SSH")).toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText("Platform"), "splunk");
+    navigation.search = new URLSearchParams("platform=splunk");
+    rerender(<QueryLibrary queries={queries} />);
+
     await user.selectOptions(screen.getByLabelText("Protocol"), "SNMP");
+    navigation.search = new URLSearchParams("platform=splunk&protocol=SNMP");
+    rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByRole("heading", { name: "No queries match these filters" })).toBeInTheDocument();
     expect(screen.getByText("0 queries")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Reset query filters" }));
+    navigation.search = new URLSearchParams();
+    rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByText("3 queries")).toBeInTheDocument();
   });
 
   test("names a removal chip with the same label the user can see", async () => {
     const user = userEvent.setup();
-    render(<QueryLibrary queries={queries} />);
+    const { rerender } = render(<QueryLibrary queries={queries} />);
 
     await user.selectOptions(screen.getByLabelText("Telemetry"), "netflow-ipfix");
+    navigation.search = new URLSearchParams("telemetry=netflow-ipfix");
+    rerender(<QueryLibrary queries={queries} />);
 
     const chip = screen.getByRole("button", { name: "Remove telemetry NetFlow / IPFIX filter" });
     expect(chip).toHaveTextContent("NetFlow / IPFIX");
@@ -184,5 +229,21 @@ describe("QueryLibrary", () => {
     expect(within(card).queryByText("Devices")).not.toBeInTheDocument();
     expect(within(card).queryByText("Protocols")).not.toBeInTheDocument();
     expect(within(card).queryByText("Telemetry")).not.toBeInTheDocument();
+  });
+
+  test("writes filter selections to the URL and renders the URL's filters on Back", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<QueryLibrary queries={queries} />);
+
+    await user.selectOptions(screen.getByLabelText("Platform"), "zeek");
+    expect(navigation.push).toHaveBeenCalledWith("/queries/?platform=zeek", { scroll: false });
+
+    navigation.search = new URLSearchParams("platform=zeek");
+    rerender(<QueryLibrary queries={queries} />);
+    expect(screen.getByText("1 query")).toBeInTheDocument();
+
+    navigation.search = new URLSearchParams();
+    rerender(<QueryLibrary queries={queries} />);
+    expect(screen.getByText("3 queries")).toBeInTheDocument();
   });
 });

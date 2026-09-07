@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { CodeBlock } from "@/components/common/CodeBlock";
-import { Tag } from "@/components/common/Tag";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { labelFor, QueryCard } from "@/components/queries/QueryCard";
+import {
+  emptyQueryFilters,
+  parseQueryFilters,
+  queryFilterDefinitions,
+  serializeQueryFilters,
+  type QueryFilterOptions,
+  type QueryFilters,
+} from "@/lib/query-filters";
 import type { TrustedHighlightedQueryHtml } from "@/lib/highlight";
 
 export type QueryDisplayRecord = Readonly<{
@@ -23,53 +29,11 @@ export type QueryDisplayRecord = Readonly<{
   techniques: readonly string[];
 }>;
 
-type QueryFilters = {
-  platforms: readonly string[];
-  families: readonly string[];
-  protocols: readonly string[];
-  devices: readonly string[];
-  telemetry: readonly string[];
-  techniques: readonly string[];
-};
-
-const filterDefinitions = [
-  ["platforms", "Platform", "platform"],
-  ["families", "Family", "family"],
-  ["protocols", "Protocol", "protocol"],
-  ["devices", "Device", "device"],
-  ["telemetry", "Telemetry", "telemetry"],
-  ["techniques", "Technique", "technique"],
-] as const satisfies ReadonlyArray<readonly [keyof QueryFilters, string, string]>;
-
-const emptyQueryFilters: QueryFilters = {
-  platforms: [],
-  families: [],
-  protocols: [],
-  devices: [],
-  telemetry: [],
-  techniques: [],
-};
-
-const labels: Record<string, string> = {
-  "management-plane-c2": "Management-Plane C2",
-  "infrastructure-lateral-movement": "Infrastructure Lateral Movement",
-  "discovery-credential-access": "Discovery & Credential Access",
-  "traffic-manipulation": "Traffic Manipulation",
-  "netflow-ipfix": "NetFlow / IPFIX",
-  "configuration-diffs": "Configuration diffs",
-  "cli-audit": "CLI audit",
-  "packet-capture": "Packet capture",
-};
-
-function labelFor(value: string) {
-  return labels[value] ?? value.replaceAll("-", " ");
-}
-
 function unique(values: readonly string[]) {
   return [...new Set(values)];
 }
 
-function deriveOptions(queries: readonly QueryDisplayRecord[]): QueryFilters {
+function deriveOptions(queries: readonly QueryDisplayRecord[]): QueryFilterOptions {
   return {
     platforms: unique(queries.map((query) => query.platform)),
     families: unique(queries.map((query) => query.family)),
@@ -99,13 +63,26 @@ function replaceFilter(filters: QueryFilters, key: keyof QueryFilters, values: r
   return { ...filters, [key]: values };
 }
 
+function withTrailingSlash(pathname: string) {
+  return pathname.endsWith("/") ? pathname : `${pathname}/`;
+}
+
 export function QueryLibrary({ queries }: { queries: readonly QueryDisplayRecord[] }) {
-  const [filters, setFilters] = useState<QueryFilters>(emptyQueryFilters);
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const options = deriveOptions(queries);
+  const filters = parseQueryFilters(new URLSearchParams(searchParams.toString()), options);
   const filteredQueries = filterQueries(queries, filters);
-  const activeFilters = filterDefinitions.flatMap(([key, , singular]) => (
+  const canonicalPath = withTrailingSlash(pathname);
+  const activeFilters = queryFilterDefinitions.flatMap(([key, , singular]) => (
     filters[key].map((value) => ({ key, singular, value }))
   ));
+
+  function setFilters(nextFilters: QueryFilters) {
+    const query = serializeQueryFilters(nextFilters, options).toString();
+    router.push(query ? `${canonicalPath}?${query}` : canonicalPath, { scroll: false });
+  }
 
   return (
     <div className="query-library">
@@ -118,7 +95,7 @@ export function QueryLibrary({ queries }: { queries: readonly QueryDisplayRecord
           <p>Values within one category broaden results. Populated categories combine to narrow them.</p>
         </div>
         <div className="query-filters__controls">
-          {filterDefinitions.map(([key, label]) => (
+          {queryFilterDefinitions.map(([key, label]) => (
             <label key={key}>
               <span>{label}</span>
               <select
@@ -166,32 +143,7 @@ export function QueryLibrary({ queries }: { queries: readonly QueryDisplayRecord
 
       {filteredQueries.length ? (
         <div className="query-library__list">
-          {filteredQueries.map((query) => (
-            <article className="query-card" data-testid="query-card" key={query.id}>
-              <header className="query-card__heading">
-                <div>
-                  <p className="eyebrow">{query.platform.toUpperCase()}</p>
-                  <h2>{query.title}</h2>
-                  <p className="query-card__context">
-                    From <Link href={`/hunts/${query.huntSlug}/`}>{query.huntTitle}</Link>
-                  </p>
-                </div>
-                <p>{query.description}</p>
-              </header>
-              <dl className="query-card__metadata">
-                <div><dt>Family</dt><dd><Tag>{labelFor(query.family)}</Tag></dd></div>
-                {query.devices.length ? <div><dt>Devices</dt><dd>{query.devices.map((value) => <Tag key={value}>{labelFor(value)}</Tag>)}</dd></div> : null}
-                {query.protocols.length ? <div><dt>Protocols</dt><dd>{query.protocols.map((value) => <Tag key={value}>{value}</Tag>)}</dd></div> : null}
-                {query.telemetry.length ? <div><dt>Telemetry</dt><dd>{query.telemetry.map((value) => <Tag key={value}>{labelFor(value)}</Tag>)}</dd></div> : null}
-                {query.techniques.length ? <div><dt>Techniques</dt><dd>{query.techniques.map((value) => <Tag key={value}>{value}</Tag>)}</dd></div> : null}
-              </dl>
-              <div className="query-card__strategy">
-                <h3>Detection strategy</h3>
-                <p>{query.detectionStrategy}</p>
-              </div>
-              <CodeBlock highlightedHtml={query.highlightedHtml} raw={query.query} />
-            </article>
-          ))}
+          {filteredQueries.map((query) => <QueryCard key={query.id} query={query} />)}
         </div>
       ) : (
         <section className="catalog-empty-state">
@@ -203,6 +155,18 @@ export function QueryLibrary({ queries }: { queries: readonly QueryDisplayRecord
           </button>
         </section>
       )}
+    </div>
+  );
+}
+
+export function QueryLibraryFallback({ queries }: { queries: readonly QueryDisplayRecord[] }) {
+  return (
+    <div className="query-library query-library--fallback">
+      <p className="hunt-catalog__loading">Library controls are loading. All queries are available below.</p>
+      <p className="query-library__count">{queries.length} {queries.length === 1 ? "query" : "queries"}</p>
+      <div className="query-library__list">
+        {queries.map((query) => <QueryCard key={query.id} query={query} />)}
+      </div>
     </div>
   );
 }
