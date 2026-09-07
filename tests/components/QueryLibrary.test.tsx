@@ -200,6 +200,16 @@ describe("QueryLibrary", () => {
     expect(screen.queryByText("Active filters")).not.toBeInTheDocument();
   });
 
+  test("describes multi-selection in terms every input mode can follow", () => {
+    render(<QueryLibrary queries={queries} />);
+
+    const guidance = document.getElementById("query-filter-guidance")!;
+    expect(screen.getByLabelText("Platform")).toHaveAttribute("aria-describedby", "query-filter-guidance");
+    expect(guidance).toHaveTextContent(
+      "Select one or more values. With a keyboard or mouse, hold Control or Command while selecting. On a touch screen, tap each value.",
+    );
+  });
+
   test("provides a resettable empty state and preserves inherited hunt context", async () => {
     const user = userEvent.setup();
     const { rerender } = render(<QueryLibrary queries={queries} />);
