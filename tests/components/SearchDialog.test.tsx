@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import type { AnchorHTMLAttributes, MouseEvent } from "react";
 import { describe, expect, test, vi } from "vitest";
 import { Header } from "@/components/layout/Header";
+import { SearchDialog } from "@/components/search/SearchDialog";
 import { SearchProvider } from "@/components/search/SearchProvider";
 import { SearchTrigger } from "@/components/search/SearchTrigger";
 import type { SearchEntry } from "@/lib/search";
@@ -269,5 +270,17 @@ describe("global search dialog", () => {
     unmount();
     fireEvent.keyDown(document, { key: "k", ctrlKey: true });
     expect(screen.queryByRole("dialog", { name: "Search hunt-tricks" })).not.toBeInTheDocument();
+  });
+
+  test("keeps focus where the user put it when the close handler identity changes", () => {
+    const { rerender } = render(<SearchDialog entries={entries} onActivate={() => {}} onClose={() => {}} />);
+
+    const firstOption = screen.getAllByRole("option")[0]!;
+    firstOption.focus();
+    expect(firstOption).toHaveFocus();
+
+    rerender(<SearchDialog entries={entries} onActivate={() => {}} onClose={() => {}} />);
+
+    expect(firstOption).toHaveFocus();
   });
 });

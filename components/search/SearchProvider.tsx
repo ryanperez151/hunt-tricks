@@ -58,6 +58,9 @@ export function SearchProvider({ entries, children }: { entries: readonly Search
     setIsOpen(false);
   }, []);
 
+  const handleActivate = useCallback(() => closeSearch(false), [closeSearch]);
+  const handleClose = useCallback(() => closeSearch(true), [closeSearch]);
+
   useEffect(() => {
     if (isOpen) return;
     const invoker = pendingRestoreRef.current;
@@ -92,8 +95,8 @@ export function SearchProvider({ entries, children }: { entries: readonly Search
       {isOpen ? (
         <SearchDialog
           entries={immutableEntries}
-          onActivate={() => closeSearch(false)}
-          onClose={() => closeSearch(true)}
+          onActivate={handleActivate}
+          onClose={handleClose}
         />
       ) : null}
     </SearchContext.Provider>

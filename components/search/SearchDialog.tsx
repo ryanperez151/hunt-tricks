@@ -30,6 +30,10 @@ export function SearchDialog({ entries, onClose, onActivate }: SearchDialogProps
   const dialogRef = useRef<HTMLDivElement>(null);
   const portalRootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
   const results = useMemo(() => searchGuide(query, entries), [entries, query]);
   const selectedIndex = results.length ? Math.min(activeIndex, results.length - 1) : -1;
   const selectedResult = selectedIndex >= 0 ? results[selectedIndex] : undefined;
@@ -59,7 +63,7 @@ export function SearchDialog({ entries, onClose, onActivate }: SearchDialogProps
     const handleModalKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== "Tab") return;
@@ -91,7 +95,7 @@ export function SearchDialog({ entries, onClose, onActivate }: SearchDialogProps
         else element.setAttribute("aria-hidden", ariaHidden);
       }
     };
-  }, [onClose]);
+  }, []);
 
   useEffect(() => {
     if (!activeDescendant) return;
