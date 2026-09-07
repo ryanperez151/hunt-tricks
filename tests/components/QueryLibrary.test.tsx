@@ -166,4 +166,23 @@ describe("QueryLibrary", () => {
     const chip = screen.getByRole("button", { name: "Remove telemetry NetFlow / IPFIX filter" });
     expect(chip).toHaveTextContent("NetFlow / IPFIX");
   });
+
+  test("omits metadata rows the source hunt does not populate", () => {
+    const bare: QueryDisplayRecord = {
+      ...queries[0]!,
+      id: "identity-hunt:kql:0",
+      title: "Identity-only query",
+      devices: [],
+      protocols: [],
+      telemetry: [],
+      techniques: [],
+    };
+    render(<QueryLibrary queries={[bare]} />);
+
+    const card = screen.getByTestId("query-card");
+    expect(within(card).getByText("Family")).toBeInTheDocument();
+    expect(within(card).queryByText("Devices")).not.toBeInTheDocument();
+    expect(within(card).queryByText("Protocols")).not.toBeInTheDocument();
+    expect(within(card).queryByText("Telemetry")).not.toBeInTheDocument();
+  });
 });

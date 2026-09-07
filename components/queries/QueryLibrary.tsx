@@ -180,9 +180,9 @@ export function QueryLibrary({ queries }: { queries: readonly QueryDisplayRecord
               </header>
               <dl className="query-card__metadata">
                 <div><dt>Family</dt><dd><Tag>{labelFor(query.family)}</Tag></dd></div>
-                <div><dt>Devices</dt><dd>{query.devices.map((value) => <Tag key={value}>{labelFor(value)}</Tag>)}</dd></div>
-                <div><dt>Protocols</dt><dd>{query.protocols.map((value) => <Tag key={value}>{value}</Tag>)}</dd></div>
-                <div><dt>Telemetry</dt><dd>{query.telemetry.map((value) => <Tag key={value}>{labelFor(value)}</Tag>)}</dd></div>
+                {query.devices.length ? <div><dt>Devices</dt><dd>{query.devices.map((value) => <Tag key={value}>{labelFor(value)}</Tag>)}</dd></div> : null}
+                {query.protocols.length ? <div><dt>Protocols</dt><dd>{query.protocols.map((value) => <Tag key={value}>{value}</Tag>)}</dd></div> : null}
+                {query.telemetry.length ? <div><dt>Telemetry</dt><dd>{query.telemetry.map((value) => <Tag key={value}>{labelFor(value)}</Tag>)}</dd></div> : null}
                 {query.techniques.length ? <div><dt>Techniques</dt><dd>{query.techniques.map((value) => <Tag key={value}>{value}</Tag>)}</dd></div> : null}
               </dl>
               <section aria-label="Detection strategy">
