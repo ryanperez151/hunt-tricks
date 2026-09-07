@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { AnchorHTMLAttributes } from "react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { QueryLibrary, type QueryDisplayRecord } from "@/components/queries/QueryLibrary";
+import { QueryLibrary, QueryLibraryFallback, type QueryDisplayRecord } from "@/components/queries/QueryLibrary";
 import type { TrustedHighlightedQueryHtml } from "@/lib/highlight";
 import QueriesPage from "@/app/queries/page";
 import { hunts } from "@/lib/content";
@@ -110,6 +110,8 @@ describe("QueryLibrary", () => {
     const { rerender } = render(<QueryLibrary queries={queries} />);
 
     await user.selectOptions(screen.getByLabelText("Platform"), "zeek");
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/?platform=zeek", { scroll: false });
+
     navigation.search = new URLSearchParams("platform=zeek");
     rerender(<QueryLibrary queries={queries} />);
 
@@ -132,11 +134,29 @@ describe("QueryLibrary", () => {
       expect(screen.getByLabelText(label)).toBeInTheDocument();
     }
 
+    await user.selectOptions(screen.getByLabelText("Platform"), "splunk");
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/?platform=splunk", { scroll: false });
+
+    navigation.search = new URLSearchParams("platform=splunk");
+    rerender(<QueryLibrary queries={queries} />);
+
+    // The select is controlled purely by URL state, so selecting a set of options in one
+    // gesture only takes effect once the DOM reflects the value already pushed for the first
+    // one (React resets an uncommitted controlled <select>'s selection between change events
+    // that don't themselves update its `value`). Re-selecting the full ["splunk", "zeek"] set
+    // against the now-current "platform=splunk" render is what actually produces a combined push.
     await user.selectOptions(screen.getByLabelText("Platform"), ["splunk", "zeek"]);
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/?platform=splunk&platform=zeek", { scroll: false });
+
     navigation.search = new URLSearchParams("platform=splunk&platform=zeek");
     rerender(<QueryLibrary queries={queries} />);
 
     await user.selectOptions(screen.getByLabelText("Protocol"), "SNMP");
+    expect(navigation.push).toHaveBeenLastCalledWith(
+      "/queries/?platform=splunk&platform=zeek&protocol=SNMP",
+      { scroll: false },
+    );
+
     navigation.search = new URLSearchParams("platform=splunk&platform=zeek&protocol=SNMP");
     rerender(<QueryLibrary queries={queries} />);
 
@@ -151,21 +171,29 @@ describe("QueryLibrary", () => {
     const { rerender } = render(<QueryLibrary queries={queries} />);
 
     await user.selectOptions(screen.getByLabelText("Technique"), "T1046");
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/?technique=T1046", { scroll: false });
+
     navigation.search = new URLSearchParams("technique=T1046");
     rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByText("2 queries")).toBeInTheDocument();
     expect(screen.getByText("Active filters")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Remove technique T1046 filter" }));
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/", { scroll: false });
+
     navigation.search = new URLSearchParams();
     rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByText("3 queries")).toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText("Device"), "firewall");
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/?device=firewall", { scroll: false });
+
     navigation.search = new URLSearchParams("device=firewall");
     rerender(<QueryLibrary queries={queries} />);
 
     await user.click(screen.getByRole("button", { name: "Clear all filters" }));
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/", { scroll: false });
+
     navigation.search = new URLSearchParams();
     rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByText("3 queries")).toBeInTheDocument();
@@ -185,16 +213,22 @@ describe("QueryLibrary", () => {
     expect(within(firstCard).getByText("SSH")).toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText("Platform"), "splunk");
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/?platform=splunk", { scroll: false });
+
     navigation.search = new URLSearchParams("platform=splunk");
     rerender(<QueryLibrary queries={queries} />);
 
     await user.selectOptions(screen.getByLabelText("Protocol"), "SNMP");
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/?platform=splunk&protocol=SNMP", { scroll: false });
+
     navigation.search = new URLSearchParams("platform=splunk&protocol=SNMP");
     rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByRole("heading", { name: "No queries match these filters" })).toBeInTheDocument();
     expect(screen.getByText("0 queries")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Reset query filters" }));
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/", { scroll: false });
+
     navigation.search = new URLSearchParams();
     rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByText("3 queries")).toBeInTheDocument();
@@ -205,6 +239,8 @@ describe("QueryLibrary", () => {
     const { rerender } = render(<QueryLibrary queries={queries} />);
 
     await user.selectOptions(screen.getByLabelText("Telemetry"), "netflow-ipfix");
+    expect(navigation.push).toHaveBeenLastCalledWith("/queries/?telemetry=netflow-ipfix", { scroll: false });
+
     navigation.search = new URLSearchParams("telemetry=netflow-ipfix");
     rerender(<QueryLibrary queries={queries} />);
 
@@ -245,5 +281,15 @@ describe("QueryLibrary", () => {
     navigation.search = new URLSearchParams();
     rerender(<QueryLibrary queries={queries} />);
     expect(screen.getByText("3 queries")).toBeInTheDocument();
+  });
+
+  test("provides a useful server-rendered library while the URL island hydrates", () => {
+    render(<QueryLibraryFallback queries={queries} />);
+
+    expect(screen.getByText("Library controls are loading. All queries are available below.")).toBeInTheDocument();
+    expect(screen.getAllByTestId("query-card")).toHaveLength(queries.length);
+    for (const query of queries) {
+      expect(screen.getByRole("heading", { name: query.title })).toBeInTheDocument();
+    }
   });
 });

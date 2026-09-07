@@ -84,11 +84,14 @@ test("new workbench pages fit the viewport and produce review screenshots", asyn
 
 test("query library filters survive a link out and back", async ({ page }) => {
   await page.goto("/queries/");
+  const unfilteredCount = await page.getByTestId("query-card").count();
+
   await page.getByRole("listbox", { name: "Platform", exact: true }).selectOption("zeek");
   await expect(page).toHaveURL(/\/queries\/\?platform=zeek$/);
 
   const filteredCount = await page.getByTestId("query-card").count();
   expect(filteredCount).toBeGreaterThan(0);
+  expect(filteredCount).toBeLessThan(unfilteredCount);
 
   await page.getByTestId("query-card").first().getByRole("link").first().click();
   await expect(page).toHaveURL(/\/hunts\/[a-z0-9-]+\/$/);
