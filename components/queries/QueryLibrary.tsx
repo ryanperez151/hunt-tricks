@@ -113,7 +113,7 @@ export function QueryLibrary({ queries }: { queries: readonly QueryDisplayRecord
             </label>
           ))}
         </div>
-        <p className="sr-only" id="query-filter-guidance">Hold Control or Command to select more than one value.</p>
+        <p className="sr-only" id="query-filter-guidance">Select one or more values. With a keyboard or mouse, hold Control or Command while selecting. On a touch screen, tap each value.</p>
         {activeFilters.length ? (
           <div className="query-filters__active">
             <p>Active filters</p>

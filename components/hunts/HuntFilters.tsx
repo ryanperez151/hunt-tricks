@@ -104,7 +104,7 @@ export function HuntFilters({ filters, options, onChange }: HuntFiltersProps) {
         ))}
       </div>
       </details>
-      <p className="sr-only" id="hunt-filter-guidance">Hold Control or Command to select more than one value.</p>
+      <p className="sr-only" id="hunt-filter-guidance">Select one or more values. With a keyboard or mouse, hold Control or Command while selecting. On a touch screen, tap each value.</p>
       {activeFilters.length ? (
         <div className="hunt-filters__active">
           <p>Active filters</p>

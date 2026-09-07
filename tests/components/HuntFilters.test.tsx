@@ -87,4 +87,14 @@ describe("HuntFilters", () => {
     const chip = screen.getByRole("button", { name: "Remove family Management-Plane C2 filter" });
     expect(chip).toHaveTextContent("Management-Plane C2");
   });
+
+  test("describes multi-selection in terms every input mode can follow", () => {
+    render(<HuntFilters filters={emptyHuntFilters} options={filterOptions} onChange={vi.fn()} />);
+
+    const guidance = document.getElementById("hunt-filter-guidance")!;
+    expect(screen.getByLabelText("Scope")).toHaveAttribute("aria-describedby", "hunt-filter-guidance");
+    expect(guidance).toHaveTextContent(
+      "Select one or more values. With a keyboard or mouse, hold Control or Command while selecting. On a touch screen, tap each value.",
+    );
+  });
 });
