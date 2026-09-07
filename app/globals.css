@@ -122,8 +122,9 @@ button { font: inherit; }
 .mobile-menu {
   position: fixed;
   z-index: 90;
-  inset: 0 0 auto;
-  min-height: 100vh;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 1rem;
   background: var(--bg-navy);
 }

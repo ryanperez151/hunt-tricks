@@ -33,3 +33,16 @@ test("contains mobile navigation focus and restores it to its trigger", async ()
   await user.click(closeButton);
   expect(trigger).toHaveFocus();
 });
+
+test("locks background scrolling while the mobile menu is open", async () => {
+  const user = userEvent.setup();
+  document.body.style.overflow = "";
+  render(<Header />);
+  const trigger = screen.getByRole("button", { name: /open navigation/i });
+
+  await user.click(trigger);
+  expect(document.body.style.overflow).toBe("hidden");
+
+  await user.keyboard("{Escape}");
+  expect(document.body.style.overflow).toBe("");
+});

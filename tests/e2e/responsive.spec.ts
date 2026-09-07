@@ -133,6 +133,30 @@ test("desktop navigation and comparison retain their wide layout", async ({ page
   expect(lastNodeBox!.x + lastNodeBox!.width).toBeLessThanOrEqual(canvasBox!.x + canvasBox!.width);
 });
 
+test("mobile navigation scrolls to its last link in a short viewport", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-chromium", "Mobile-only assertions");
+  await page.setViewportSize({ width: 390, height: 380 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open navigation" }).click();
+
+  const menu = page.locator(".mobile-menu");
+  await expect(menu).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("hidden");
+
+  const overflow = await menu.evaluate((element) => ({
+    scrollHeight: element.scrollHeight,
+    clientHeight: element.clientHeight,
+  }));
+  expect(overflow.scrollHeight).toBeGreaterThan(overflow.clientHeight);
+  expect(overflow.clientHeight).toBeLessThanOrEqual(380);
+
+  const about = menu.getByRole("link", { name: "About" });
+  await about.scrollIntoViewIfNeeded();
+  await expect(about).toBeInViewport();
+  await about.click();
+  await expect(page).toHaveURL(/\/about\/$/);
+});
+
 test("reduced motion removes meaningful transitions", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");

@@ -34,6 +34,9 @@ export function MobileNavigation() {
     const previousInertState = inertSiblings.map((element) => [element, element.hasAttribute("inert")] as const);
     inertSiblings.forEach((element) => element.setAttribute("inert", ""));
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     closeRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -65,6 +68,7 @@ export function MobileNavigation() {
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
       previousInertState.forEach(([element, wasInert]) => {
         if (!wasInert) element.removeAttribute("inert");
       });
