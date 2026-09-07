@@ -52,4 +52,11 @@ describe("TelemetryMatrix", () => {
     expect(triggers[0]).toHaveAttribute("aria-expanded", "true");
     expect(triggers[1]).toHaveAttribute("aria-expanded", "false");
   });
+
+  test("exposes every coverage cell with a role that permits an accessible name", () => {
+    render(<TelemetryMatrix sources={telemetrySources} />);
+
+    expect(screen.getByRole("img", { name: "NetFlow/IPFIX C2 coverage: high" })).toBeInTheDocument();
+    expect(screen.getAllByRole("img")).toHaveLength(telemetrySources.length * 4);
+  });
 });

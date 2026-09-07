@@ -24,6 +24,7 @@ function Coverage({ source, dimension, label }: {
     <span
       aria-label={`${source.name} ${label} coverage: ${level}`}
       className={`telemetry-coverage telemetry-coverage--${level}`}
+      role="img"
     >
       {level[0].toUpperCase() + level.slice(1)}
     </span>
