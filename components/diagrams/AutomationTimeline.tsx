@@ -15,7 +15,7 @@ export function AutomationTimeline() {
     <h2 id="automation-timeline-title">Same sequence. Different orchestration.</h2>
     <p>These examples illustrate possible workflows, not signatures or measured incident traces. All three can call APIs quickly; adaptive automation and agents can both branch on results.</p>
     <div className="automation-timeline__controls" role="group" aria-label="Choose a scenario">{scenarios.map((item, index) => <button key={item.label} type="button" aria-pressed={selected === index} onClick={() => setSelected(index)}>{item.label}</button>)}</div>
-    <div aria-live="polite" aria-atomic="true">
+    <div aria-live="polite">
       <ol aria-label="Scenario steps">{steps.map((step, index) => <li key={step}><span aria-hidden="true">0{index + 1}</span><strong>{step}</strong></li>)}</ol>
       <p className="automation-timeline__observation"><strong>Observation: </strong>{scenario.observation}</p>
     </div>

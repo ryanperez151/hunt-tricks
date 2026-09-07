@@ -16,3 +16,15 @@ test("switches synthetic scenarios while preserving ordered evidence and attribu
   expect(screen.getByText(/model, run, and tool provenance/i)).toBeInTheDocument();
   expect(screen.getByText(/Speed alone does not identify AI involvement/)).toBeInTheDocument();
 });
+
+test("announces the changed step without re-reading the whole timeline", async () => {
+  const user = userEvent.setup();
+  render(<AutomationTimeline />);
+
+  const live = screen.getByRole("list", { name: "Scenario steps" }).closest("[aria-live]")!;
+  expect(live).toHaveAttribute("aria-live", "polite");
+  expect(live).not.toHaveAttribute("aria-atomic");
+
+  await user.click(screen.getByRole("button", { name: "Autonomous agent" }));
+  expect(within(live as HTMLElement).getByText("Select another permitted tool using the run context")).toBeInTheDocument();
+});
