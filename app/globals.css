@@ -365,7 +365,8 @@ main { min-height: calc(100vh - 15rem); }
 .query-filters__active .query-filters__clear { margin-left: auto; border-color: var(--border); border-radius: .25rem; color: var(--text); }
 .query-library__count { margin: 0; color: var(--cyan); font-family: var(--font-mono); font-weight: 700; }
 .query-library__list { display: grid; gap: 1.5rem; }
-.query-card { min-width: 0; border: 1px solid var(--border); background: var(--bg-panel); padding: clamp(1rem, 3vw, 1.5rem); }
+.query-card { min-width: 0; scroll-margin-top: 6.5rem; border: 1px solid var(--border); background: var(--bg-panel); padding: clamp(1rem, 3vw, 1.5rem); }
+.query-card:target { border-color: var(--cyan); }
 .query-card__heading { display: grid; grid-template-columns: minmax(16rem, .8fr) minmax(0, 1fr); align-items: end; gap: 1.25rem; }
 .query-card__heading h2 { margin: .2rem 0 .35rem; font-size: 1.35rem; line-height: 1.2; }
 .query-card__heading > p, .query-card__context { margin: 0; color: var(--text-muted); }

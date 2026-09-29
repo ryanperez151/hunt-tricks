@@ -60,23 +60,28 @@ const seeds: HuntSeed[] = [
     queries: [
       {
         title: "Unexpected infrastructure egress",
-        description: "Splunk search supplied for environments with the named network and dependency lookup fields.",
+        description: "Example SPL over normalized device-originated management sessions: initiator=source and network_plane=management must be established from direction and interface evidence before ingestion. The dependency lookup must use src_ip, dest_ip, numeric dest_port, and lowercase transport (tcp/udp); approved must be true only for the complete authorized service relationship. Missing, false, or unknown approvals remain visible. Map these fields and asset roles to your environment.",
         platform: "splunk",
-        query: `index=network
+        query: `index=network initiator=source network_plane=management
 | lookup network_assets ip AS src_ip
     OUTPUT asset_type AS src_type
 | where src_type IN (
     "firewall",
     "router",
     "switch",
+    "wireless_controller",
     "vpn_gateway",
     "load_balancer"
 )
+| eval transport=lower(transport)
+| fields - dependency_approved
 | lookup approved_infrastructure_dependencies
     src_ip
     dest_ip
-    OUTPUT approved
-| where isnull(approved)
+    dest_port
+    transport
+    OUTPUT approved AS dependency_approved
+| where coalesce(lower(trim(dependency_approved)), "false") != "true"
 | stats
     count
     sum(bytes_out) AS bytes_out

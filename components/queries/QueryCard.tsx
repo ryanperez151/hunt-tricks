@@ -20,7 +20,7 @@ export function labelFor(value: string) {
 
 export function QueryCard({ query }: { query: QueryDisplayRecord }) {
   return (
-    <article className="query-card" data-testid="query-card">
+    <article className="query-card" data-testid="query-card" id={`query-${query.id}`} tabIndex={-1}>
       <header className="query-card__heading">
         <div>
           <p className="eyebrow">{query.platform.toUpperCase()}</p>

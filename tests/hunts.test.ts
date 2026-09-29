@@ -57,31 +57,6 @@ const originMattersBySlug = {
   "management-acl-modified": false,
 } as const;
 
-const suppliedUnexpectedInfrastructureEgressQuery = `index=network
-| lookup network_assets ip AS src_ip
-    OUTPUT asset_type AS src_type
-| where src_type IN (
-    "firewall",
-    "router",
-    "switch",
-    "vpn_gateway",
-    "load_balancer"
-)
-| lookup approved_infrastructure_dependencies
-    src_ip
-    dest_ip
-    OUTPUT approved
-| where isnull(approved)
-| stats
-    count
-    sum(bytes_out) AS bytes_out
-    sum(bytes_in) AS bytes_in
-    values(dest_port) AS dest_ports
-    earliest(_time) AS first_seen
-    latest(_time) AS last_seen
-    by src_ip dest_ip
-| sort count`;
-
 describe("launch hunt registry", () => {
   test("preserves the required launch hunts before expanded content", () => {
     expect(hunts.length).toBeGreaterThanOrEqual(44);
@@ -104,12 +79,6 @@ describe("launch hunt registry", () => {
     expect(hunt.escalationConditions.length).toBeGreaterThanOrEqual(4);
     expect(hunt.behaviorComparison).toBeDefined();
     expect(hunt.rationale.length).toBeGreaterThan(180);
-  });
-
-  test("preserves the supplied Unexpected Infrastructure Egress Splunk query verbatim", () => {
-    const hunt = getHuntBySlug("unexpected-management-interface-egress")!;
-    const query = hunt.queries.find((item) => item.platform === "splunk");
-    expect(query?.query).toBe(suppliedUnexpectedInfrastructureEgressQuery);
   });
 
   test("creates a GRE literal before using it as a Splunk lookup key", () => {

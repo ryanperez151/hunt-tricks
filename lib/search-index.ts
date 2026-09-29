@@ -103,7 +103,7 @@ export function buildSearchIndex(huntRecords: readonly Hunt[] = hunts): readonly
     type: "QUERY",
     title: query.title,
     description: `${query.huntTitle}: ${query.description}`,
-    href: "/queries/",
+    href: `/queries/#query-${query.id}`,
     tags: [query.platform, query.family, query.severity, ...query.protocols, ...query.devices, ...query.planes, ...query.telemetry, ...query.techniques],
     body: `${query.huntTitle} ${query.query}`,
   }));

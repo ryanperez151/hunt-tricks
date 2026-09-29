@@ -31,6 +31,15 @@ describe("guide search", () => {
     ]);
   });
 
+  test("opens a query result at its unique library fragment", () => {
+    const results = searchGuide("Workflow authority diff", buildSearchIndex());
+    const result = results.find((entry) => entry.type === "QUERY" && entry.title === "Workflow authority diff");
+
+    expect(result?.href).toBe("/queries/#query-workflow-file-privilege-expansion:pseudocode:0");
+    const queryLinks = buildSearchIndex().filter((entry) => entry.type === "QUERY").map((entry) => entry.href);
+    expect(new Set(queryLinks).size).toBe(queryLinks.length);
+  });
+
   test("labels and ranks SNMP content with a stable bounded result set", () => {
     const entries = buildSearchIndex();
     const first = searchGuide("SNMP", entries);

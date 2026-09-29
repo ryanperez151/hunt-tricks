@@ -2,6 +2,22 @@ import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
+test("query search reveals the selected card from home and a filtered library", async ({ page }) => {
+  for (const start of ["/", "/queries/?platform=zeek"]) {
+    await page.goto(start, { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Search guide", exact: true }).click();
+    await page.getByRole("combobox", { name: "Search guide", exact: true }).fill("Workflow authority diff");
+    await page.getByRole("option", { name: /QUERY Workflow authority diff/ }).click();
+    await expect(page).toHaveURL(/\/queries\/#query-workflow-file-privilege-expansion:pseudocode:0$/);
+    const heading = page.getByRole("heading", { name: "Workflow authority diff", exact: true });
+    await expect(heading).toBeInViewport();
+    await expect.poll(async () => (await heading.boundingBox())!.y)
+      .toBeGreaterThanOrEqual(76);
+    await page.reload();
+    await expect(heading).toBeInViewport();
+  }
+});
+
 test("scope and temporal filters survive navigation and reset together", async ({ page }) => {
   await page.goto("/hunts/?scope=identity&temporal=low-and-slow");
   const scope = page.getByRole("listbox", { name: "Scope", exact: true });

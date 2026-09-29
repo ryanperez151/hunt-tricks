@@ -6,6 +6,7 @@ import { QueryLibrary, QueryLibraryFallback, type QueryDisplayRecord } from "@/c
 import type { TrustedHighlightedQueryHtml } from "@/lib/highlight";
 import QueriesPage from "@/app/queries/page";
 import { hunts } from "@/lib/content";
+import { buildSearchIndex } from "@/lib/search-index";
 
 vi.mock("server-only", () => ({}));
 
@@ -102,6 +103,18 @@ describe("QueryLibrary", () => {
       expect(code).not.toBeNull();
       expect(strategy.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
+  });
+
+  test("resolves every query search destination to the matching rendered card", async () => {
+    render(await QueriesPage());
+    const entries = buildSearchIndex().filter((entry) => entry.type === "QUERY");
+
+    for (const entry of entries) {
+      const fragment = new URL(entry.href, "https://example.test").hash.slice(1);
+      const card = document.getElementById(decodeURIComponent(fragment));
+      expect(card, entry.title).not.toBeNull();
+      expect(within(card!).getByRole("heading", { name: entry.title, exact: true })).toBeInTheDocument();
+    }
   });
 
   test("filters by platform without duplicating or mismatching highlighted and copied query content", async () => {
