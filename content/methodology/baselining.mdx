@@ -138,3 +138,23 @@ Use one row per directional dependency. A bidirectional protocol may need two ro
 ## Review deviations
 
 A deviation is a question, not an automatic incident. Confirm the asset role, change record, observed initiator, source interface, NAT path, authenticated identity, and independent telemetry. Update the matrix only after the owner confirms the dependency is necessary, constrained, and observable.
+
+## Design the baseline before querying
+
+MITRE's [TTP-Based Hunting, sections 2.2–2.4](https://www.mitre.org/sites/default/files/2021-11/prs-19-3892-ttp-based-hunting.pdf) connects hypotheses to collection requirements and analytic testing. The following is this guide's operational worksheet, not a mandated MITRE template.
+
+- State the protected asset and decision: for example, whether a router initiated an unapproved administrative session to a peer.
+- Specify the population, observation period, comparison period, and exclusions before inspecting results. Include representative maintenance and workload cycles; no fixed number of days establishes a clean baseline.
+- Record coverage by device and period, including missing exports, sampling, onboarding dates, and address changes. A newly observed entity may be newly visible.
+- Version the allow matrix and record owner approval. Preserve suspicious history separately so that repeated compromise does not become approved behavior.
+- Separate baseline construction from evaluation. Freeze the reference period, then evaluate later activity and inspect operational changes before refreshing the baseline.
+
+Chronological evaluation is an editorial application of the experimental-bias concerns in [TESSERACT](https://www.usenix.org/conference/usenixsecurity19/presentation/pendlebury). That study evaluated Android malware classifiers; it does not establish an effective network baseline window.
+
+## Worked example: a new SSH relationship
+
+Illustrative hypothesis: a router is using administrative credentials to reach another router outside its approved dependencies. Start with [router-to-router SSH](/hunts/router-to-router-ssh/). Resolve device identity and flow direction, compare the pair with the versioned allow matrix, and join AAA session evidence to configuration history. Review automation jobs, emergency support, NAT, and failover before escalation.
+
+Record the result as a confirmed authorized dependency, an unresolved deviation, or evidence requiring incident response. If the AAA feed was unavailable, describe the identity question as untested; a flow alone does not identify the administrator or establish successful authentication.
+
+See the [source record and limitations](/research/#research-mitre-ttp-hunting-2019) and [independent observation](/methodology/independent-observation/) before interpreting an empty query result.

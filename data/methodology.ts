@@ -7,7 +7,7 @@ export type MethodologyEntry = {
 };
 
 export const methodologyEntries: readonly MethodologyEntry[] = [
-  {"id": "methodology-behavior", "title": "Hunt behavior in context", "summary": "Establish roles, reconstruct sequences, and test alternative explanations.", "searchTerms": ["role deviation", "baseline", "new relationships", "trust boundary"], "route": "/methodology/behavior"},
+  {"id": "methodology-behavior", "title": "Hunt behavior in context", "summary": "Establish roles, test scoped hypotheses, reconstruct sequences, and document outcomes.", "searchTerms": ["role deviation", "baseline", "new relationships", "trust boundary", "hypothesis", "TTP-based hunting", "negative result", "hunt disposition"], "route": "/methodology/behavior"},
   {"id": "methodology-velocity", "title": "Reason about velocity", "summary": "Compare temporal windows and linked stages without turning speed into AI attribution.", "searchTerms": ["acceleration", "fan-out", "low-and-slow", "ingest delay", "stage latency"], "route": "/methodology/velocity"},
   {"id": "methodology-ai-autonomy", "title": "Investigate AI and autonomy", "summary": "Separate automation, adaptation, corroborated AI involvement, and malicious intent.", "searchTerms": ["reward hacking", "evaluator manipulation", "agent traces", "defender assistance", "prompt injection"], "route": "/methodology/ai-autonomy"},
 
@@ -15,27 +15,36 @@ export const methodologyEntries: readonly MethodologyEntry[] = [
     id: "methodology-baselining",
     title: "Baseline Expected Infrastructure Communication",
     summary: "Build a dependency inventory and allow matrix that make unexpected initiators, destinations, protocols, and timing reviewable.",
-    searchTerms: ["baseline", "dependency inventory", "allow matrix", "expected direction"],
+    searchTerms: ["baseline", "dependency inventory", "allow matrix", "expected direction", "reference period", "holdout", "baseline contamination", "SSH relationship"],
     route: "/methodology/baselining",
   },
   {
     id: "methodology-rarity",
     title: "Reason About Infrastructure Rarity",
     summary: "Prioritize behavior by combining rarity, privilege, origin, destination, protocol, timing, and corroborating sequence without pretending the factors form a universal score.",
-    searchTerms: ["rarity", "hunt score", "first seen", "fan-out", "sequence"],
+    searchTerms: ["rarity", "hunt score", "first seen", "fan-out", "sequence", "base rate", "precision", "recall", "denominator", "evaluation bias", "TESSERACT"],
     route: "/methodology/rarity",
   },
   {
     id: "methodology-independent-observation",
     title: "Require Independent Observation",
     summary: "Corroborate a potentially compromised appliance with upstream flow, passive network, identity, configuration, and external log evidence.",
-    searchTerms: ["independent telemetry", "corroboration", "NetFlow", "TAP", "SPAN", "Zeek"],
+    searchTerms: ["independent telemetry", "corroboration", "NetFlow", "TAP", "SPAN", "Zeek", "observability", "negative result", "visibility gap", "evidence provenance", "incident handoff"],
     route: "/methodology/independent-observation",
   },
 ];
 
 export const methodologySections: Record<string, readonly { title: string; paragraphs: readonly string[]; sourceIds: readonly string[] }[]> = {
   "behavior": [
+    {
+      title: "Make the hypothesis testable",
+      paragraphs: [
+        "MITRE's TTP-Based Hunting describes a process linking behavior models, hypotheses, data requirements, collection gaps, and analytic testing. Indicators, anomalies, and behavior-based approaches can complement each other.",
+        "This guide's worksheet: name the asset population, actor or identity, action, target, expected consequence, time window, and available evidence. State a plausible authorized explanation and what evidence would weaken the compromise hypothesis. Set a time budget and an escalation condition before searching.",
+        "Example: an edge router initiated an unapproved SSH session to a peer after an administrative change. Flow records test the relationship; AAA records test identity and authentication; configuration history and the change owner test authorization. A missing AAA feed leaves part of the hypothesis untested."
+      ],
+      sourceIds: ["research-mitre-ttp-hunting-2019"]
+    },
     {
       "title": "Begin with a role, not an alert",
       "paragraphs": [
@@ -68,7 +77,8 @@ export const methodologySections: Record<string, readonly { title: string; parag
         "Define expectation: record the permitted actor, target, action, and workload cadence.",
         "Identify deviation: specify exactly which role, relationship, privilege, or result changed.",
         "Reconstruct consequences: join the sequence using session and event evidence, preserving uncertainty.",
-        "Disconfirm the hypothesis: check maintenance, migrations, approved orchestration, and an independent outcome before escalating."
+        "Disconfirm the hypothesis: check maintenance, migrations, approved orchestration, and an independent outcome before escalating.",
+        "Record a disposition: corroborated suspicious activity requiring response, an authorized explanation supported by evidence, not observed within the tested scope, or inconclusive because of a visibility gap. These are editorial categories. Retain the query version, searched population, time bounds, evidence, and unresolved questions; an empty result is not proof of absence."
       ],
       "sourceIds": []
     }

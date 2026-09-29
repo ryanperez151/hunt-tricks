@@ -26,3 +26,25 @@ Use device evidence to explain intended state and local context. Use independent
 ## Resolve contradictions
 
 Absence in one source is not proof of absence. Check collection health, sensor placement, sampling, NAT, asymmetric routing, retention, time synchronization, and parser behavior. Escalate when independent telemetry observes a session the device denies, when the device reports activity no adjacent source can confirm, or when multiple external sources develop a gap immediately before suspicious configuration or network behavior.
+
+## Independence is a property of the evidence path
+
+Two dashboards of the same forwarded log are one underlying observation. Off-device storage protects retained records but cannot prove that a compromised sender emitted complete or truthful events. Record the producer, collector, transport, storage administrator, and observation point for each source. Treat shared exporters, credentials, and parsers as possible common failure points. This is the guide's evidence-assessment rule, not a numerical confidence formula.
+
+The [2024 joint event-logging guidance](https://www.cyber.gov.au/business-government/detecting-responding-to-threats/event-logging/best-practices-for-event-logging-and-threat-detection) recommends centralized correlation, secure storage, sufficient event detail, and consistent timestamps. Those controls support investigation; centralization alone does not create an independent observation. See the [source limitations](/research/#research-joint-event-logging-2024).
+
+## Check observability before accepting a negative result
+
+- Confirm the queried assets actually produced the relevant event type during the window. Check a known authorized action through the same pipeline or use an approved validation exercise.
+- Inspect raw records and parsed fields. Distinguish a missing field from an empty value, and check schema changes, duplicate delivery, filtering, retention, and ingest delay.
+- Preserve event time and receipt time. Record measured clock uncertainty before asserting order across sensors; ingestion order is not necessarily execution order.
+- Verify the sensor could see the hypothesized path. Sampling, asymmetric routing, encrypted payloads, and a compromised exporter can limit what flow or packet evidence establishes.
+- Test both a representative positive case and a benign near-match. An event reaching storage does not demonstrate that the hunt query recognizes it.
+
+Classify an empty result as **not observed within the tested scope** only when the relevant collection and analytic checks pass. Otherwise classify it as **inconclusive because of a visibility gap**. Neither disposition establishes that the environment is uncompromised. These are editorial reporting categories.
+
+## Preserve a reproducible handoff
+
+Store the hypothesis, assets, exact time bounds and timezone, query version and parameters, raw evidence locations, collection gaps, alternative explanations, and disposition owner. Preserve original records with access controls and integrity checks appropriate to the case. Escalate actionable evidence through the organization's incident process, and assign an owner to any collection repair or reusable detection.
+
+[NIST SP 800-61 Revision 3](https://csrc.nist.gov/pubs/sp/800/61/r3/final) places incident response within cybersecurity risk management. This checklist applies that program context to hunt handoff; it is not a NIST-prescribed evidence form. Review the [research entry](/research/#research-nist-ir-2025) for scope.

@@ -35,3 +35,17 @@ Use several reference groups. Compare the device with its own history, same-role
 ## Preserve reasons, not just ranks
 
 Write the factors into the case: “first device-originated SSH, new external destination, no change ticket, repeated every five minutes, confirmed by upstream IPFIX.” That statement survives threshold changes and gives the investigator a concrete hypothesis. A bare score does neither.
+
+## Keep the denominator visible
+
+The following arithmetic is synthetic, not a measured detector result. Suppose 100,000 events contain 100 malicious events. A detector that finds 90 of those and flags 1% of the 99,900 benign events creates 90 true alerts and 999 false alerts. Only about 8.3% of its 1,089 alerts are true, despite detecting 90% of malicious events. Event-level results also differ from case-level results when many events belong to one incident.
+
+Record both the number of candidates and the population searched. Do not call the fraction of reviewed alerts found malicious a detection rate: that excludes attacks the hunt missed. Recall requires an independently labeled set of relevant malicious activity; most exploratory hunts cannot estimate it from production hits alone.
+
+## Validate ranking on later activity
+
+[TESSERACT](https://www.usenix.org/conference/usenixsecurity19/presentation/pendlebury) demonstrates population and temporal bias in malware-classifier evaluation. Our methodological inference is to tune on one period and review a later, representative period, including benign operational changes. Keep related events from the same known incident together when separating development and evaluation data. These practices help expose overfitting; the paper does not validate this guide's rarity factors or numerical thresholds.
+
+Record review workload, adjudicated case outcomes, known missed validation cases, and collection gaps separately. If you inspect only the highest-ranked candidates, label the resulting precision estimate as conditional on that selection. Revisit exclusions after role changes, migrations, and new telemetry rather than silently expanding an allowlist.
+
+An ATT&CK mapping is a behavior label. It is not proof that every implementation of a technique is observable. [MITRE CAR](https://car.mitre.org/) explicitly separates the threat model from detection implementations and describes hypotheses, data models, pseudocode, and tests. For each deployed analytic, retain those details and the local validation result.
