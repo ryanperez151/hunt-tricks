@@ -19,32 +19,32 @@
 - [x] Reuse the application worktree and create `codex/github-preparation` from `7dc23c9`.
 - [x] Commit the existing methodology edits and research-review note, then merge `main` and the research-annex branch.
 - [x] Validate the annex with `node docs/research/validate-records.mjs` (39 additions, 6 amendments).
-- [ ] Mark the annex as a dated supporting snapshot, copy the approved review into this branch, and preserve the assembled history.
+- [x] Mark the annex as a dated supporting snapshot, copy the approved review into this branch, and preserve the assembled history.
 
 ### Task 2: Clean publication contents
 
-- [ ] Ignore `.task10-verify/`, `.claude/`, and `.publication-verify/`.
-- [ ] Remove tracked `.superpowers/` reports from the index while keeping local copies.
-- [ ] Verify the staged file list contains only intended project content; preserve all earlier history.
+- [x] Ignore `.task10-verify/`, `.claude/`, and `.publication-verify/`.
+- [x] Remove tracked `.superpowers/` reports from the index while keeping local copies.
+- [x] Verify the staged file list contains only intended project content; preserve all earlier history.
 
 ### Task 3: Correct query behavior and dependency
 
-- [ ] Replace the verbatim legacy SPL expectation: lookup dependencies by source, destination, destination port, and transport; suppress only a normalized positive approval. Document origin and lookup assumptions. Validate the example against hand-checked allowed-HTTPS/disallowed-SSH and null/false approval cases; a live Splunk service is unavailable.
-- [ ] Write failing consumer tests for query-result fragments resolving to query cards, plus browser tests for search selection and reload. Use the existing aggregated query ID as the unique fragment, with a `query-` prefix.
-- [ ] Add matching card IDs and search destinations, with a scroll offset for the sticky header. Verify direct links and search from both home and a filtered library.
-- [ ] Update the compatible transitive `undici` dependency to a patched version; verify the lockfile change and audit result.
+- [x] Replace the verbatim legacy SPL expectation: lookup dependencies by source, destination, destination port, and transport; suppress only a normalized positive approval. Document origin and lookup assumptions. Validate the example against hand-checked allowed-HTTPS/disallowed-SSH and null/false approval cases; a live Splunk service is unavailable.
+- [x] Write failing consumer tests for query-result fragments resolving to query cards, plus browser tests for search selection and reload. Use the existing aggregated query ID as the unique fragment, with a `query-` prefix.
+- [x] Add matching card IDs and search destinations, with a scroll offset for the sticky header. Verify direct links and search from both home and a filtered library.
+- [x] Update the compatible transitive `undici` dependency to a patched version; verify the lockfile change and audit result.
 
 ### Task 4: Publication configuration and navigation
 
-- [ ] Add a failing component test for current navigation on hunt/protocol/methodology detail routes, then a shared navigation link that adds `aria-current` and a visible state.
-- [ ] Add Node 24 runtime metadata, `npm ci` instructions, contributor/source-correction guidance, and CI running checks, build, and Chromium journeys.
-- [ ] Include `public/.nojekyll` so exported assets survive branch-based Pages hosting; document build-time site URL and base path. Configure the actual host only once known.
-- [ ] Keep license selection pending, per user instruction.
+- [x] Add a failing component test for current navigation on hunt/protocol/methodology detail routes, then a shared navigation link that adds `aria-current` and a visible state.
+- [x] Add Node 24 runtime metadata, `npm ci` instructions, contributor/source-correction guidance, and CI running checks, build, and Chromium journeys.
+- [x] Include `public/.nojekyll` so exported assets survive branch-based Pages hosting; document build-time site URL and base path. Configure the actual host only once known.
+- [x] Keep license selection pending, per user instruction.
 
 ### Task 5: Verify and integrate
 
-- [ ] Run lint, typecheck, all unit/component tests, production build, annex validation, dependency audit, and desktop/mobile browser journeys.
-- [ ] Verify a clean checkout/install and a prefixed static export, including the selected-query fragment and active navigation.
-- [ ] Request one independent whole-change code review and address substantive findings.
-- [ ] Commit the fixes and fast-forward local `main` to the verified preparation branch, preserving the root review file.
-- [ ] Record final verification and any remaining publication details without claiming a push occurred.
+- [x] Run lint, typecheck, all unit/component tests, production build, annex validation, dependency audit, and desktop/mobile browser journeys.
+- [x] Verify a clean checkout/install and a prefixed static export, including the selected-query fragment and active navigation.
+- [x] Request one independent whole-change code review and address substantive findings.
+- [x] Commit the fixes and fast-forward local `main` to the verified preparation branch, preserving the root review file.
+- [x] Record final verification and any remaining publication details without claiming a push occurred.
