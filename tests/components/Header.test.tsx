@@ -1,7 +1,39 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, test } from "vitest";
+import { beforeEach, expect, test, vi } from "vitest";
 import { Header } from "@/components/layout/Header";
+
+const route = vi.hoisted(() => ({ pathname: "/" }));
+vi.mock("next/navigation", () => ({ usePathname: () => route.pathname }));
+beforeEach(() => { route.pathname = "/"; });
+
+test.each([
+  ["/hunts/", "Hunts", "page"],
+  ["/hunts/snmp-fan-out/", "Hunts", "location"],
+  ["/protocols/snmp/", "Protocols", "location"],
+  ["/methodology/rarity/", "Methodology", "location"],
+])("identifies the current section on %s in desktop and mobile navigation", async (pathname, label, current) => {
+  route.pathname = pathname;
+  const user = userEvent.setup();
+  render(<Header />);
+  const desktop = screen.getByRole("navigation", { name: "Primary" });
+  expect(within(desktop).getByRole("link", { name: label })).toHaveAttribute("aria-current", current);
+  expect(desktop.querySelectorAll("[aria-current]")).toHaveLength(1);
+
+  await user.click(screen.getByRole("button", { name: /open navigation/i }));
+  const mobile = screen.getByRole("navigation", { name: "Mobile navigation" });
+  expect(within(mobile).getByRole("link", { name: label })).toHaveAttribute("aria-current", current);
+  expect(mobile.querySelectorAll("[aria-current]")).toHaveLength(1);
+});
+
+test("updates current navigation after a route change without matching partial section names", () => {
+  route.pathname = "/queries/";
+  const { rerender } = render(<Header />);
+  expect(screen.getByRole("link", { name: "Queries" })).toHaveAttribute("aria-current", "page");
+  route.pathname = "/queries-archive/";
+  rerender(<Header />);
+  expect(screen.getByRole("navigation", { name: "Primary" }).querySelector("[aria-current]")).toBeNull();
+});
 
 test("exposes primary navigation and an operable mobile menu", async () => {
   const user = userEvent.setup();

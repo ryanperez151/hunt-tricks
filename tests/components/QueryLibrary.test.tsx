@@ -113,7 +113,7 @@ describe("QueryLibrary", () => {
       const fragment = new URL(entry.href, "https://example.test").hash.slice(1);
       const card = document.getElementById(decodeURIComponent(fragment));
       expect(card, entry.title).not.toBeNull();
-      expect(within(card!).getByRole("heading", { name: entry.title, exact: true })).toBeInTheDocument();
+      expect(within(card!).getByRole("heading", { name: entry.title })).toBeInTheDocument();
     }
   });
 

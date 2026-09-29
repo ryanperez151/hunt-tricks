@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MobileNavigation } from "@/components/layout/MobileNavigation";
+import { NavigationLink } from "@/components/layout/NavigationLink";
 import { SearchTrigger } from "@/components/search/SearchTrigger";
 import { navigation } from "@/data/navigation";
 
@@ -18,7 +19,7 @@ export function Header() {
           <ul>
             {navigation.map((item) => (
               <li key={item.href}>
-                <Link href={item.href}>{item.label}</Link>
+                <NavigationLink href={item.href}>{item.label}</NavigationLink>
               </li>
             ))}
           </ul>

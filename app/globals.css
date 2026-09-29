@@ -86,6 +86,7 @@ button { font: inherit; }
 .desktop-navigation ul, .mobile-menu ul, .site-footer ul { display: flex; gap: 1rem; margin: 0; padding: 0; list-style: none; }
 .desktop-navigation a, .site-footer a { color: var(--text-muted); font-size: .875rem; text-decoration: none; }
 .desktop-navigation a:hover, .site-footer a:hover { color: var(--cyan); }
+.desktop-navigation a[aria-current], .mobile-menu a[aria-current] { color: var(--cyan); text-decoration: underline; text-underline-offset: .35em; text-decoration-thickness: 2px; }
 
 .mobile-navigation { display: none; }
 .search-trigger {

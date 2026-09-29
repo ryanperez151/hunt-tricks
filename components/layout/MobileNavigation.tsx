@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import Link from "next/link";
+import { NavigationLink } from "@/components/layout/NavigationLink";
 import { navigation } from "@/data/navigation";
 
 export function MobileNavigation() {
@@ -108,9 +108,9 @@ export function MobileNavigation() {
                 <ul>
                   {navigation.map((item) => (
                     <li key={item.href}>
-                      <Link href={item.href} onClick={closeNavigation}>
+                      <NavigationLink href={item.href} onClick={closeNavigation}>
                         {item.label}
-                      </Link>
+                      </NavigationLink>
                     </li>
                   ))}
                 </ul>
