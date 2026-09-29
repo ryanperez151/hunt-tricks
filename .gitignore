@@ -9,3 +9,6 @@ test-results/
 !.env.example
 .worktrees/
 .superpowers/
+.task10-verify/
+.claude/
+.publication-verify/

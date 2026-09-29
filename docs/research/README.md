@@ -13,7 +13,9 @@ Verified source corpus and claim mappings for the hunt-tricks threat hunting met
 
 ## Why this lives in `docs/`
 
-The application is on `feat/edge-threat-hunting-guide-mvp`; this branch carries the specs. Keeping the corpus here means it can be reviewed as research — one diff of sources and claims — rather than buried in an application diff. The records are already in the shape `data/research-expanded.ts` consumes, so merging is a paste, not a translation.
+This annex preserves the research review from September 6, 2026. It is supporting documentation, not an additional application registry. The source records and claim map describe the application snapshot reviewed on that date; later methodology edits may already address some observations. The live website uses the validated records in `data/research*.ts`.
+
+Before promoting an annex record into the live registry, recheck its source, reconcile overlapping records and amendments, and validate its claims against the current page. The annex validator checks its recorded snapshot context; it does not establish that every proposed record is current or already published on the website.
 
 ## Validate
 
