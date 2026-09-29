@@ -6,5 +6,8 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 export default defineConfig([
   ...fixupConfigRules(nextVitals),
   ...fixupConfigRules(nextTypeScript),
-  globalIgnores([".next/**", "out/**", "coverage/**", "playwright-report/**"]),
+  globalIgnores([
+    ".next/**", "out/**", "coverage/**", "playwright-report/**", "test-results/**",
+    ".worktrees/**", ".claude/**", ".superpowers/**", ".task10-verify/**", ".publication-verify/**",
+  ]),
 ]);

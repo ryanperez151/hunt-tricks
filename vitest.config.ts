@@ -11,7 +11,10 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    exclude: [...configDefaults.exclude, "tests/e2e/**"],
+    exclude: [
+      ...configDefaults.exclude, "tests/e2e/**",
+      ".worktrees/**", ".claude/**", ".superpowers/**", ".task10-verify/**", ".publication-verify/**",
+    ],
     setupFiles: ["./tests/setup.ts"],
   },
 });

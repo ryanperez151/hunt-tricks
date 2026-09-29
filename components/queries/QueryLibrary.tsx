@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { labelFor, QueryCard } from "@/components/queries/QueryCard";
 import {
   emptyQueryFilters,
@@ -78,6 +79,28 @@ export function QueryLibrary({ queries }: { queries: readonly QueryDisplayRecord
   const activeFilters = queryFilterDefinitions.flatMap(([key, , singular]) => (
     filters[key].map((value) => ({ key, singular, value }))
   ));
+
+  useEffect(() => {
+    // The static fallback and filtered library have different layouts. Reveal
+    // the fragment after hydration/navigation has committed the actual cards.
+    let frame = 0;
+    function revealQuery() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const fragment = window.location.hash.slice(1);
+        if (!fragment.startsWith("query-")) return;
+        const card = document.getElementById(fragment);
+        card?.scrollIntoView({ block: "start" });
+        card?.focus({ preventScroll: true });
+      });
+    }
+    revealQuery();
+    window.addEventListener("hashchange", revealQuery);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("hashchange", revealQuery);
+    };
+  }, [searchParams]);
 
   function setFilters(nextFilters: QueryFilters) {
     const query = serializeQueryFilters(nextFilters, options).toString();

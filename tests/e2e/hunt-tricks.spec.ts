@@ -2,7 +2,7 @@ import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
-test("query search reveals the selected card from home and a filtered library", async ({ page }) => {
+test("query search reveals the selected card across routes, filters, reloads, and fragments", async ({ page }) => {
   for (const start of ["/", "/queries/?platform=zeek"]) {
     await page.goto(start, { waitUntil: "networkidle" });
     await page.getByRole("button", { name: "Search guide", exact: true }).click();
@@ -15,6 +15,14 @@ test("query search reveals the selected card from home and a filtered library", 
       .toBeGreaterThanOrEqual(76);
     await page.reload();
     await expect(heading).toBeInViewport();
+    await expect(page.locator('[id="query-workflow-file-privilege-expansion:pseudocode:0"]')).toBeFocused();
+
+    // A second result changes only the hash on the already-open library.
+    await page.getByRole("button", { name: "Search guide", exact: true }).click();
+    await page.getByRole("combobox", { name: "Search guide", exact: true }).fill("Unexpected infrastructure egress");
+    await page.getByRole("option", { name: /QUERY Unexpected infrastructure egress/ }).click();
+    await expect(page.getByRole("heading", { name: "Unexpected infrastructure egress", exact: true })).toBeInViewport();
+    await expect(page.locator('[id="query-unexpected-management-interface-egress:splunk:0"]')).toBeFocused();
   }
 });
 
