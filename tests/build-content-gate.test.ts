@@ -18,6 +18,7 @@ describe("production build content gate", () => {
       "tests/content-production-validation.test.ts",
       "--environment",
       "node",
+      "--reporter=json",
     ], {
       cwd: projectRoot,
       encoding: "utf8",
@@ -25,6 +26,11 @@ describe("production build content gate", () => {
     });
 
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toMatch(/Tests\s+1 passed \(1\)/);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      success: true,
+      numTotalTests: 1,
+      numPassedTests: 1,
+      numFailedTests: 0,
+    });
   }, 20_000);
 });
