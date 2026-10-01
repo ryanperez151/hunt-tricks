@@ -4,8 +4,6 @@ A static Next.js threat-hunting workbench across identities, systems, networks, 
 
 Published with GitHub Pages at [ryanperez151.github.io/hunt-tricks](https://ryanperez151.github.io/hunt-tricks/). Source: [ryanperez151/hunt-tricks](https://github.com/ryanperez151/hunt-tricks).
 
-High velocity can be scripted just as readily as AI-driven. Speed alone does not identify AI involvement. Methodology covers behavior, velocity, and AI/autonomy, alongside the original baselining, rarity, and independent-observation guides.
-
 ## Local commands
 
 Use Node **24.18.0** (recorded in `.nvmrc`) and npm **11.16.0**. The supported runtime is Node 24.18 or newer in the 24.x line, with npm 11. Install the committed dependency versions with `npm ci`.
